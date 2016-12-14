@@ -1,7 +1,7 @@
 ﻿  ConfigurationType : StaticLibrary
   Configuration     : DebugLIB
   PlatformToolset   : v140
-  TargetPath        : C:\Users\bmod\Documents\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\static\libzmq.lib
+  TargetPath        : C:\Workspace\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\static\libzmq.lib
   Option-tweet      : 
   Option-sodium     : 
   Option-openpgm    : 
@@ -57,6 +57,8 @@
   poller_base.cpp
   proxy.cpp
   pub.cpp
+..\..\..\..\src\proxy.cpp(37): warning C4627: '#include <poll.h>': skipped when looking for precompiled header use
+  ..\..\..\..\src\proxy.cpp(37): note: Add directive to 'precompiled.hpp' or rebuild precompiled header
   pull.cpp
   push.cpp
   radio.cpp
@@ -73,6 +75,8 @@
   session_base.cpp
   signaler.cpp
   socket_base.cpp
+..\..\..\..\src\signaler.cpp(37): warning C4627: '#include <poll.h>': skipped when looking for precompiled header use
+  ..\..\..\..\src\signaler.cpp(37): note: Add directive to 'precompiled.hpp' or rebuild precompiled header
   socket_poller.cpp
   socks.cpp
   socks_connecter.cpp
@@ -97,4 +101,4 @@
   zmq.cpp
   zmq_utils.cpp
   tweetnacl.c
-  libzmq.vcxproj -> C:\Users\bmod\Documents\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\static\libzmq.lib
+  libzmq.vcxproj -> C:\Workspace\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\static\libzmq.lib
