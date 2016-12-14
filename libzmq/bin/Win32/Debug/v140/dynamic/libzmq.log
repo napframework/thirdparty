@@ -1,7 +1,7 @@
 ﻿  ConfigurationType : DynamicLibrary
   Configuration     : DebugDLL
   PlatformToolset   : v140
-  TargetPath        : C:\Users\bmod\Documents\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\dynamic\libzmq.dll
+  TargetPath        : C:\Workspace\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\dynamic\libzmq.dll
   Option-tweet      : 
   Option-sodium     : 
   Option-openpgm    : 
@@ -56,6 +56,8 @@
   poll.cpp
   poller_base.cpp
   proxy.cpp
+..\..\..\..\src\proxy.cpp(37): warning C4627: '#include <poll.h>': skipped when looking for precompiled header use
+  ..\..\..\..\src\proxy.cpp(37): note: Add directive to 'precompiled.hpp' or rebuild precompiled header
   pub.cpp
   pull.cpp
   push.cpp
@@ -72,6 +74,8 @@
   server.cpp
   session_base.cpp
   signaler.cpp
+..\..\..\..\src\signaler.cpp(37): warning C4627: '#include <poll.h>': skipped when looking for precompiled header use
+  ..\..\..\..\src\signaler.cpp(37): note: Add directive to 'precompiled.hpp' or rebuild precompiled header
   socket_base.cpp
   socket_poller.cpp
   socks.cpp
@@ -97,6 +101,5 @@
   zmq.cpp
   zmq_utils.cpp
   tweetnacl.c
-     Creating library C:\Users\bmod\Documents\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\dynamic\libzmq.lib and object C:\Users\bmod\Documents\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\dynamic\libzmq.exp
-  libzmq.vcxproj -> C:\Users\bmod\Documents\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\dynamic\libzmq.dll
-  libzmq.vcxproj -> C:\Users\bmod\Documents\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\dynamic\libzmq.pdb (Full PDB)
+     Creating library C:\Workspace\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\dynamic\libzmq.lib and object C:\Workspace\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\dynamic\libzmq.exp
+  libzmq.vcxproj -> C:\Workspace\libzmq\builds\msvc\vs2015\libzmq\..\..\..\..\bin\Win32\Debug\v140\dynamic\libzmq.dll
