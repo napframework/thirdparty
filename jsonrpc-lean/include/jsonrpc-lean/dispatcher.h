@@ -185,7 +185,7 @@ namespace jsonrpc {
                 if (method == myMethods.end()) {
                     throw MethodNotFoundFault("Method not found: " + name);
                 }
-                return{ method->second(parameters), Value(id) };
+                return { method->second(parameters), Value(id) };
             }
             catch (const Fault& fault) {
                 return Response(fault.GetCode(), fault.GetString(), Value(id));
