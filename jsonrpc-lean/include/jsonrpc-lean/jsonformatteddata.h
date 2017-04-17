@@ -21,8 +21,8 @@
 
 #include "formatteddata.h"
 
-#define RAPIDJSON_NO_SIZETYPEDEFINE
-namespace rapidjson { typedef ::std::size_t SizeType; }
+//#define RAPIDJSON_NO_SIZETYPEDEFINE
+//namespace rapidjson { typedef ::std::size_t SizeType; }
 
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
