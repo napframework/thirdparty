@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -109,7 +109,7 @@ class array_wrapper : public array_wrapper_base
         {
             return array_accessor<Array_Type>::set_size(*m_address_data, new_size, index_list);
         }
-        
+
         /////////////////////////////////////////////////////////////////////////////////////////
 
         bool set_value(argument& arg)
@@ -160,6 +160,13 @@ class array_wrapper : public array_wrapper_base
 
         /////////////////////////////////////////////////////////////////////////////////////////
 
+        variant get_value_as_ref(std::size_t index_1) const
+        {
+            return array_accessor<Array_Type>::get_value_as_ref(*m_address_data, index_1);
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////////////
+
         bool insert_value(std::size_t index_1, argument& arg)
         {
             return array_accessor<Array_Type>::insert_value(*m_address_data, arg, index_1);
@@ -169,7 +176,7 @@ class array_wrapper : public array_wrapper_base
         {
             return array_accessor<Array_Type>::insert_value(*m_address_data, arg, index_1, index_2);
         }
-        
+
         bool insert_value(std::size_t index_1, std::size_t index_2, std::size_t index_3, argument& arg)
         {
             return array_accessor<Array_Type>::insert_value(*m_address_data, arg, index_1, index_2, index_3);
@@ -179,7 +186,7 @@ class array_wrapper : public array_wrapper_base
         {
             return array_accessor<Array_Type>::insert_value(*m_address_data, arg, index_list);
         }
-        
+
         /////////////////////////////////////////////////////////////////////////////////////////
 
         bool remove_value(std::size_t index_1)
@@ -201,7 +208,7 @@ class array_wrapper : public array_wrapper_base
             return array_accessor<Array_Type>::remove_value(*m_address_data, index_list);
         }
 
-        std::unique_ptr<array_wrapper_base> clone() const 
+        std::unique_ptr<array_wrapper_base> clone() const
         {
             return detail::make_unique<array_wrapper<T, Array_Address>>(m_address_data);
         }

@@ -1,6 +1,6 @@
 ####################################################################################
 #                                                                                  #
-#  Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     #
+#  Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     #
 #                                                                                  #
 #  This file is part of RTTR (Run Time Type Reflection)                            #
 #  License: MIT License                                                            #
@@ -28,7 +28,7 @@
 set(HEADER_FILES test_classes.h
                  version.rc.in
                  )
-                
+
 set(SOURCE_FILES benchmark_rttr_cast.cpp
                  main.cpp
                  )

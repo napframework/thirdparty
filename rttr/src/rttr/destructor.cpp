@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -33,9 +33,27 @@ using namespace std;
 namespace rttr
 {
 
+namespace detail
+{
+
+template<>
+destructor create_item(const destructor_wrapper_base* wrapper)
+{
+    return destructor(wrapper);
+}
+
+template<>
+destructor create_invalid_item()
+{
+    static const destructor_wrapper_base invalid_wrapper;
+    return destructor(&invalid_wrapper);
+}
+
+} // end namespace detail
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
-destructor::destructor(const detail::destructor_wrapper_base* wrapper)
+destructor::destructor(const detail::destructor_wrapper_base* wrapper) RTTR_NOEXCEPT
 :   m_wrapper(wrapper)
 {
 
@@ -43,46 +61,42 @@ destructor::destructor(const detail::destructor_wrapper_base* wrapper)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool destructor::is_valid() const
+bool destructor::is_valid() const RTTR_NOEXCEPT
 {
-    return (m_wrapper ? true : false);
+    return m_wrapper->is_valid();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-destructor::operator bool() const
+destructor::operator bool() const RTTR_NOEXCEPT
 {
-    return (m_wrapper ? true : false);
+    return m_wrapper->is_valid();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-type destructor::get_destructed_type() const
+type destructor::get_destructed_type() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_destructed_type();
-    else
-        return detail::get_invalid_type();
+    return m_wrapper->get_destructed_type();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void destructor::invoke(variant& obj) const
+bool destructor::invoke(variant& obj) const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        m_wrapper->invoke(obj);
+    return m_wrapper->invoke(obj);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool destructor::operator==(const destructor& other) const
+bool destructor::operator==(const destructor& other) const RTTR_NOEXCEPT
 {
     return (m_wrapper == other.m_wrapper);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool destructor::operator!=(const destructor& other) const
+bool destructor::operator!=(const destructor& other) const RTTR_NOEXCEPT
 {
     return (m_wrapper != other.m_wrapper);
 }

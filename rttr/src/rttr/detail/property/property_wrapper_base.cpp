@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -26,7 +26,6 @@
 *************************************************************************************/
 
 #include "rttr/detail/property/property_wrapper_base.h"
-#include "rttr/detail/type/type_database_p.h"
 
 namespace rttr
 {
@@ -35,8 +34,9 @@ namespace detail
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-property_wrapper_base::property_wrapper_base()
-:   m_declaring_type(get_invalid_type())
+property_wrapper_base::property_wrapper_base(string_view name, type declaring_type) RTTR_NOEXCEPT
+:   m_name(name),
+    m_declaring_type(declaring_type)
 {
 }
 
@@ -48,30 +48,86 @@ property_wrapper_base::~property_wrapper_base()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void property_wrapper_base::set_name(const char* name)
+void property_wrapper_base::init() RTTR_NOEXCEPT
 {
-    m_name = name;
+    get_type();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-const char* property_wrapper_base::get_name() const
+bool property_wrapper_base::is_valid() const RTTR_NOEXCEPT
+{
+    return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+string_view property_wrapper_base::get_name() const RTTR_NOEXCEPT
 {
     return m_name;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void property_wrapper_base::set_declaring_type(type declaring_type)
+type property_wrapper_base::get_declaring_type() const RTTR_NOEXCEPT
 {
-    m_declaring_type = declaring_type;
+    return m_declaring_type;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-type property_wrapper_base::get_declaring_type() const
+access_levels property_wrapper_base::get_access_level() const RTTR_NOEXCEPT
 {
-    return m_declaring_type;
+    return access_levels::public_access;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+bool property_wrapper_base::is_readonly() const RTTR_NOEXCEPT
+{
+    return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+bool property_wrapper_base::is_static() const RTTR_NOEXCEPT
+{
+    return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+type property_wrapper_base::get_type() const RTTR_NOEXCEPT
+{
+    return get_invalid_type();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+variant property_wrapper_base::get_metadata(const variant& key) const
+{
+    return variant();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+bool property_wrapper_base::is_array() const RTTR_NOEXCEPT
+{
+    return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+bool property_wrapper_base::set_value(instance& object, argument& arg) const
+{
+    return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+variant property_wrapper_base::get_value(instance& object) const
+{
+    return variant();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

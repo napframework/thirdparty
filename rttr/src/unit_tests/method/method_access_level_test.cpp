@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -35,6 +35,8 @@ struct method_access_level_test
     void method_1() {}
     void method_2() {}
     void method_3() {}
+
+    void default_method(int value = 23) {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -63,12 +65,16 @@ RTTR_REGISTRATION
         (
             metadata("23", 43)
         )
+        .method("default_method", &method_access_level_test::default_method, registration::public_access)
+        (
+            default_arguments(23)
+        )
         ;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("method - access_levels test", "[method]") 
+TEST_CASE("method - access_levels test", "[method]")
 {
     type t = type::get_by_name("method_access_level_test");
     REQUIRE(t.is_valid() == true);
@@ -85,6 +91,20 @@ TEST_CASE("method - access_levels test", "[method]")
     CHECK(t.get_method("method_6").get_access_level() == access_levels::private_access);
     CHECK(t.get_method("method_7").get_access_level() == access_levels::protected_access);
     CHECK(t.get_method("method_8").get_access_level() == access_levels::public_access);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+TEST_CASE("method - NEGATIVE - access_levels test", "[method]")
+{
+    type t = type::get_by_name("method_access_level_test");
+    REQUIRE(t.is_valid() == true);
+
+    REQUIRE(t.get_method("").is_valid() == false);
+    CHECK(t.get_method("").get_access_level() == access_levels::public_access);
+
+    REQUIRE(t.get_method("default_method").is_valid() == true);
+    CHECK(t.get_method("default_method").get_access_level() == access_levels::public_access);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

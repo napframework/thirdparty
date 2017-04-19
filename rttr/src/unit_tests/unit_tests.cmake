@@ -1,6 +1,6 @@
 ####################################################################################
 #                                                                                  #
-#  Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     #
+#  Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     #
 #                                                                                  #
 #  This file is part of RTTR (Run Time Type Reflection)                            #
 #  License: MIT License                                                            #
@@ -26,36 +26,67 @@
 ####################################################################################
 
 set(HEADER_FILES test_classes.h
-                 enumeration/test_enumeration_reflection.h
                  method/test_method_reflection.h
-                 property/test_property_reflection.h
                  type/test_type.h
+                 variant/test_enums.h
                  version.rc.in
                  )
-                
+
 set(SOURCE_FILES main.cpp
                  misc/test_misc.cpp
-                 property/test_property_reflection.cpp
+                 misc/array_range_test.cpp
+                 misc/string_view_test.cpp
+                 misc/enum_flags_test.cpp
                  property/property_access_level_test.cpp
+                 property/property_misc_test.cpp
+                 property/property_class_inheritance.cpp
+                 property/property_class_invoke_wrapper.cpp
+                 property/property_member_function.cpp
+                 property/property_member_object.cpp
+                 property/property_global_function.cpp
+                 property/property_global_object.cpp
                  type/test_type.cpp
+                 type/test_type_names.cpp
+                 type/type_prop_meth_invoke.cpp
+                 destructor/destructor_invoke_test.cpp
+                 destructor/destructor_misc_test.cpp
                  constructor/constructor_access_level_test.cpp
                  constructor/constructor_default_arg_test.cpp
                  constructor/constructor_param_info_test.cpp
                  constructor/constructor_retrieve_test.cpp
                  constructor/constructor_invoke_test.cpp
                  constructor/constructor_misc_test.cpp
-                 enumeration/test_enumeration_reflection.cpp
+                 constructor/constructor_query_test.cpp
+                 enumeration/enumeration_conversion.cpp
+                 enumeration/enumeration_misc.cpp
+                 instance/instance_test.cpp
+                 method/method_invoke_defaults_test.cpp
                  method/method_access_level_test.cpp
                  method/test_method_reflection.cpp
                  method/method_default_arg_test.cpp
+                 method/method_misc_test.cpp
+                 method/method_invoke_test.cpp
                  method/method_param_info_test.cpp
+                 method/method_query_test.cpp
                  variant/variant_assign_test.cpp
                  variant/variant_conv_test.cpp
-                 variant/variant_conv_to_bool_test.cpp
                  variant/variant_ctor_test.cpp
                  variant/variant_cmp_equal_test.cpp
                  variant/variant_cmp_less_test.cpp
-                 variant/variant_enum_test.cpp
                  variant/variant_misc_test.cpp
+                 variant/variant_conv_to_bool.cpp
+                 variant/variant_conv_to_int8.cpp
+                 variant/variant_conv_to_int16.cpp
+                 variant/variant_conv_to_int32.cpp
+                 variant/variant_conv_to_int64.cpp
+                 variant/variant_conv_to_uint8.cpp
+                 variant/variant_conv_to_uint16.cpp
+                 variant/variant_conv_to_uint32.cpp
+                 variant/variant_conv_to_uint64.cpp
+                 variant/variant_conv_to_double.cpp
+                 variant/variant_conv_to_float.cpp
+                 variant/variant_conv_to_string.cpp
+                 variant/variant_conv_to_enum.cpp
                  variant_array_view/variant_array_view_test.cpp
+                 variant_associative_view/variant_associative_view_test.cpp
                  )

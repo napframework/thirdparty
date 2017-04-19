@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -27,6 +27,8 @@
 
 #include "rttr/detail/conversion/std_conversion_functions.h"
 
+#include "rttr/detail/conversion/number_conversion.h"
+
 #include <sstream>
 #include <locale>
 #include <limits>
@@ -38,124 +40,10 @@ namespace rttr
 {
 namespace detail
 {
-
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool char_to_bool(const char* source, bool* ok)
-{
-    return string_to_bool(source, ok);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-int char_to_int(const char* source, bool* ok)
-{
-    char *end_ptr;
-    errno = 0;
-    long n = strtol(source, &end_ptr, 0);
- 
-    if (ERANGE != errno && (n > INT_MIN && n < INT_MAX) &&
-        end_ptr != source && *end_ptr == '\0')
-    {
-        if (ok)
-            *ok = true;
-        return static_cast<int>(n);
-    }
-
-    if (ok)
-        *ok = false;
-    return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-long long char_to_long_long(const char* source, bool* ok)
-{
-    char *end_ptr;
-    errno = 0;
-    long long n = strtoll(source, &end_ptr, 0);
-     if (errno != ERANGE && 
-        end_ptr != source && 
-        *end_ptr == '\0')
-    {
-        if (ok)
-            *ok = true;
-        return n;
-    }
-
-    if (ok)
-        *ok = false;
-    return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-unsigned int char_to_uint(const char* source, bool* ok)
-{
-    char *end_ptr;
-    errno = 0;
-    long n = strtoul(source, &end_ptr, 0);
-    if (errno != ERANGE && 
-        end_ptr != source && 
-        *end_ptr == '\0')
-    {
-        if (ok)
-            *ok = true;
-        return static_cast<unsigned int>(n);
-    }
-
-    if (ok)
-        *ok = false;
-    return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-float char_to_float(const char* source, bool* ok)
-{
-    char *end_ptr;
-    errno = 0;
-    float n = strtof(source, &end_ptr);
- 
-    if (errno != ERANGE && 
-        end_ptr != source && 
-        *end_ptr == '\0')
-    {
-        if (ok)
-            *ok = true;
-        return n;
-    }
-
-    if (ok)
-        *ok = false;
-    return 0.0f;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-double char_to_double(const char* source, bool* ok)
-{
-    char *end_ptr;
-    errno = 0;
-    double n = strtod(source, &end_ptr);
- 
-    if (errno != ERANGE && 
-        end_ptr != source && 
-        *end_ptr == '\0')
-    {
-        if (ok)
-            *ok = true;
-        return n;
-    }
-
-    if (ok)
-        *ok = false;
-    return 0.0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-std::string int_to_string(int value, bool* ok)
+template<typename T>
+std::string to_string_impl(T value, bool* ok)
 {
     try
     {
@@ -174,7 +62,49 @@ std::string int_to_string(int value, bool* ok)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-std::string float_to_string(float value, bool* ok)
+std::string to_string(int value, bool* ok)
+{
+    return to_string_impl(value, ok);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+std::string to_string(long value, bool* ok)
+{
+    return to_string_impl(value, ok);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+std::string to_string(long long value, bool* ok)
+{
+    return to_string_impl(value, ok);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+std::string to_string(unsigned value, bool* ok)
+{
+    return to_string_impl(value, ok);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+std::string to_string(unsigned long value, bool* ok)
+{
+    return to_string_impl(value, ok);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+std::string to_string(unsigned long long value, bool* ok)
+{
+    return to_string_impl(value, ok);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+std::string to_string(float value, bool* ok)
 {
     try
     {
@@ -194,7 +124,7 @@ std::string float_to_string(float value, bool* ok)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-std::string double_to_string(double value, bool* ok)
+std::string to_string(double value, bool* ok)
 {
     try
     {
@@ -213,6 +143,8 @@ std::string double_to_string(double value, bool* ok)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
 
 bool string_to_bool(std::string text, bool* ok)
 {
@@ -228,7 +160,7 @@ bool string_to_bool(std::string text, bool* ok)
 
     if (ok)
         *ok = true;
-    
+
     return true;
 }
 
@@ -245,6 +177,92 @@ int string_to_int(const std::string& source, bool* ok)
             if (ok)
                 *ok = true;
             return value;
+        }
+    }
+    catch (...)
+    {
+        if (ok)
+            *ok = false;
+        return 0;
+    }
+
+    if (ok)
+        *ok = false;
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+unsigned long string_to_ulong(const std::string& source, bool* ok)
+{
+    try
+    {
+        std::size_t pos = 0;
+        const long long value = std::stoll(source, &pos);
+        unsigned long result = 0;
+        if (pos == source.length() && convert_to(value, result))
+        {
+            if (ok)
+                *ok = true;
+            return result;
+        }
+    }
+    catch (...)
+    {
+        if (ok)
+            *ok = false;
+        return 0;
+    }
+
+    if (ok)
+        *ok = false;
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+long long string_to_long_long(const std::string& source, bool* ok)
+{
+    try
+    {
+        std::size_t pos = 0;
+        const long long value = std::stoll(source, &pos);
+        if (pos == source.length())
+        {
+            if (ok)
+                *ok = true;
+            return value;
+        }
+    }
+    catch (...)
+    {
+        if (ok)
+            *ok = false;
+        return 0;
+    }
+
+    if (ok)
+        *ok = false;
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+unsigned long long string_to_ulong_long(const std::string& source, bool* ok)
+{
+    try
+    {
+        std::size_t pos = 0;
+        const auto itr = std::find_if(source.begin(), source.end(), [](char c){ return !std::isdigit(c, std::locale()); });
+        if (itr == source.end())
+        {
+            const unsigned long long value = std::stoull(source, &pos);
+            if (pos == source.length())
+            {
+                if (ok)
+                    *ok = true;
+                return value;
+            }
         }
     }
     catch (...)

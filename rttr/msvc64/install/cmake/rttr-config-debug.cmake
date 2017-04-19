@@ -15,15 +15,5 @@ set_target_properties(RTTR::Core PROPERTIES
 list(APPEND _IMPORT_CHECK_TARGETS RTTR::Core )
 list(APPEND _IMPORT_CHECK_FILES_FOR_RTTR::Core "${_IMPORT_PREFIX}/lib/rttr_core_d.lib" "${_IMPORT_PREFIX}/bin/rttr_core_d.dll" )
 
-# Import target "RTTR::Core_Lib" for configuration "Debug"
-set_property(TARGET RTTR::Core_Lib APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
-set_target_properties(RTTR::Core_Lib PROPERTIES
-  IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "CXX;RC"
-  IMPORTED_LOCATION_DEBUG "${_IMPORT_PREFIX}/lib/librttr_core_d.lib"
-  )
-
-list(APPEND _IMPORT_CHECK_TARGETS RTTR::Core_Lib )
-list(APPEND _IMPORT_CHECK_FILES_FOR_RTTR::Core_Lib "${_IMPORT_PREFIX}/lib/librttr_core_d.lib" )
-
 # Commands beyond this point should not need to know the version.
 set(CMAKE_IMPORT_FILE_VERSION)

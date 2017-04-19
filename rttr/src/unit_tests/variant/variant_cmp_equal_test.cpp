@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -104,6 +104,24 @@ TEST_CASE("variant::operator==() - basic", "[variant]")
         CHECK((a != b) == false);
     }
 
+    SECTION("int[neg] - uint8_t")
+    {
+        variant a = -12;
+        variant b = static_cast<uint8_t>(12);
+
+        CHECK((a == b) == false);
+        CHECK((a != b) == true);
+    }
+
+     SECTION("uint8_t - int[neg]")
+    {
+        variant a = static_cast<uint8_t>(12);
+        variant b = -12;
+
+        CHECK((a == b) == false);
+        CHECK((a != b) == true);
+    }
+
     SECTION("double - float")
     {
         variant a = 12.5f;
@@ -117,6 +135,24 @@ TEST_CASE("variant::operator==() - basic", "[variant]")
     {
         variant a = 12.1234;
         variant b = 12.1234f;
+
+        CHECK((a == b) == false);
+        CHECK((a != b) == true);
+    }
+
+    SECTION("double - int")
+    {
+        variant a = 12.1234;
+        variant b = 12;
+
+        CHECK((a == b) == false);
+        CHECK((a != b) == true);
+    }
+
+    SECTION("int - double")
+    {
+        variant a = 12;
+        variant b = 12.1234;
 
         CHECK((a == b) == false);
         CHECK((a != b) == true);
@@ -137,11 +173,14 @@ TEST_CASE("variant::operator==() - enums", "[variant]")
     variant a = COLOR::RED;
     variant b = 0;
 
-    CHECK((a == b) == false);
-    CHECK((a != b) == true);
+    CHECK((a == b) == true);
+    CHECK((a != b) == false);
+
+    // commutative
+    CHECK((b == a) == true);
+    CHECK((b != a) == false);
 
     b = COLOR::RED;
-
     CHECK((a == b) == true);
     CHECK((a != b) == false);
 
@@ -184,8 +223,8 @@ TEST_CASE("variant::operator==() - raw arrays", "[variant]")
         variant a = array;
         variant b = arrays;
 
-        CHECK((a == b) == true);
-        CHECK((a != b) == false);
+        CHECK((a == b) == false);
+        CHECK((a != b) == true);
     }
 
     SECTION("type_with_no_equal_operator")
@@ -247,6 +286,7 @@ static std::string convert_to_string(const point& p, bool& ok)
 TEST_CASE("variant::operator==() - custom", "[variant]")
 {
     type::register_converter_func(convert_to_string);
+    type::register_equal_comparator<point>();
 
     SECTION("equal")
     {
@@ -295,16 +335,16 @@ TEST_CASE("variant::operator==() - custom", "[variant]")
 
 TEST_CASE("variant::operator==() - no build in == operator", "[variant]")
 {
-    SECTION("no equal operator, same types")
+    SECTION("no equal operator, same types, same values")
     {
         variant a = type_with_no_equal_operator{12};
         variant b = type_with_no_equal_operator{12};
 
-        CHECK((a == b) == true);
-        CHECK((a != b) == false);
+        CHECK((a == b) == false);
+        CHECK((a != b) == true);
     }
 
-    SECTION("no equal operator, same types")
+    SECTION("no equal operator, same types, different values")
     {
         variant a = type_with_no_equal_operator{12};
         variant b = type_with_no_equal_operator{23};
@@ -313,7 +353,7 @@ TEST_CASE("variant::operator==() - no build in == operator", "[variant]")
         CHECK((a != b) == true);
     }
 
-     SECTION("no equal operator, different types")
+     SECTION("no equal operator, different types, different values")
     {
         variant a = other_type_with_no_equal_operator{12};
         variant b = type_with_no_equal_operator{23};
@@ -353,7 +393,7 @@ TEST_CASE("variant::operator==() - template type - comparator registered", "[var
     SECTION("self equal test")
     {
         variant a = std::make_tuple(23, std::string("some long long text"));
-       
+
         CHECK((a == a) == true);
         CHECK((a != a) == false);
     }

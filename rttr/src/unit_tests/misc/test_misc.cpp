@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -61,7 +61,7 @@ namespace
 } // end namespace anonymous
 
 
-TEST_CASE("Test raw_adressof", "[raw_adressof]") 
+TEST_CASE("Test raw_adressof", "[raw_adressof]")
 {
     volatile ClassSingleBase* obj = nullptr;
 
@@ -245,7 +245,7 @@ TEST_CASE("Test raw_adressof", "[raw_adressof]")
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("Test get_wrapper_adressof", "[wrapped_raw_addressof]") 
+TEST_CASE("Test get_wrapper_adressof", "[wrapped_raw_addressof]")
 {
     SECTION("Test std::shared_ptr")
     {
@@ -288,7 +288,7 @@ bool raw_type_check()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("Test raw_type type traits", "[raw_type<T>]") 
+TEST_CASE("Test raw_type type traits", "[raw_type<T>]")
 {
     SECTION("Test pointer type")
     {
@@ -359,9 +359,9 @@ TEST_CASE("Test raw_type type traits", "[raw_type<T>]")
     SECTION("Test reference to pointer types")
     {
         raw_type_check<int*&,                        int >();
-        raw_type_check<std::vector<int> const & ,   std::vector<int> >();
+        raw_type_check<std::vector<int> const &,     std::vector<int> >();
     }
-    
+
     SECTION("Test array types")
     {
         raw_type_check<int[10],                     int[10]>();
@@ -446,21 +446,21 @@ TEST_CASE("Test raw_type type traits", "[raw_type<T>]")
 
     SECTION("Test member function type")
     {
-        raw_type_check<mem_func_ptr_t,                      mem_func_ptr_t>();
-        raw_type_check<const mem_func_ptr_t,                mem_func_ptr_t>();
-        raw_type_check<const volatile mem_func_ptr_t,       mem_func_ptr_t>();
+        raw_type_check<mem_func_ptr_t,                       mem_func_ptr_t>();
+        raw_type_check<const mem_func_ptr_t,                 mem_func_ptr_t>();
+        raw_type_check<const volatile mem_func_ptr_t,        mem_func_ptr_t>();
 
-        raw_type_check<mem_func_ptr_t*,                     mem_func_ptr_t>();
-        raw_type_check<const mem_func_ptr_t*,               mem_func_ptr_t>();
-        raw_type_check<const volatile mem_func_ptr_t*,      mem_func_ptr_t>();
+        raw_type_check<mem_func_ptr_t*,                      mem_func_ptr_t>();
+        raw_type_check<const mem_func_ptr_t*,                mem_func_ptr_t>();
+        raw_type_check<const volatile mem_func_ptr_t*,       mem_func_ptr_t>();
 
-        raw_type_check<mem_const_func_ptr_t,                mem_const_func_ptr_t>();
-        raw_type_check<const mem_const_func_ptr_t,          mem_const_func_ptr_t>();
-        raw_type_check<const volatile mem_const_func_ptr_t, mem_const_func_ptr_t>();
+        raw_type_check<mem_const_func_ptr_t,                 mem_const_func_ptr_t>();
+        raw_type_check<const mem_const_func_ptr_t,           mem_const_func_ptr_t>();
+        raw_type_check<const volatile mem_const_func_ptr_t,  mem_const_func_ptr_t>();
 
-        raw_type_check<mem_const_func_ptr_t*,               mem_const_func_ptr_t>();
-        raw_type_check<const mem_const_func_ptr_t*,         mem_const_func_ptr_t>();
-        raw_type_check<const volatile mem_const_func_ptr_t*,mem_const_func_ptr_t>();
+        raw_type_check<mem_const_func_ptr_t*,                mem_const_func_ptr_t>();
+        raw_type_check<const mem_const_func_ptr_t*,          mem_const_func_ptr_t>();
+        raw_type_check<const volatile mem_const_func_ptr_t*, mem_const_func_ptr_t>();
     }
 }
 
@@ -475,7 +475,7 @@ bool raw_array_type_check()
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("Test raw_array_type type traits", "[raw_array_type<T>]") 
+TEST_CASE("Test raw_array_type type traits", "[raw_array_type<T>]")
 {
     SECTION("Test array types")
     {

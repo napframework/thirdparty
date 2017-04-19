@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -26,7 +26,7 @@
 *************************************************************************************/
 
 #include "rttr/detail/enumeration/enumeration_wrapper_base.h"
-#include "rttr/detail/type/type_database_p.h"
+
 #include "rttr/argument.h"
 
 namespace rttr
@@ -35,29 +35,85 @@ namespace detail
 {
 /////////////////////////////////////////////////////////////////////////////////////////
 
-enumeration_wrapper_base::enumeration_wrapper_base()
+enumeration_wrapper_base::enumeration_wrapper_base() RTTR_NOEXCEPT
 :   m_declaring_type(get_invalid_type())
 {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-enumeration_wrapper_base::~enumeration_wrapper_base()
+enumeration_wrapper_base::~enumeration_wrapper_base() RTTR_NOEXCEPT
 {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void enumeration_wrapper_base::set_declaring_type(type declaring_type)
+void enumeration_wrapper_base::set_declaring_type(type declaring_type) RTTR_NOEXCEPT
 {
     m_declaring_type = declaring_type;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-type enumeration_wrapper_base::get_declaring_type() const
+type enumeration_wrapper_base::get_declaring_type() const RTTR_NOEXCEPT
 {
     return m_declaring_type;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+bool enumeration_wrapper_base::is_valid() const RTTR_NOEXCEPT
+{
+    return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+type enumeration_wrapper_base::get_underlying_type() const RTTR_NOEXCEPT
+{
+    return get_invalid_type();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+type enumeration_wrapper_base::get_type() const RTTR_NOEXCEPT
+{
+    return get_invalid_type();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+array_range<string_view> enumeration_wrapper_base::get_names() const RTTR_NOEXCEPT
+{
+    return array_range<string_view>();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+array_range<variant> enumeration_wrapper_base::get_values() const RTTR_NOEXCEPT
+{
+    return array_range<variant>();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+string_view enumeration_wrapper_base::value_to_name(argument& value) const
+{
+    return string_view();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+variant enumeration_wrapper_base::name_to_value(string_view name) const
+{
+    return variant();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+variant enumeration_wrapper_base::get_metadata(const variant& key) const
+{
+    return variant();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

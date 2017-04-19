@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -46,12 +46,12 @@ struct array_mapper<T[N]>
     using raw_type = typename array_mapper<T>::raw_type;
     using sub_type = T;
 
-    static bool is_dynamic()
+    static bool is_dynamic() RTTR_NOEXCEPT
     {
         return false;
     }
 
-    static std::size_t get_size(const T (&)[N])
+    static std::size_t get_size(const T (&)[N]) RTTR_NOEXCEPT
     {
         return N;
     }
@@ -91,12 +91,12 @@ struct array_mapper<std::array<T, N> >
     using raw_type = typename array_mapper<T>::raw_type;
     using sub_type = T;
 
-    static bool is_dynamic()
+    static bool is_dynamic() RTTR_NOEXCEPT
     {
         return false;
     }
 
-    static std::size_t get_size(const std::array<T, N>&)
+    static std::size_t get_size(const std::array<T, N>&) RTTR_NOEXCEPT
     {
         return N;
     }
@@ -135,12 +135,12 @@ struct array_mapper<std::array<T, N> >
     using raw_type = typename array_mapper<T>::raw_type;
     using sub_type = T;
 
-    static bool is_dynamic()
+    static bool is_dynamic() RTTR_NOEXCEPT
     {
         return true;
     }
 
-    static std::size_t get_size(const std::vector<T>& arr)
+    static std::size_t get_size(const std::vector<T>& arr) RTTR_NOEXCEPT
     {
         return arr.size();
     }
@@ -183,12 +183,12 @@ struct array_mapper<std::array<T, N> >
     using raw_type          = array_mapper<bool>::raw_type;
     using sub_type          = bool;
 
-    static bool is_dynamic()
+    static bool is_dynamic() RTTR_NOEXCEPT
     {
         return true;
     }
 
-    static std::size_t get_size(const std::vector<bool>& arr)
+    static std::size_t get_size(const std::vector<bool>& arr) RTTR_NOEXCEPT
     {
         return arr.size();
     }
@@ -198,12 +198,12 @@ struct array_mapper<std::array<T, N> >
         arr.resize(new_size);
         return true;
     }
-    
+
     static std::vector<bool>::const_reference get_value(const std::vector<bool>& arr, std::size_t index)
     {
         return arr[index];
     }
-    
+
     static std::vector<bool>::reference get_value(std::vector<bool>& arr, std::size_t index)
     {
         return arr[index];
@@ -230,12 +230,12 @@ struct array_mapper<std::array<T, N> >
     using raw_type = typename array_mapper<T>::raw_type;
     using sub_type = T;
 
-    static bool is_dynamic()
+    static bool is_dynamic() RTTR_NOEXCEPT
     {
         return true;
     }
 
-    static std::size_t get_size(const std::list<T>& arr)
+    static std::size_t get_size(const std::list<T>& arr) RTTR_NOEXCEPT
     {
         return arr.size();
     }

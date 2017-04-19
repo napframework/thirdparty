@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -47,7 +47,7 @@ struct ctor_param_info_test
 
     }
 
-   
+
     static ctor_param_info_test create_with_default(std::string val_1, int val_2, bool val_3)
     {
         return ctor_param_info_test();
@@ -83,23 +83,26 @@ RTTR_REGISTRATION
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("constructor - parameter info - no info", "[constructor]") 
+TEST_CASE("constructor - parameter info - no info", "[constructor]")
 {
     constructor ctor = type::get<ctor_param_info_test>().get_constructor();
     REQUIRE(ctor.is_valid() == true);
 
-    std::vector<parameter_info> infos = ctor.get_parameter_infos();
+    auto infos = ctor.get_parameter_infos();
     REQUIRE(infos.size() == 0);
+
+    //negative test
+    CHECK(type::get_by_name("").get_constructor().get_parameter_infos().size() == 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("constructor - parameter info - no names provided", "[constructor]") 
+TEST_CASE("constructor - parameter info - no names provided", "[constructor]")
 {
     constructor ctor = type::get<ctor_param_info_test>().get_constructor({type::get<std::string>(), type::get<int>()});
     REQUIRE(ctor.is_valid() == true);
 
-    std::vector<parameter_info> infos = ctor.get_parameter_infos();
+    std::vector<parameter_info> infos(ctor.get_parameter_infos().begin(), ctor.get_parameter_infos().end());
     REQUIRE(infos.size() == 2);
 
     CHECK(infos[0].get_name()           == std::string());
@@ -117,12 +120,12 @@ TEST_CASE("constructor - parameter info - no names provided", "[constructor]")
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("constructor - parameter info - names provided", "[constructor]") 
+TEST_CASE("constructor - parameter info - names provided", "[constructor]")
 {
     constructor ctor = type::get<ctor_param_info_test>().get_constructor({type::get<bool>(), type::get<int>(), type::get<float>()});
     REQUIRE(ctor.is_valid() == true);
 
-    std::vector<parameter_info> infos = ctor.get_parameter_infos();
+    std::vector<parameter_info> infos(ctor.get_parameter_infos().begin(), ctor.get_parameter_infos().end());
     REQUIRE(infos.size() == 3);
 
     CHECK(infos[0].get_name()           == std::string("val_1"));
@@ -146,12 +149,12 @@ TEST_CASE("constructor - parameter info - names provided", "[constructor]")
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("constructor - parameter info - no names provided & default values", "[constructor]") 
+TEST_CASE("constructor - parameter info - no names provided & default values", "[constructor]")
 {
     constructor ctor = type::get<ctor_param_info_test>().get_constructor({type::get<std::string>(), type::get<int>(), type::get<bool>()});
     REQUIRE(ctor.is_valid() == true);
 
-    std::vector<parameter_info> infos = ctor.get_parameter_infos();
+    std::vector<parameter_info> infos(ctor.get_parameter_infos().begin(), ctor.get_parameter_infos().end());
     REQUIRE(infos.size() == 3);
 
     CHECK(infos[0].get_name()           == std::string());
@@ -175,12 +178,12 @@ TEST_CASE("constructor - parameter info - no names provided & default values", "
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("constructor - parameter info - names provided & default values", "[constructor]") 
+TEST_CASE("constructor - parameter info - names provided & default values", "[constructor]")
 {
      constructor ctor = type::get<ctor_param_info_test>().get_constructor({type::get<double>(), type::get<int>(), type::get<bool>()});
     REQUIRE(ctor.is_valid() == true);
 
-    std::vector<parameter_info> infos = ctor.get_parameter_infos();
+    std::vector<parameter_info> infos(ctor.get_parameter_infos().begin(), ctor.get_parameter_infos().end());
     REQUIRE(infos.size() == 3);
 
     CHECK(infos[0].get_name()           == std::string("val_1"));

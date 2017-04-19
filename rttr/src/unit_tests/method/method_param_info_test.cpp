@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -77,23 +77,28 @@ RTTR_REGISTRATION
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("method - parameter info - no info", "[method]") 
+TEST_CASE("method - parameter info - no info", "[method]")
 {
     method meth = type::get<method_param_info_test>().get_method("method_1");
     REQUIRE(meth.is_valid() == true);
 
-    std::vector<parameter_info> infos = meth.get_parameter_infos();
+    auto infos = meth.get_parameter_infos();
     REQUIRE(infos.size() == 0);
+
+    // negative test
+    meth = type::get<method_param_info_test>().get_method("");
+    REQUIRE(meth.is_valid() == false);
+    CHECK(meth.get_parameter_infos().size() == 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("method - parameter info - no names provided", "[method]") 
+TEST_CASE("method - parameter info - no names provided", "[method]")
 {
     method meth = type::get<method_param_info_test>().get_method("method_2");
     REQUIRE(meth.is_valid() == true);
 
-    std::vector<parameter_info> infos = meth.get_parameter_infos();
+    std::vector<parameter_info> infos(meth.get_parameter_infos().begin(), meth.get_parameter_infos().end());
     REQUIRE(infos.size() == 3);
 
     CHECK(infos[0].get_name()           == std::string());
@@ -117,12 +122,12 @@ TEST_CASE("method - parameter info - no names provided", "[method]")
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("method - parameter info - names provided", "[method]") 
+TEST_CASE("method - parameter info - names provided", "[method]")
 {
     method meth = type::get<method_param_info_test>().get_method("method_3");
     REQUIRE(meth.is_valid() == true);
 
-    std::vector<parameter_info> infos = meth.get_parameter_infos();
+    std::vector<parameter_info> infos(meth.get_parameter_infos().begin(), meth.get_parameter_infos().end());
     REQUIRE(infos.size() == 3);
 
     CHECK(infos[0].get_name()           == std::string("val_1"));
@@ -146,12 +151,12 @@ TEST_CASE("method - parameter info - names provided", "[method]")
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("method - parameter info - no names provided & default values", "[method]") 
+TEST_CASE("method - parameter info - no names provided & default values", "[method]")
 {
     method meth = type::get<method_param_info_test>().get_method("method_4");
     REQUIRE(meth.is_valid() == true);
 
-    std::vector<parameter_info> infos = meth.get_parameter_infos();
+    std::vector<parameter_info> infos(meth.get_parameter_infos().begin(), meth.get_parameter_infos().end());
     REQUIRE(infos.size() == 3);
 
     CHECK(infos[0].get_name()           == std::string());
@@ -175,12 +180,12 @@ TEST_CASE("method - parameter info - no names provided & default values", "[meth
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("method - parameter info - names provided & default values", "[method]") 
+TEST_CASE("method - parameter info - names provided & default values", "[method]")
 {
     method meth = type::get<method_param_info_test>().get_method("method_5");
     REQUIRE(meth.is_valid() == true);
 
-    std::vector<parameter_info> infos = meth.get_parameter_infos();
+    std::vector<parameter_info> infos(meth.get_parameter_infos().begin(), meth.get_parameter_infos().end());
     REQUIRE(infos.size() == 3);
 
     CHECK(infos[0].get_name()           == std::string("val_1"));
@@ -200,6 +205,20 @@ TEST_CASE("method - parameter info - names provided & default values", "[method]
     CHECK(infos[2].get_type()           == type::get<bool>());
     CHECK(infos[2].get_index()          == 2);
     CHECK(infos[2].get_default_value()  == true);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+TEST_CASE("method - parameter info - compare", "[method]")
+{
+    method meth = type::get<method_param_info_test>().get_method("method_3");
+    REQUIRE(meth.is_valid() == true);
+
+    std::vector<parameter_info> infos(meth.get_parameter_infos().begin(), meth.get_parameter_infos().end());
+    REQUIRE(infos.size() == 3);
+
+    CHECK(infos[0] == infos[0]);
+    CHECK(infos[0] != infos[1]);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

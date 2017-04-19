@@ -1,6 +1,6 @@
 ####################################################################################
 #                                                                                  #
-#  Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     #
+#  Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     #
 #                                                                                  #
 #  This file is part of RTTR (Run Time Type Reflection)                            #
 #  License: MIT License                                                            #
@@ -28,7 +28,7 @@
 set(HEADER_FILES version.rc.in
                   test_methods.h
                   )
-                
+
 set(SOURCE_FILES main.cpp
                  bench_method.cpp
                  bench_find_method.cpp

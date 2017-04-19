@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -45,6 +45,107 @@ TEST_CASE("variant - misc", "[variant]")
 
         CHECK(var.is_valid() == false);
     }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+TEST_CASE("variant - swap", "[variant]")
+{
+    SECTION("self")
+    {
+        variant a = 1;
+        a.swap(a);
+
+        CHECK(a.is_valid() == true);
+    }
+
+    SECTION("both valid")
+    {
+        variant a = 12;
+        variant b = std::string("text");
+        a.swap(b);
+
+        CHECK(a.is_type<std::string>() == true);
+        CHECK(b.is_type<int>() == true);
+    }
+
+    SECTION("left valid")
+    {
+        variant a = 12;
+        variant b;
+        a.swap(b);
+
+        CHECK(a.is_valid() == false);
+        CHECK(b.is_type<int>() == true);
+    }
+
+    SECTION("right valid")
+    {
+        variant a;
+        variant b = 12;
+        a.swap(b);
+
+        CHECK(a.is_type<int>() == true);
+        CHECK(b.is_valid() == false);
+    }
+
+    SECTION("both invalid")
+    {
+        variant a, b;
+        a.swap(b);
+
+        CHECK(a.is_valid() == false);
+        CHECK(b.is_valid() == false);
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+TEST_CASE("variant - get_wrapped_value", "[variant]")
+{
+    int foo = 12;
+    variant var = std::ref(foo);
+    CHECK(var.get_type().is_wrapper() == true);
+    CHECK(var.get_type() == type::get<std::reference_wrapper<int>>());
+    REQUIRE(var.get_type().get_wrapped_type() == type::get<int>());
+    REQUIRE(var.extract_wrapped_value().is_valid() == true);
+    CHECK(var.extract_wrapped_value().get_value<int>() == 12);
+
+    int* bar = &foo;
+    var = std::ref(bar);
+    CHECK(var.get_type().is_wrapper() == true);
+    CHECK(var.get_type() == type::get<std::reference_wrapper<int*>>());
+    REQUIRE(var.get_type().get_wrapped_type() == type::get<int*>());
+    REQUIRE(var.extract_wrapped_value().is_valid() == true);
+    CHECK(*var.extract_wrapped_value().get_value<int*>() == foo);
+
+    int** bar2 = &bar;
+    var = std::cref(bar2);
+    CHECK(var.get_type().is_wrapper() == true);
+    CHECK(var.get_type() == type::get<std::reference_wrapper<int** const>>());
+    REQUIRE(var.get_type().get_wrapped_type() == type::get<int** const>());
+    REQUIRE(var.extract_wrapped_value().is_valid() == true);
+    CHECK(**var.extract_wrapped_value().get_value<int** const>() == foo);
+
+
+    auto ptr = detail::make_unique<int>(24);
+    var = std::ref(ptr);
+    CHECK(var.get_type().is_wrapper() == true);
+    REQUIRE(var.get_type().get_wrapped_type() == type::get<std::unique_ptr<int>>());
+    CHECK(*var.get_wrapped_value<std::unique_ptr<int>>().get() == 24);
+    CHECK(var.extract_wrapped_value().is_valid() == false);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+TEST_CASE("variant - is_array", "[variant]")
+{
+    variant a = std::vector<int>(100, 1);
+    CHECK(a.is_array() == true);
+
+    int raw_array[100];
+    variant b = raw_array;
+    CHECK(b.is_array() == true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

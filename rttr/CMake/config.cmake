@@ -1,6 +1,6 @@
 ####################################################################################
 #                                                                                  #
-#  Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     #
+#  Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     #
 #                                                                                  #
 #  This file is part of RTTR (Run Time Type Reflection)                            #
 #  License: MIT License                                                            #
@@ -28,7 +28,7 @@
 # setup version numbers
 set(RTTR_VERSION_MAJOR 0)
 set(RTTR_VERSION_MINOR 9)
-set(RTTR_VERSION_PATCH 5)
+set(RTTR_VERSION_PATCH 6)
 set(RTTR_VERSION ${RTTR_VERSION_MAJOR}.${RTTR_VERSION_MINOR}.${RTTR_VERSION_PATCH})
 set(RTTR_VERSION_STR "${RTTR_VERSION_MAJOR}.${RTTR_VERSION_MINOR}.${RTTR_VERSION_PATCH}")
 math(EXPR RTTR_VERSION_CALC "${RTTR_VERSION_MAJOR}*1000 + ${RTTR_VERSION_MINOR}*100 + ${RTTR_VERSION_PATCH}")
@@ -44,6 +44,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set(CMAKE_EXECUTABLE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set(RTTR_INSTALL_DIR "${CMAKE_BINARY_DIR}/install")
+
+# in order to group in visual studio the targets into solution filters
+set_property( GLOBAL PROPERTY USE_FOLDERS ON)
 
 #3rd part dependencies dirs
 set(RTTR_3RD_PARTY_DIR "${CMAKE_SOURCE_DIR}/3rd_party")
@@ -64,8 +67,10 @@ set(CMAKE_DEBUG_POSTFIX "_d")
 # detect architecture
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(RTTR_NATIVE_ARCH 64)
+    message(STATUS "Architecture: x64")
 else()
     set(RTTR_NATIVE_ARCH 32)
+    message(STATUS "Architecture: x86")
 endif()
 
 enable_rtti(BUILD_WITH_RTTI)
@@ -81,7 +86,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.0.0")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -fvisibility-inlines-hidden")
   endif()
-  
+
   if(MINGW)
     set(GNU_STATIC_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
   else()
@@ -94,6 +99,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   message(STATUS "added flag -std=c++11 to g++")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -fvisibility-inlines-hidden")
   message(WARNING "clang support is currently experimental")
+  
+  set(CLANG_STATIC_LINKER_FLAGS "-stdlib=libstdc++ -static -lstdc++")
 endif()
 
 
@@ -120,15 +127,12 @@ write_basic_package_version_file(
   COMPATIBILITY AnyNewerVersion
 )
 
-install(
-  FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/CMake/rttr-config-version.cmake"
-  DESTINATION
-    cmake
-  COMPONENT
-    Devel
-)
+if (BUILD_INSTALLER)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/CMake/rttr-config-version.cmake"
+             DESTINATION cmake
+             COMPONENT Devel)
 
-install(FILES "${LICENSE_FILE}" "${README_FILE}"
-        DESTINATION "."
-        PERMISSIONS OWNER_READ)
+    install(FILES "${LICENSE_FILE}" "${README_FILE}"
+            DESTINATION "."
+            PERMISSIONS OWNER_READ)
+endif()

@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -25,8 +25,8 @@
 *                                                                                   *
 *************************************************************************************/
 
-#ifndef RTTR_PROPERTY_ACCESSOR__
-#define RTTR_PROPERTY_ACCESSOR__
+#ifndef RTTR_PROPERTY_ACCESSOR_H_
+#define RTTR_PROPERTY_ACCESSOR_H_
 
 namespace rttr
 {
@@ -37,8 +37,18 @@ template<typename T>
 struct property_accessor
 {
     static bool set_value(T& prop, argument& arg)
-    {           
+    {
         prop = arg.get_value<T>();
+        return true;
+    }
+};
+
+template<typename T>
+struct property_accessor<std::reference_wrapper<T>>
+{
+    static bool set_value(T& prop, argument& arg)
+    {
+        prop = arg.get_value<std::reference_wrapper<T>>().get();
         return true;
     }
 };
@@ -47,17 +57,17 @@ template<typename T, std::size_t N>
 struct property_accessor<T[N]>
 {
     static bool set_value(T (& prop)[N], argument& arg)
-    {           
+    {
         copy_array(arg.get_value<T[N]>(), prop);
         return true;
     }
 };
 
 template<typename T>
-struct property_accessor<T*>
+struct property_accessor<T const*>
 {
     static bool set_value(T* prop, argument& arg)
-    {           
+    {
         *prop = *arg.get_value<T*>();
         return true;
     }
@@ -67,7 +77,7 @@ template<typename T, std::size_t N>
 struct property_accessor<T(*)[N]>
 {
     static bool set_value(T (* prop)[N], argument& arg)
-    {           
+    {
         copy_array(*arg.get_value<T(*)[N]>(), *prop);
         return true;
     }
@@ -76,4 +86,4 @@ struct property_accessor<T(*)[N]>
 } // end namespace detail
 } // end namespace rttr
 
-#endif // RTTR_PROPERTY_ACCESSOR_
+#endif // RTTR_PROPERTY_ACCESSOR_H_

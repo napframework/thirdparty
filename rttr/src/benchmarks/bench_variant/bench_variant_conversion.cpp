@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -365,7 +365,7 @@ void bench_variant_conversion()
 {
     nonius::configuration cfg;
     cfg.title = "rttr::variant conversion";
-    
+
     nonius::html_group_reporter reporter;
     reporter.set_output_file("benchmark_variant_conversion.html");
 

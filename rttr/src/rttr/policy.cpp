@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -33,6 +33,8 @@ namespace rttr
 /////////////////////////////////////////////////////////////////////////////////////////
 
 const detail::bind_as_ptr policy::prop::bind_as_ptr = {};
+
+const detail::as_reference_wrapper policy::prop::as_reference_wrapper = {};
 
 const detail::return_as_ptr policy::meth::return_ref_as_ptr = {};
 

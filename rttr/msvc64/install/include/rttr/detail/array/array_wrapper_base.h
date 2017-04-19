@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -54,7 +54,7 @@ class RTTR_API array_wrapper_base
         virtual type        get_rank_type(std::size_t index) const { return get_invalid_type(); }
         virtual type        get_type() const    { return get_invalid_type(); }
         virtual bool        is_raw_array() const { return false; }
-      
+
         virtual std::size_t get_size() const    { return 0; }
         virtual std::size_t get_size(std::size_t index_1) const { return 0; }
         virtual std::size_t get_size(std::size_t index_1, std::size_t index_2) const { return 0; }
@@ -64,7 +64,7 @@ class RTTR_API array_wrapper_base
         virtual bool set_size(std::size_t new_size, std::size_t index_1) { return false; }
         virtual bool set_size(std::size_t new_size, std::size_t index_1, std::size_t index_2) { return false; }
         virtual bool set_size_variadic(std::size_t new_size, const std::vector<std::size_t>& index_list) { return false; }
-        
+
         virtual bool set_value(argument& arg) { return false; }
         virtual bool set_value(std::size_t index_1, argument& arg) { return false; }
         virtual bool set_value(std::size_t index_1, std::size_t index_2, argument& arg) { return false; }
@@ -75,6 +75,8 @@ class RTTR_API array_wrapper_base
         virtual variant get_value(std::size_t index_1, std::size_t index_2) const { return variant(); }
         virtual variant get_value(std::size_t index_1, std::size_t index_2, std::size_t index_3) const { return variant(); }
         virtual variant get_value_variadic(const std::vector<std::size_t>& index_list) const { return variant(); }
+
+        virtual variant get_value_as_ref(std::size_t index_1) const { return variant(); }
 
         virtual bool insert_value(std::size_t index_1, argument& arg) { return false; }
         virtual bool insert_value(std::size_t index_1, std::size_t index_2, argument& arg) { return false; }

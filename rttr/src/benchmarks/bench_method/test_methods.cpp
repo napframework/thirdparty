@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -121,21 +121,21 @@ void method_class::method_v()
 
 void method_class::void_method()
 {
-    method_void_called = true; 
+    method_void_called = true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 int method_class::int_method()
 {
-    return 42; 
+    return 42;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 std::string method_class::string_method()
 {
-    return std::string("some text"); 
+    return std::string("some text");
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

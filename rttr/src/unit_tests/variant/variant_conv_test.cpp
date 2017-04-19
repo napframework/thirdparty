@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -102,6 +102,14 @@ RTTR_REGISTRATION
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+TEST_CASE("variant - basic - can_convert()", "[variant]")
+{
+    variant var;
+    CHECK(var.can_convert(type::get<int>()) == false);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 TEST_CASE("variant conversion - to int", "[variant]")
 {
     SECTION("int to int")
@@ -136,7 +144,7 @@ TEST_CASE("variant conversion - to int", "[variant]")
 
         var = "-12";
         CHECK(var.to_int() == -12);
-    
+
         var = "text 34 and text";
         bool ok = false;
         CHECK(var.to_int(&ok) == 0);
@@ -163,7 +171,7 @@ TEST_CASE("variant conversion - to int", "[variant]")
 
         var = std::string("-12");
         CHECK(var.to_int() == -12);
-    
+
         var = std::string("text 34 and text");
         bool ok = false;
         CHECK(var.to_int(&ok) == 0);
@@ -174,7 +182,7 @@ TEST_CASE("variant conversion - to int", "[variant]")
         CHECK(var.to_int(&ok) == 0);
         CHECK(ok == false);
     }
-    
+
     SECTION("bool to int")
     {
         variant var = true;
@@ -260,7 +268,7 @@ TEST_CASE("variant conversion - to std::string", "[variant]")
         var = std::string("-12");
         CHECK(var.to_string() == "-12");
     }
-    
+
     SECTION("bool to std::string")
     {
         variant var = true;
@@ -374,7 +382,7 @@ TEST_CASE("variant conversion - to float", "[variant]")
         CHECK(var.to_float(&ok) == 0);
         CHECK(ok == false);
     }
-    
+
     SECTION("bool to float")
     {
         variant var = true;
@@ -484,7 +492,7 @@ TEST_CASE("variant conversion - to double", "[variant]")
         CHECK(var.to_double(&ok) == 0.0);
         CHECK(ok == false);
     }
-    
+
     SECTION("bool to double")
     {
         variant var = true;
@@ -561,14 +569,15 @@ TEST_CASE("variant test - convert internal", "[variant]")
     REQUIRE(ret == true);
     REQUIRE(var.is_type<std::string>() == true);
 
-    derived* d = new derived;
+    auto ptr = detail::make_unique<derived>();
+    derived* d = ptr.get();
     base* b = d;
     var = b;
     REQUIRE(var.can_convert(type::get<derived>())   == false);
     REQUIRE(var.can_convert(type::get<derived*>())  == true);
     REQUIRE(var.can_convert(type::get<derived**>()) == false);
     REQUIRE(var.can_convert(type::get<other_derived*>())  == false);
-        
+
     bool could_convert = var.convert(type::get<derived**>());
     CHECK(could_convert == false);
 
@@ -600,7 +609,7 @@ TEST_CASE("variant test - convert to nullptr", "[variant]")
         CHECK(var.convert(type::get<std::nullptr_t>()) == false);
 
         std::nullptr_t null_obj;
-        CHECK(var.convert(null_obj) == false);
+        CHECK(var.convert<std::nullptr_t>(null_obj) == false);
     }
 
     SECTION("valid conversion")
@@ -610,14 +619,54 @@ TEST_CASE("variant test - convert to nullptr", "[variant]")
 
         CHECK(var.can_convert(type::get<std::nullptr_t>()) == true);
         std::nullptr_t null_obj;
-        CHECK(var.convert(null_obj) == true);
+        CHECK(var.convert<std::nullptr_t>(null_obj) == true);
         CHECK(null_obj == nullptr);
-        
+
         bool ok = false;
         std::nullptr_t o = var.convert<std::nullptr_t>(&ok);
         CHECK(ok == true);
 
         CHECK(var.convert(type::get<std::nullptr_t>()) == true);
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+TEST_CASE("variant test - convert from wrapped value", "[variant]")
+{
+    SECTION("Invalid conversion")
+    {
+        int obj = 42;
+        variant var = std::ref(obj);
+
+        CHECK(var.can_convert(type::get<int>()) == true);
+
+        bool ok = false;
+        int val = var.convert<int>(&ok);
+        CHECK(ok == true);
+        CHECK(val == obj);
+
+        CHECK(var.convert(type::get<int>()) == true);
+
+        int val_2;
+        CHECK(var.convert<int>(val_2) == true);
+        CHECK(val_2 == obj);
+    }
+
+    SECTION("invalid conversion")
+    {
+        int obj = 42;
+        int* obj_ptr = &obj;
+        variant var = std::ref(obj_ptr);
+
+        // cannot convert from int* to int automatically
+        CHECK(var.can_convert(type::get<int>()) == false);
+
+        bool ok = false;
+        int val = var.convert<int>(&ok);
+        CHECK(ok == false);
+
+        CHECK(var.convert(type::get<int>()) == false);
     }
 }
 

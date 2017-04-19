@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -29,6 +29,7 @@
 
 #include "rttr/detail/variant/variant_data_policy.h"
 #include "rttr/variant_array_view.h"
+#include "rttr/variant_associative_view.h"
 #include "rttr/argument.h"
 
 #include <algorithm>
@@ -68,13 +69,13 @@ void variant::swap(variant& other)
 
     if (!is_this_valid && !is_other_valid)
         return;
-    
+
     if (is_this_valid && is_other_valid)
     {
         detail::variant_data tmp_data;
         detail::variant_policy_func tmp_policy_func = other.m_policy;
         other.m_policy(detail::variant_policy_operation::SWAP, other.m_data, tmp_data);
-        
+
         m_policy(detail::variant_policy_operation::SWAP, m_data, other.m_data);
         other.m_policy = m_policy;
 
@@ -164,11 +165,27 @@ bool variant::is_array() const
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+bool variant::is_associative_container() const
+{
+    return m_policy(detail::variant_policy_operation::IS_ASSOCIATIVE_CONTAINER, m_data, detail::argument_wrapper());
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 type variant::get_type() const
 {
-    type src_type(type::m_invalid_id);
+    type src_type = detail::get_invalid_type();
     m_policy(detail::variant_policy_operation::GET_TYPE, m_data, src_type);
     return src_type;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+variant variant::extract_wrapped_value() const
+{
+    variant var;
+    m_policy(detail::variant_policy_operation::EXTRACT_WRAPPED_VALUE, m_data, var);
+    return var;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -182,13 +199,23 @@ variant_array_view variant::create_array_view() const
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+variant_associative_view variant::create_associative_view() const
+{
+    variant_associative_view result;
+    m_policy(detail::variant_policy_operation::CREATE_ASSOCIATIV_VIEW, m_data, result.m_view);
+    return result;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 bool variant::can_convert(const type& target_type) const
 {
     if (!is_valid())
         return false;
 
-    const type source_type = get_type();
-    
+    type source_type = get_type();
+    source_type = (source_type.is_wrapper() && !target_type.is_wrapper()) ? source_type.get_wrapped_type() : source_type;
+
     if (source_type == target_type)
         return true;
 
@@ -206,11 +233,15 @@ bool variant::can_convert(const type& target_type) const
 
     const bool source_is_arithmetic = source_type.is_arithmetic();
     const bool target_is_arithmetic = target_type.is_arithmetic();
+    const bool target_is_enumeration = target_type.is_enumeration();
     const type string_type = type::get<std::string>();
 
     return ((source_is_arithmetic && target_is_arithmetic) ||
             (source_is_arithmetic && target_type == string_type) ||
-            (source_type == string_type && target_is_arithmetic));
+            (source_type == string_type && target_is_arithmetic) ||
+            (source_type.is_enumeration() && target_is_arithmetic) ||
+            (source_is_arithmetic && target_is_enumeration) ||
+            (source_type == string_type && target_is_enumeration));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -231,9 +262,17 @@ bool variant::convert(const type& target_type, variant& target_var) const
         target_var = *this;
         return true; // the current variant is already the target type, we don't need to do anything
     }
+    else if (source_type.is_wrapper() && !target_type.is_wrapper())
+    {
+        variant var = extract_wrapped_value();
+        ok = var.convert(target_type);
+        target_var = var;
+    }
     else if ((source_is_arithmetic && target_is_arithmetic) ||
             (source_is_arithmetic && target_type == string_type) ||
-            (source_type == string_type && target_is_arithmetic))
+            (source_type == string_type && target_is_arithmetic) ||
+            (source_type.is_enumeration() && target_is_arithmetic) ||
+            (source_type.is_enumeration() && target_type == string_type))
     {
         if (target_type == type::get<bool>())
         {
@@ -313,6 +352,14 @@ bool variant::convert(const type& target_type, variant& target_var) const
             if ((ok = try_basic_type_conversion(value)))
                 target_var = std::move(value);
         }
+    }
+    else if ((source_is_arithmetic || source_type == string_type)
+             && target_type.is_enumeration())
+    {
+        variant var = target_type;
+        auto wrapper = std::ref(var);
+        if ((ok = try_basic_type_conversion(wrapper)))
+            target_var = std::move(var);
     }
     else
     {

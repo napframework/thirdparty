@@ -16,7 +16,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_targetsDefined)
 set(_targetsNotDefined)
 set(_expectedTargets)
-foreach(_expectedTarget RTTR::Core RTTR::Core_Lib)
+foreach(_expectedTarget RTTR::Core)
   list(APPEND _expectedTargets ${_expectedTarget})
   if(NOT TARGET ${_expectedTarget})
     list(APPEND _targetsNotDefined ${_expectedTarget})
@@ -53,13 +53,6 @@ add_library(RTTR::Core SHARED IMPORTED)
 
 set_target_properties(RTTR::Core PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "RTTR_DLL"
-  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-)
-
-# Create imported target RTTR::Core_Lib
-add_library(RTTR::Core_Lib STATIC IMPORTED)
-
-set_target_properties(RTTR::Core_Lib PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
 )
 

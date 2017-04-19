@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -34,15 +34,15 @@ using namespace rttr;
 struct simple_type
 {
     simple_type() {}
-    simple_type(const simple_type& other) 
+    simple_type(const simple_type& other)
     :   moved(other.moved),
         moved_from(other.moved_from)
     {
     }
     simple_type(simple_type&& other)
-    :   moved(true) 
-    { 
-        other.moved_from = true; 
+    :   moved(true)
+    {
+        other.moved_from = true;
     }
 
     bool moved = false;
@@ -68,7 +68,7 @@ TEST_CASE("basic assignment", "[variant]")
     {
         variant a;
         variant b;
-        
+
         a = b;
         CHECK(a.is_valid() == false);
         CHECK((bool)a      == false);
@@ -125,7 +125,7 @@ TEST_CASE("move assignment", "[variant]")
         variant a;
         a = obj;
         CHECK(obj.moved_from == false);
-    
+
         variant b;
         b = std::move(obj);
         CHECK(obj.moved_from == true);
@@ -138,7 +138,7 @@ TEST_CASE("move assignment", "[variant]")
         variant a;
         a = obj;
         CHECK(obj.moved_from == false);
-    
+
         variant b;
         b = std::move(obj);
         CHECK(obj.moved_from == true);
@@ -162,14 +162,6 @@ TEST_CASE("variant::operator=() - self assignment", "[variant]")
     {
         variant a = 1;
         a = a;
-
-        CHECK(a.is_valid() == true);
-    }
-
-    SECTION("self assign - swap")
-    {
-        variant a = 1;
-        a.swap(a);
 
         CHECK(a.is_valid() == true);
     }

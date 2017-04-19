@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -130,7 +130,7 @@ TEST_CASE("Test rttr::type - ComplexerTypes", "[type]")
     CHECK((type::get(myMap) == type::get(myMap2)));
 
     CHECK((type::get(myMap) != type::get<std::map<int, int> >()));
-    
+
     // check typedef
     typedef std::map<int, std::string> MyMap;
     CHECK((type::get<MyMap>() == type::get<std::map<int, std::string>>()));
@@ -245,11 +245,35 @@ TEST_CASE("Test rttr::type - Virtual Inheritance", "[type]")
     DiamondTop* base    = &diamond;
     DiamondLeft* left   = &diamond;
     DiamondRight* right = &diamond;
- 
+
     CHECK(rttr_cast<DiamondBottom*>(base)   == &diamond);   // top to bottom cast
     CHECK(rttr_cast<DiamondTop*>(&diamond)  == base);       // bottom to top
     CHECK(rttr_cast<DiamondLeft*>(base)     == left);       // base to one level up - left class
     CHECK(rttr_cast<DiamondRight*>(base)    == right);      // base to one level up - right class
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+TEST_CASE("type - get_base_classes()", "[type]")
+{
+    DiamondBottom d;
+    const auto base_list_range = type::get(d).get_base_classes();
+    REQUIRE(base_list_range.size() == 3);
+
+    std::vector<type> base_list(base_list_range.cbegin(), base_list_range.cend());
+    REQUIRE(base_list[0] == type::get<DiamondTop>());
+    REQUIRE(base_list[1] == type::get<DiamondLeft>());
+    REQUIRE(base_list[2] == type::get<DiamondRight>());
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+TEST_CASE("type - is_derived_from()", "[type]")
+{
+    DiamondBottom d;
+
+    REQUIRE(type::get(d).is_derived_from(type::get<DiamondTop>()) == true); // dynamic
+    REQUIRE(type::get(d).is_derived_from<DiamondTop>() == true); // static
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -268,18 +292,6 @@ TEST_CASE("Test rttr::type - TypeId/ClassInheritance", "[type]")
     ClassSingle3A instance3A;
     CHECK(type::get<ClassSingle3A>() == type::get(instance3A));
     CHECK(type::get<ClassSingle6A>() != type::get(instance3A));
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-TEST_CASE("Test rttr::type - type::get_by_name", "[type]")
-{
-    CHECK(type::get_by_name("std::string").is_valid()   == true);
-    CHECK(type::get_by_name("std::string*").is_valid()  == true);
-
-    CHECK(type::get_by_name("std::string[100]").is_valid()   == false);
-    type::get<std::string[100]>(); // register it first, now it is available also by name lookup too
-    CHECK(type::get_by_name("std::string[100]").is_valid()   == true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -395,6 +407,30 @@ TEST_CASE("Test rttr::type - Check is_array", "[type]")
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+TEST_CASE("Test rttr::type - is_associative_container", "[type]")
+{
+    CHECK(type::get<std::set<int>>().is_associative_container()                                 == true);
+    CHECK((type::get<std::map<int, std::string>>().is_associative_container()                   == true));
+    CHECK((type::get<std::multimap<int, std::string>>().is_associative_container()              == true));
+    CHECK((type::get<std::multiset<int>>().is_associative_container()                           == true));
+
+    CHECK(type::get<std::unordered_set<int>>().is_associative_container()                       == true);
+    CHECK((type::get<std::unordered_map<int, std::string>>().is_associative_container()         == true));
+    CHECK((type::get<std::unordered_multimap<int, std::string>>().is_associative_container()    == true));
+    CHECK((type::get<std::unordered_multiset<int>>().is_associative_container()                 == true));
+
+    CHECK(type::get<int>().is_associative_container()            == false);
+    CHECK(type::get<float>().is_associative_container()          == false);
+    CHECK(type::get<int*>().is_associative_container()           == false);
+    CHECK(type::get<float*>().is_associative_container()         == false);
+    CHECK(type::get<double>().is_associative_container()         == false);
+    CHECK(type::get<char>().is_associative_container()           == false);
+    CHECK(type::get<bool>().is_associative_container()           == false);
+    CHECK(type::get<ClassSingle6A>().is_associative_container()  == false);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 TEST_CASE("Test rttr::type - Check is_wrapper", "[type]")
 {
     CHECK(type::get<std::shared_ptr<int>>().is_wrapper()        == true);
@@ -463,7 +499,7 @@ TEST_CASE("Test rttr::type - Check get_wrapped_type", "[type]")
 
     CHECK(type::get<std::shared_ptr<const int>>().get_wrapped_type()          == type::get<const int*>());
     CHECK(type::get<std::reference_wrapper<const int>>().get_wrapped_type()   == type::get<int>());
-    
+
     std::shared_ptr<ClassSingle6A> sharedPtr = std::make_shared<ClassSingle6A>();
     CHECK(type::get(sharedPtr).get_wrapped_type()           == type::get<ClassSingle6A*>());
 

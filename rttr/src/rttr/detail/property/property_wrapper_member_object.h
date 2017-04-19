@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -33,21 +33,26 @@
 // pointer to member - read write
 
 template<typename C, typename A, access_levels Acc_Level, std::size_t Metadata_Count>
-class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_copy, set_value, Metadata_Count> : public property_wrapper_base, public metadata_handler<Metadata_Count>
+class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_copy, set_value, Metadata_Count>
+    : public property_wrapper_base, public metadata_handler<Metadata_Count>
 {
     using accessor = A (C::*);
     public:
-        property_wrapper(accessor acc, std::array<metadata, Metadata_Count> metadata_list)
-        :   metadata_handler<Metadata_Count>(std::move(metadata_list)),
+        property_wrapper(string_view name, type declaring_type,
+                         accessor acc, std::array<metadata, Metadata_Count> metadata_list) RTTR_NOEXCEPT
+        :   property_wrapper_base(name, declaring_type),
+            metadata_handler<Metadata_Count>(std::move(metadata_list)),
             m_acc(acc)
-        { 
+        {
+            init();
         }
 
-        access_levels get_access_level() const { return Acc_Level; }
-        bool is_readonly()  const   { return false; }
-        bool is_static()    const   { return false; }
-        type get_type()     const   { return type::get<A>(); }
-        bool is_array()     const   { return detail::is_array<A>::value; }
+        access_levels get_access_level() const RTTR_NOEXCEPT    { return Acc_Level; }
+        bool is_valid()     const RTTR_NOEXCEPT                 { return true;  }
+        bool is_readonly()  const RTTR_NOEXCEPT                 { return false; }
+        bool is_static()    const RTTR_NOEXCEPT                 { return false; }
+        type get_type()     const RTTR_NOEXCEPT                 { return type::get<A>(); }
+        bool is_array()     const RTTR_NOEXCEPT                 { return detail::is_array<A>::value; }
 
         variant get_metadata(const variant& key) const { return metadata_handler<Metadata_Count>::get_metadata(key); }
 
@@ -78,21 +83,26 @@ class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_co
 // pointer to member - read only (because of std::false_type)
 
 template<typename C, typename A, access_levels Acc_Level, std::size_t Metadata_Count>
-class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_copy, read_only, Metadata_Count> : public property_wrapper_base, public metadata_handler<Metadata_Count>
+class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_copy, read_only, Metadata_Count>
+    : public property_wrapper_base, public metadata_handler<Metadata_Count>
 {
     using accessor = A (C::*);
     public:
-        property_wrapper(accessor acc, std::array<metadata, Metadata_Count> metadata_list)
-        :   metadata_handler<Metadata_Count>(std::move(metadata_list)),
+        property_wrapper(string_view name, type declaring_type,
+                         accessor acc, std::array<metadata, Metadata_Count> metadata_list) RTTR_NOEXCEPT
+        :   property_wrapper_base(name, declaring_type),
+            metadata_handler<Metadata_Count>(std::move(metadata_list)),
             m_acc(acc)
         {
+            init();
         }
 
-        access_levels get_access_level() const { return Acc_Level; }
-        bool is_readonly()  const   { return true; }
-        bool is_static()    const   { return false; }
-        type get_type()     const   { return type::get<A>(); }
-        bool is_array()     const   { return detail::is_array<A>::value; }
+        access_levels get_access_level() const RTTR_NOEXCEPT    { return Acc_Level; }
+        bool is_valid()     const RTTR_NOEXCEPT                 { return true;  }
+        bool is_readonly()  const RTTR_NOEXCEPT                 { return true; }
+        bool is_static()    const RTTR_NOEXCEPT                 { return false; }
+        type get_type()     const RTTR_NOEXCEPT                 { return type::get<A>(); }
+        bool is_array()     const RTTR_NOEXCEPT                 { return detail::is_array<A>::value; }
 
         variant get_metadata(const variant& key) const { return metadata_handler<Metadata_Count>::get_metadata(key); }
 
@@ -118,22 +128,28 @@ class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_co
 // pointer to member - read write
 
 template<typename C, typename A, access_levels Acc_Level, std::size_t Metadata_Count>
-class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_ptr, set_as_ptr, Metadata_Count> : public property_wrapper_base, public metadata_handler<Metadata_Count>
+class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_ptr, set_as_ptr, Metadata_Count>
+    : public property_wrapper_base, public metadata_handler<Metadata_Count>
 {
     using accessor = A (C::*);
     public:
-        property_wrapper(accessor acc, std::array<metadata, Metadata_Count> metadata_list)
-        :   metadata_handler<Metadata_Count>(std::move(metadata_list)),
+        property_wrapper(string_view name, type declaring_type,
+                         accessor acc, std::array<metadata, Metadata_Count> metadata_list) RTTR_NOEXCEPT
+        :   property_wrapper_base(name, declaring_type),
+            metadata_handler<Metadata_Count>(std::move(metadata_list)),
             m_acc(acc)
         {
             static_assert(!std::is_pointer<A>::value, "The data type of the property is already a pointer type! The given policy cannot be used for this property.");
+
+            init();
         }
 
-        access_levels get_access_level() const { return Acc_Level; }
-        bool is_readonly()  const   { return false; }
-        bool is_static()    const   { return false; }
-        type get_type()     const   { return type::get<A*>(); }
-        bool is_array()     const   { return detail::is_array<A>::value; }
+        access_levels get_access_level() const RTTR_NOEXCEPT    { return Acc_Level; }
+        bool is_valid()     const RTTR_NOEXCEPT                 { return true;  }
+        bool is_readonly()  const RTTR_NOEXCEPT                 { return false; }
+        bool is_static()    const RTTR_NOEXCEPT                 { return false; }
+        type get_type()     const RTTR_NOEXCEPT                 { return type::get<A*>(); }
+        bool is_array()     const RTTR_NOEXCEPT                 { return detail::is_array<A>::value; }
 
         variant get_metadata(const variant& key) const { return metadata_handler<Metadata_Count>::get_metadata(key); }
 
@@ -142,7 +158,7 @@ class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_pt
             C* ptr = object.try_convert<C>();
             if (ptr && arg.is_type<A*>())
             {
-                return property_accessor<A*>::set_value(&(ptr->*m_acc), arg);
+                return property_accessor<A const*>::set_value(&(ptr->*m_acc), arg);
             }
             else
             {
@@ -167,21 +183,27 @@ class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_pt
 // pointer to member - read only
 
 template<typename C, typename A, access_levels Acc_Level, std::size_t Metadata_Count>
-class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_ptr, read_only, Metadata_Count> : public property_wrapper_base, public metadata_handler<Metadata_Count>
+class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_ptr, read_only, Metadata_Count>
+    : public property_wrapper_base, public metadata_handler<Metadata_Count>
 {
     using accessor = A (C::*);
     public:
-        property_wrapper(accessor acc, std::array<metadata, Metadata_Count> metadata_list)
-        :   metadata_handler<Metadata_Count>(std::move(metadata_list)), m_acc(acc)
+        property_wrapper(string_view name, type declaring_type,
+                         accessor acc, std::array<metadata, Metadata_Count> metadata_list) RTTR_NOEXCEPT
+        :   property_wrapper_base(name, declaring_type),
+            metadata_handler<Metadata_Count>(std::move(metadata_list)), m_acc(acc)
         {
             static_assert(!std::is_pointer<A>::value, "The data type of the property is already a pointer type! The given policy cannot be used for this property.");
+
+            init();
         }
 
-        access_levels get_access_level() const { return Acc_Level; }
-        bool is_readonly()  const   { return true; }
-        bool is_static()    const   { return false; }
-        type get_type()     const   { return type::get<typename std::add_const<A>::type*>(); }
-        bool is_array()     const   { return detail::is_array<A>::value; }
+        access_levels get_access_level() const RTTR_NOEXCEPT    { return Acc_Level; }
+        bool is_valid()     const RTTR_NOEXCEPT                 { return true;  }
+        bool is_readonly()  const RTTR_NOEXCEPT                 { return true; }
+        bool is_static()    const RTTR_NOEXCEPT                 { return false; }
+        type get_type()     const RTTR_NOEXCEPT                 { return type::get<typename std::add_const<A>::type*>(); }
+        bool is_array()     const RTTR_NOEXCEPT                 { return detail::is_array<A>::value; }
 
         variant get_metadata(const variant& key) const { return metadata_handler<Metadata_Count>::get_metadata(key); }
 
@@ -194,6 +216,107 @@ class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_pt
         {
             if (C* ptr = object.try_convert<C>())
                 return variant(const_cast<const A*>(&(ptr->*m_acc)));
+            else
+                return variant();
+        }
+
+    private:
+        accessor m_acc;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+// pointer to member - read write
+
+template<typename C, typename A, access_levels Acc_Level, std::size_t Metadata_Count>
+class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, get_as_ref_wrapper, set_as_ref_wrapper, Metadata_Count>
+    : public property_wrapper_base, public metadata_handler<Metadata_Count>
+{
+    using accessor = A (C::*);
+    public:
+        property_wrapper(string_view name, type declaring_type,
+                         accessor acc, std::array<metadata, Metadata_Count> metadata_list) RTTR_NOEXCEPT
+        :   property_wrapper_base(name, declaring_type),
+            metadata_handler<Metadata_Count>(std::move(metadata_list)),
+            m_acc(acc)
+        {
+            static_assert(!std::is_pointer<A>::value, "The data type of the property is already a pointer type! The given policy cannot be used for this property.");
+
+            init();
+        }
+
+        access_levels get_access_level() const RTTR_NOEXCEPT    { return Acc_Level; }
+        bool is_valid()     const RTTR_NOEXCEPT                 { return true;  }
+        bool is_readonly()  const RTTR_NOEXCEPT                 { return false; }
+        bool is_static()    const RTTR_NOEXCEPT                 { return false; }
+        type get_type()     const RTTR_NOEXCEPT                 { return type::get<std::reference_wrapper<A>>(); }
+        bool is_array()     const RTTR_NOEXCEPT                 { return detail::is_array<A>::value; }
+
+        variant get_metadata(const variant& key) const { return metadata_handler<Metadata_Count>::get_metadata(key); }
+
+        bool set_value(instance& object, argument& arg) const
+        {
+            C* ptr = object.try_convert<C>();
+            if (ptr && arg.is_type<std::reference_wrapper<A>>())
+            {
+                return property_accessor<std::reference_wrapper<A>>::set_value((ptr->*m_acc), arg);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        variant get_value(instance& object) const
+        {
+            if (C* ptr = object.try_convert<C>())
+                return variant(std::ref(ptr->*m_acc));
+            else
+                return variant();
+        }
+
+    private:
+        accessor m_acc;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+// pointer to member - read only
+
+template<typename C, typename A, access_levels Acc_Level, std::size_t Metadata_Count>
+class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, get_as_ref_wrapper, read_only, Metadata_Count>
+    : public property_wrapper_base, public metadata_handler<Metadata_Count>
+{
+    using accessor = A (C::*);
+    public:
+        property_wrapper(string_view name, type declaring_type,
+                         accessor acc, std::array<metadata, Metadata_Count> metadata_list) RTTR_NOEXCEPT
+        :   property_wrapper_base(name, declaring_type),
+            metadata_handler<Metadata_Count>(std::move(metadata_list)), m_acc(acc)
+        {
+            static_assert(!std::is_pointer<A>::value, "The data type of the property is already a pointer type! The given policy cannot be used for this property.");
+
+            init();
+        }
+        using policy_type = std::reference_wrapper<add_const_t<A>>;
+        access_levels get_access_level() const RTTR_NOEXCEPT    { return Acc_Level; }
+        bool is_valid()     const RTTR_NOEXCEPT                 { return true;  }
+        bool is_readonly()  const RTTR_NOEXCEPT                 { return true; }
+        bool is_static()    const RTTR_NOEXCEPT                 { return false; }
+        type get_type()     const RTTR_NOEXCEPT                 { return type::get< std::reference_wrapper<add_const_t<A>> >(); }
+        bool is_array()     const RTTR_NOEXCEPT                 { return detail::is_array<A>::value; }
+
+        variant get_metadata(const variant& key) const { return metadata_handler<Metadata_Count>::get_metadata(key); }
+
+        bool set_value(instance& object, argument& arg) const
+        {
+            return false;
+        }
+
+        variant get_value(instance& object) const
+        {
+            if (C* ptr = object.try_convert<C>())
+                return variant(std::cref((ptr->*m_acc)));
             else
                 return variant();
         }

@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -31,6 +31,10 @@
 #include <map>
 #include <list>
 #include <set>
+
+// explicit instantiation of std::string needed, otherwise we get a linker error with clang on osx
+// thats a bug in libc++, because of interaction with __attribute__ ((__visibility__("hidden"), __always_inline__)) in std::string
+template class std::basic_string<char>;
 
 RTTR_REGISTRATION
 {
@@ -67,7 +71,7 @@ RTTR_REGISTRATION
                 .constructor<const std::string&>()
                 .constructor<const std::string&, unsigned int, unsigned int>()
                 .constructor<const char*>()
-                .constructor<const char*, unsigned int>() 
+                .constructor<const char*, unsigned int>()
                 .constructor<unsigned int, char>()
                 .method("length",       &std::string::length)
                 .method("size",         &std::string::size)

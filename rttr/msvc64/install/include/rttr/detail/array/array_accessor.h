@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -67,6 +67,11 @@ struct array_accessor
 
     /////////////////////////////////////////////////////////////////////////////////////////
 
+    static variant get_value_as_ref(Array_Type& array, std::size_t index_1);
+    static variant get_value_as_ref(const Array_Type& array, std::size_t index_1);
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+
     template<typename... Indices>
     static bool set_value(const Array_Type&, argument&, Indices... indices);
     static bool set_value(const Array_Type&, argument&, const std::vector<std::size_t>&);
@@ -91,7 +96,7 @@ struct array_accessor
     template<typename... Indices>
     static bool remove_value(const Array_Type&, Indices... indices);
     static bool remove_value(const Array_Type&, const std::vector<std::size_t>&);
-    
+
     template<typename... Indices>
     static bool remove_value(Array_Type& array, Indices... indices);
     static bool remove_value(Array_Type& array, const std::vector<std::size_t>& index_list);

@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -52,14 +52,14 @@ namespace detail
  * The \ref variant_array_view describes a class that refers to an array inside a \ref variant.
  * With an instance of that class you can set/get values of an array,
  * without having access to the type declaration of the type or it's elements.
- * 
+ *
  * A \ref variant_array_view can be created directly from a \ref variant with its member function \ref variant::create_array_view() "create_array_view()".
  * \remark The instance of an variant_array_view is always valid till the referenced \ref variant is valid, otherwise accessing a variant_array_view
  *         is undefined behaviour.
  *
  * Meta Information
  * ----------------
- * An array is defined by its \ref variant_array_view::get_rank() "rank", it's \ref variant_array_view::get_size "size" and 
+ * An array is defined by its \ref variant_array_view::get_rank() "rank", it's \ref variant_array_view::get_size "size" and
  * whether he is \ref variant_array_view::is_dynamic() "dynamic" or not.
  *
  * The rank of an array describes the number of dimensions. E.g. `int[10]` has a rank of `1`. `int[2][10]` has an rank of `2` and so on.
@@ -78,7 +78,7 @@ namespace detail
  *
  * When the given array type is \ref variant_array_view::is_dynamic() "dynamic" you can change the size of the array,
  * therefore \ref variant_array_view::set_size "set_size()" should be used.
- * A value of an array can be accessed with \ref variant_array_view::get_value "get_value()" or set with 
+ * A value of an array can be accessed with \ref variant_array_view::get_value "get_value()" or set with
  * \ref variant_array_view::set_value "set_value". These function expect an index for up to rank level 3.
  * The array class has here one interesting feature, you can set and get the value of an array up to its rank count. e.g:
  * \code{.cpp}
@@ -90,25 +90,25 @@ namespace detail
  *  array.set_value(0, 1, 23);   // equivalent to call obj[0][1] == 23
  * \endcode
  *
- * When you have arrays bigger then rank count three, use the counterpart functions: 
+ * When you have arrays bigger then rank count three, use the counterpart functions:
  * \ref variant_array_view::get_value_variadic "get_value_variadic" and \ref variant_array_view::set_value_variadic "set_value_variadic"
  * which expects a list of indices. When the array is dynamic it is also possible to
  * \ref variant_array_view::insert_value "insert" or \ref variant_array_view::remove_value "remove" values.
  *
  * RTTR recognize whether a type is an array or not with the help of the \ref array_mapper class template.
- * This call can access different array types via one common interface. 
- * At the moment there exist specializations for following types: 
+ * This call can access different array types via one common interface.
+ * At the moment there exist specializations for following types:
  * `std::array<T, N>`, `std::vector<T>`, `std::list<T>` and raw-arrays `T[N]`.
  *
  *
  * Copying and Assignment
  * ----------------------
- * A \ref variant_array_view object can be copied and assigned, 
+ * A \ref variant_array_view object can be copied and assigned,
  * however each copy will reference the address of same underlying \ref variant array value.
  *
  * Typical Usage
  * ----------------------
- * 
+ *
  * \code{.cpp}
  *  int obj[2][10];
  *  variant var = obj;
@@ -122,7 +122,7 @@ namespace detail
  *        array.set_value(index_1, index_2, 0);
  *      }
  *    }
- *  
+ *
  *    // it is also possible to set the sub array in one step
  *    for (std::size_t index_1 = 0; index_1 < array.get_size(); ++index_1)
  *    {
@@ -142,29 +142,31 @@ class RTTR_API variant_array_view
          *
          * \see is_valid()
          */
-        variant_array_view();
+        variant_array_view() RTTR_NOEXCEPT;
 
         /*!
          * \brief Constructs a copy of the given variant_array_view \p other.
          */
-        variant_array_view(const variant_array_view& other);
+        variant_array_view(const variant_array_view& other) RTTR_NOEXCEPT;
 
         /*!
          * \brief Constructs a new variant_array_view via move constructor.
          */
-        variant_array_view(variant_array_view&& other);
+        variant_array_view(variant_array_view&& other) RTTR_NOEXCEPT;
 
         /*!
-         * \brief Destroys the variant_array_view and the contained data.
+         * \brief Destroys the variant_array_view.
+         *
+         * \remark The underlying data is not destroyed.
          */
-        ~variant_array_view();
+        ~variant_array_view() RTTR_NOEXCEPT;
 
         /*!
          * \brief Assigns the value of the \a other variant_array_view to this variant_array_view.
          *
          * \return A reference to the variant_array_view with the new data.
          */
-        variant_array_view& operator=(const variant_array_view& other);
+        variant_array_view& operator=(const variant_array_view& other) RTTR_NOEXCEPT;
 
         /*!
          * \brief Returns true if this variant_array_view is valid, that means the object is holding some data.
@@ -172,7 +174,7 @@ class RTTR_API variant_array_view
          *
          * \return True if this array is valid, otherwise false.
          */
-        bool is_valid() const;
+        bool is_valid() const RTTR_NOEXCEPT;
 
         /*!
          * \brief Convenience function to check if this \ref variant_array_view is valid or not.
@@ -181,13 +183,13 @@ class RTTR_API variant_array_view
          *
          * \return True if this \ref variant_array_view is valid, otherwise false.
          */
-        explicit operator bool() const;
+        explicit operator bool() const RTTR_NOEXCEPT;
 
         /*!
          * \brief Swaps this variant_array_view with the \a other variant_array_view.
          */
-        void swap(variant_array_view& other);
-       
+        void swap(variant_array_view& other) RTTR_NOEXCEPT;
+
 
         /*!
          * \brief Returns true if this array is dynamic, otherwise false.
@@ -198,10 +200,10 @@ class RTTR_API variant_array_view
          *
          * \return A boolean flag which indicates whether this array is dynamic or not.
          */
-        bool is_dynamic() const;
+        bool is_dynamic() const RTTR_NOEXCEPT;
 
         /*!
-         * \brief Gets the rank (number of dimensions) of the array. 
+         * \brief Gets the rank (number of dimensions) of the array.
          *
          * Take a look at following return values:
          *  - \p `int[4]` => `1`
@@ -211,7 +213,7 @@ class RTTR_API variant_array_view
          *
          * \return Returns the rank of the array.
          */
-        std::size_t get_rank() const;
+        std::size_t get_rank() const RTTR_NOEXCEPT;
 
         /*!
          * \brief Gets the type of the given rank index.
@@ -224,8 +226,8 @@ class RTTR_API variant_array_view
          *
          * \return The rank type at the given dimension \p index.
          */
-        type get_rank_type(std::size_t index) const;
-        
+        type get_rank_type(std::size_t index) const RTTR_NOEXCEPT;
+
        /*!
          * \brief Returns the \ref type object of this array.
          *
@@ -233,22 +235,22 @@ class RTTR_API variant_array_view
          *
          * \return \ref type "Type" of the array.
          */
-        type get_type() const;
+        type get_type() const RTTR_NOEXCEPT;
 
         /*!
          * \brief Returns the size of the first dimension from the array.
          *
          * \return The size of the array.
          */
-        std::size_t get_size() const;
+        std::size_t get_size() const RTTR_NOEXCEPT;
 
         /*!
-         * \brief Returns the size of the array at the second dimension 
+         * \brief Returns the size of the array at the second dimension
          *        at index \p index_1.
          *
          * \return The size of the array.
          */
-        std::size_t get_size(std::size_t index_1) const;
+        std::size_t get_size(std::size_t index_1) const RTTR_NOEXCEPT;
 
         /*!
          * \brief Returns the size of the array at the third dimension at index \p index_2,
@@ -256,7 +258,7 @@ class RTTR_API variant_array_view
          *
          * \return The size of the array.
          */
-        std::size_t get_size(std::size_t index_1, std::size_t index_2) const;
+        std::size_t get_size(std::size_t index_1, std::size_t index_2) const RTTR_NOEXCEPT;
 
         /*!
          * \brief Returns the size from of the array at the specified indices in list \p index_list.
@@ -264,8 +266,8 @@ class RTTR_API variant_array_view
          *
          * \return The size of the array.
          */
-        std::size_t get_size_variadic(const std::vector<std::size_t>& index_list) const;
-        
+        std::size_t get_size_variadic(const std::vector<std::size_t>& index_list) const RTTR_NOEXCEPT;
+
         /*!
          * \brief Sets the size of the array at the first dimension to \p new_size.
          *
@@ -304,9 +306,9 @@ class RTTR_API variant_array_view
          * \return True if the value could be set, otherwise false.
          */
         bool set_value(argument arg);
-        
+
         /*!
-         * \brief Set the content of the the argument \p arg into the in the first dimension 
+         * \brief Set the content of the the argument \p arg into the in the first dimension
          *        of the array at index \p index_1.
          *
          * \return True if the value could be set, otherwise false.
@@ -332,7 +334,7 @@ class RTTR_API variant_array_view
         /*!
          * \brief Set the content of the the argument \p arg into the array in the n-th dimension given in the list \p index_list.
          *
-         * \remark Use this function when you want to set a value into a dimension which is bigger then three. 
+         * \remark Use this function when you want to set a value into a dimension which is bigger then three.
          *         Otherwise use the corresponding functions of \ref set_value() .
          *
          * \return True if the value could be set, otherwise false.
@@ -343,7 +345,7 @@ class RTTR_API variant_array_view
         /*!
          * \brief Returns the value of the array in the first dimension at index \p index_1.
          *
-         * \return The value of the given array at the specified indices.
+         * \return The value of the given array at the specified index.
          */
         variant get_value(std::size_t index_1) const;
 
@@ -369,6 +371,26 @@ class RTTR_API variant_array_view
          * \return The value of the given array at the specified indices.
          */
         variant get_value_variadic(const std::vector<std::size_t>& index_list) const;
+
+        /*!
+         * \brief Returns the value of the array in the first dimension at index \p index_1
+         *        wrapped inside a std::rerference_wrapper.
+         *
+         * \code{.cpp}
+         *  std::vector<int> vec(10, 1);
+         *  vec[5] = 23;
+         *  variant var = std::ref(vec);
+         *
+         *  variant value = var.create_array_view().get_value_as_ref(5);
+         *  value.get_type() == type::get<std::reference_wrapper<int>>(); // yields to true
+         *  auto& val = value.get_wrapped_value<int>();
+         *  variant var_extr = value.extract_wrapped_value();
+         * \endcode
+         *
+         * \return The value of the given array at the specified index.
+         */
+        variant get_value_as_ref(std::size_t index_1) const;
+
 
         /*!
          * \brief Inserts the given argument \p arg into the array, in the first dimension at index \p index_1.

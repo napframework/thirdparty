@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -35,6 +35,7 @@
 #include "rttr/detail/misc/data_address_container.h"
 #include "rttr/detail/variant/variant_data_policy.h"
 #include "rttr/variant_array_view.h"
+#include "rttr/variant_associative_view.h"
 
 namespace rttr
 {
@@ -52,7 +53,7 @@ template<typename T, typename Tp>
 RTTR_INLINE variant::variant(T&& val)
 :   m_policy(&detail::variant_policy<Tp>::invoke)
 {
-    static_assert(std::is_copy_constructible<Tp>::value || std::is_array<Tp>::value, 
+    static_assert(std::is_copy_constructible<Tp>::value || std::is_array<Tp>::value,
                   "The given value is not copy constructible, try to add a copy constructor to the class.");
 
     detail::variant_policy<Tp>::create(std::forward<T>(val), m_data);
@@ -108,6 +109,17 @@ RTTR_INLINE const T& variant::get_value() const
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+template<typename T>
+RTTR_INLINE const T& variant::get_wrapped_value() const
+{
+    detail::data_address_container result{detail::get_invalid_type(), detail::get_invalid_type(), nullptr, nullptr};
+    m_policy(detail::variant_policy_operation::GET_ADDRESS_CONTAINER, m_data, result);
+    using nonRef = detail::remove_cv_t<T>;
+    return *reinterpret_cast<const nonRef*>(result.m_data_address_wrapped_type);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 RTTR_INLINE void* variant::get_ptr() const
 {
     void* value;
@@ -119,7 +131,7 @@ RTTR_INLINE void* variant::get_ptr() const
 
 RTTR_INLINE type variant::get_raw_type() const
 {
-    type result(type::m_invalid_id);
+    type result = detail::get_invalid_type();
     m_policy(detail::variant_policy_operation::GET_RAW_TYPE, m_data, result);
     return result;
 }
@@ -137,7 +149,7 @@ RTTR_INLINE void* variant::get_raw_ptr() const
 
 RTTR_INLINE detail::data_address_container variant::get_data_address_container() const
 {
-    detail::data_address_container result{type(type::m_invalid_id), type(type::m_invalid_id), nullptr, nullptr};
+    detail::data_address_container result{detail::get_invalid_type(), detail::get_invalid_type(), nullptr, nullptr};
     m_policy(detail::variant_policy_operation::GET_ADDRESS_CONTAINER, m_data, result);
     return result;
 }
@@ -147,7 +159,7 @@ RTTR_INLINE detail::data_address_container variant::get_data_address_container()
 template<typename T>
 RTTR_INLINE bool variant::is_type() const
 {
-    type src_type(type::m_invalid_id);
+    type src_type = detail::get_invalid_type();
     m_policy(detail::variant_policy_operation::GET_TYPE, m_data, src_type);
     return (type::get<T>() == src_type);
 }
@@ -189,7 +201,7 @@ RTTR_INLINE variant::try_pointer_conversion(T& to, const type& source_type, cons
 /////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-typename std::enable_if<detail::pointer_count<T>::value != 1, bool>::type 
+typename std::enable_if<detail::pointer_count<T>::value != 1, bool>::type
 RTTR_INLINE variant::try_pointer_conversion(T& to, const type& source_type, const type& target_type) const
 {
     return false;
@@ -205,7 +217,7 @@ RTTR_INLINE bool variant::is_nullptr() const
 /////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-typename std::enable_if<detail::is_nullptr_t<T>::value, bool>::type 
+typename std::enable_if<detail::is_nullptr_t<T>::value, bool>::type
 static RTTR_INLINE ptr_to_nullptr(T& to)
 {
     to = nullptr;
@@ -215,7 +227,7 @@ static RTTR_INLINE ptr_to_nullptr(T& to)
 /////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-typename std::enable_if<!detail::is_nullptr_t<T>::value, bool>::type 
+typename std::enable_if<!detail::is_nullptr_t<T>::value, bool>::type
 static RTTR_INLINE ptr_to_nullptr(T& to)
 {
     return false;
@@ -230,7 +242,12 @@ RTTR_INLINE bool variant::convert(T& value) const
 
     const type source_type = get_type();
     const type target_type = type::get<T>();
-    if (target_type == source_type)
+    if (source_type.is_wrapper() && !target_type.is_wrapper())
+    {
+        variant var = extract_wrapped_value();
+        return var.convert<T>(value);
+    }
+    else if (target_type == source_type)
     {
         value = const_cast<variant&>(*this).get_value<T>();
         ok = true;
@@ -253,7 +270,7 @@ RTTR_INLINE bool variant::convert(T& value) const
     {
         ok = try_pointer_conversion(value, source_type, target_type);
     }
-    
+
     return ok;
 }
 
@@ -273,7 +290,7 @@ RTTR_INLINE detail::enable_if_t<std::is_arithmetic<T>::value, T> variant::conver
 /////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-RTTR_INLINE detail::enable_if_t<!std::is_arithmetic<T>::value, T> variant::convert_impl(bool* ok) const
+RTTR_INLINE detail::enable_if_t<!std::is_arithmetic<T>::value && !std::is_enum<T>::value, T> variant::convert_impl(bool* ok) const
 {
     static_assert(std::is_default_constructible<T>::value, "The given type T has no default constructor."
                                                            "You can only convert to a type, with a default constructor.");
@@ -283,6 +300,20 @@ RTTR_INLINE detail::enable_if_t<!std::is_arithmetic<T>::value, T> variant::conve
         *ok = could_convert;
 
     return result;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename T>
+RTTR_INLINE detail::enable_if_t<std::is_enum<T>::value, T> variant::convert_impl(bool* ok) const
+{
+    variant var = type::get<T>();
+    auto wrapper = std::ref(var);
+    const bool could_convert = convert<std::reference_wrapper<variant>>(wrapper);
+    if (ok)
+        *ok = could_convert;
+
+    return var.get_value<T>();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

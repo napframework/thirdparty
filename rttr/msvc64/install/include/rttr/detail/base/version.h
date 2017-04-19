@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -30,8 +30,8 @@
 
 #define RTTR_VERSION_MAJOR 0
 #define RTTR_VERSION_MINOR 9
-#define RTTR_VERSION_PATCH 5
-#define RTTR_VERSION       905
-#define RTTR_VERSION_STR   "0.9.5"
+#define RTTR_VERSION_PATCH 6
+#define RTTR_VERSION       906
+#define RTTR_VERSION_STR   "0.9.6"
 
 #endif // RTTR_VERSION_H_

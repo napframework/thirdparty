@@ -1,6 +1,6 @@
 ####################################################################################
 #                                                                                  #
-#  Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     #
+#  Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     #
 #                                                                                  #
 #  This file is part of RTTR (Run Time Type Reflection)                            #
 #  License: MIT License                                                            #
@@ -30,9 +30,9 @@ project(unit_tests)
 message(STATUS "Scanning "  ${PROJECT_NAME} " module.")
 message(STATUS "===========================")
 
-generateLibraryVersionVariables(${RTTR_VERSION_MAJOR} ${RTTR_VERSION_MINOR} ${RTTR_VERSION_PATCH} 
-                                "RTTR unit_tests" "Copyright (c) 2014, 2015 Axel Menzel <info@axelmenzel.de>" "MIT License")
-                                
+generateLibraryVersionVariables(${RTTR_VERSION_MAJOR} ${RTTR_VERSION_MINOR} ${RTTR_VERSION_PATCH}
+                                "RTTR unit_tests" "Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>" "MIT License")
+
 loadFolder("unit_tests" HPP_FILES SRC_FILES)
 
 if (USE_PCH)
@@ -40,9 +40,9 @@ if (USE_PCH)
 endif()
 
 add_executable(unit_tests ${SRC_FILES} ${HPP_FILES})
-target_link_libraries(unit_tests rttr_core)
-add_dependencies(unit_tests rttr_core)
-target_include_directories(unit_tests PUBLIC ${RTTR_3RD_PARTY_DIR})
+target_link_libraries(unit_tests RTTR::Core)
+add_dependencies(unit_tests RTTR::Core)
+target_include_directories(unit_tests PUBLIC ${CATCH_DIR})
 set_target_properties(unit_tests PROPERTIES DEBUG_POSTFIX _d)
 
 # run tests

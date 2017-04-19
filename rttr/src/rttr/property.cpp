@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -38,160 +38,141 @@ using namespace std;
 namespace rttr
 {
 
+namespace detail
+{
+
+template<>
+property create_item(const property_wrapper_base* wrapper)
+{
+    return property(wrapper);
+}
+
+template<>
+property create_invalid_item()
+{
+    static const detail::property_wrapper_base invalid_wrapper(string_view(), detail::get_invalid_type());
+    return property(&invalid_wrapper);
+}
+
+} // end namespace detail;
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
-property::property(const detail::property_wrapper_base* wrapper)
+property::property(const detail::property_wrapper_base* wrapper) RTTR_NOEXCEPT
 :   m_wrapper(wrapper)
 {
-
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool property::is_valid() const
+bool property::is_valid() const RTTR_NOEXCEPT
 {
-    return (m_wrapper ? true : false);
+    return m_wrapper->is_valid();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-property::operator bool() const
+property::operator bool() const RTTR_NOEXCEPT
 {
-    return (m_wrapper ? true : false);
+    return m_wrapper->is_valid();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-access_levels property::get_access_level() const
+access_levels property::get_access_level() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_access_level();
-    else
-        return access_levels::public_access;
+    return m_wrapper->get_access_level();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool property::is_readonly() const
+bool property::is_readonly() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->is_readonly();
-    else
-        return false;
+    return m_wrapper->is_readonly();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool property::is_static() const
+bool property::is_static() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->is_static();
-    else
-        return false;
+    return m_wrapper->is_static();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool property::is_enumeration() const
+bool property::is_enumeration() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_type().is_enumeration();
-    else
-        return false;
+    return m_wrapper->get_type().is_enumeration();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-enumeration property::get_enumeration() const
+enumeration property::get_enumeration() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_type().get_enumeration();
-    else
-        return detail::get_invalid_type().get_enumeration();
+    return m_wrapper->get_type().get_enumeration();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool property::is_array() const
+bool property::is_array() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->is_array();
-    else
-        return false;
+    return m_wrapper->is_array();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-string property::get_name() const
+string_view property::get_name() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_name();
-    else
-        return string();
+    return m_wrapper->get_name();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-type property::get_type() const
+type property::get_type() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_type();
-    else
-        return detail::get_invalid_type();
+    return m_wrapper->get_type();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-type property::get_declaring_type() const
+type property::get_declaring_type() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_declaring_type();
-    else
-        return detail::get_invalid_type();
+    return m_wrapper->get_declaring_type();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 bool property::set_value(instance object, argument arg) const
 {
-    if (is_valid())
-        return m_wrapper->set_value(object, arg);
-    else
-        return false;
+    return m_wrapper->set_value(object, arg);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 variant property::get_value(instance object) const
 {
-    if (is_valid())
-        return m_wrapper->get_value(object);
-    else
-        return variant();
+    return m_wrapper->get_value(object);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 variant property::get_metadata(const variant& key) const
 {
-    if (is_valid())
-        return m_wrapper->get_metadata(key);
-    else
-        return variant();
+    return m_wrapper->get_metadata(key);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool property::operator==(const property& other) const
+bool property::operator==(const property& other) const RTTR_NOEXCEPT
 {
-    return (m_wrapper == other.m_wrapper); 
+    return (m_wrapper == other.m_wrapper);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool property::operator!=(const property& other) const
+bool property::operator!=(const property& other) const RTTR_NOEXCEPT
 {
-    return (m_wrapper != other.m_wrapper); 
+    return (m_wrapper != other.m_wrapper);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

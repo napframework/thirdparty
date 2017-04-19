@@ -1,6 +1,6 @@
 ####################################################################################
 #                                                                                  #
-#  Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     #
+#  Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     #
 #                                                                                  #
 #  This file is part of RTTR (Run Time Type Reflection)                            #
 #  License: MIT License                                                            #
@@ -30,33 +30,33 @@ project(bench_method)
 message(STATUS "Scanning "  ${PROJECT_NAME} " module.")
 message(STATUS "===========================")
 
-generateLibraryVersionVariables(${RTTR_VERSION_MAJOR} ${RTTR_VERSION_MINOR} ${RTTR_VERSION_PATCH} 
-                                "Benchmark method" "Copyright (c) 2014, 2015 Axel Menzel <info@axelmenzel.de>" "MIT License")
-                                
+generateLibraryVersionVariables(${RTTR_VERSION_MAJOR} ${RTTR_VERSION_MINOR} ${RTTR_VERSION_PATCH}
+                                "Benchmark method" "Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>" "MIT License")
+
 loadFolder("bench_method" HPP_FILES SRC_FILES)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
-                    
+
 if (USE_PCH)
   activate_precompiled_headers("pch.h" SRC_FILES)
 endif()
 
 add_executable(bench_method ${SRC_FILES} ${HPP_FILES})
 if (MSVC)
-  target_link_libraries(bench_method rttr_core ${Boost_CHRONO_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
+  target_link_libraries(bench_method RTTR::Core ${Boost_CHRONO_LIBRARY} ${Boost_SYSTEM_LIBRARY})
 else()
-  target_link_libraries(bench_method rttr_core ${CMAKE_THREAD_LIBS_INIT})
+  target_link_libraries(bench_method RTTR::Core ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
-target_include_directories(bench_method PUBLIC ${RTTR_3RD_PARTY_DIR} ${Boost_INCLUDE_DIR})
+target_include_directories(bench_method PUBLIC ${NONIUS_DIR} ${Boost_INCLUDE_DIR})
 target_compile_definitions(bench_method PUBLIC BOOST_ALL_NO_LIB)
 if(MSVC)
     set_target_properties(bench_method PROPERTIES COMPILE_FLAGS "/Zm200 /bigobj")
 endif()
 
-set_target_properties(bench_method PROPERTIES DEBUG_POSTFIX _d)
-
-add_dependencies(bench_method rttr_core)
+set_target_properties(bench_method PROPERTIES DEBUG_POSTFIX _d
+                                              FOLDER "Benchmarks")
+add_dependencies(bench_method RTTR::Core)
 
 install(TARGETS bench_method
         RUNTIME DESTINATION ${RTTR_BIN_INSTALL_DIR})
@@ -66,20 +66,21 @@ install(TARGETS bench_method
 if (BUILD_STATIC)
     add_executable(bench_method_lib ${SRC_FILES} ${HPP_FILES})
     if (MSVC)
-      target_link_libraries(bench_method_lib rttr_core_lib ${Boost_CHRONO_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
+      target_link_libraries(bench_method_lib RTTR::Core_Lib ${Boost_CHRONO_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
     else()
-      target_link_libraries(bench_method_lib rttr_core_lib ${CMAKE_THREAD_LIBS_INIT})
+      target_link_libraries(bench_method_lib RTTR::Core_Lib ${CMAKE_THREAD_LIBS_INIT})
     endif()
 
-    target_include_directories(bench_method_lib PUBLIC ${RTTR_3RD_PARTY_DIR} ${Boost_INCLUDE_DIR})
+    target_include_directories(bench_method_lib PUBLIC ${NONIUS_DIR} ${Boost_INCLUDE_DIR})
     target_compile_definitions(bench_method_lib PUBLIC BOOST_ALL_NO_LIB)
     if(MSVC)
         set_target_properties(bench_method_lib PROPERTIES COMPILE_FLAGS "/Zm200 /bigobj")
     endif()
 
-    set_target_properties(bench_method_lib PROPERTIES DEBUG_POSTFIX _d)
+    set_target_properties(bench_method_lib PROPERTIES DEBUG_POSTFIX _d
+                                                      FOLDER "Benchmarks")
 
-    add_dependencies(bench_method_lib rttr_core_lib)
+    add_dependencies(bench_method_lib RTTR::Core_Lib)
 
     install(TARGETS bench_method_lib
             RUNTIME DESTINATION ${RTTR_BIN_INSTALL_DIR})
@@ -90,54 +91,60 @@ endif()
 if (BUILD_WITH_STATIC_RUNTIME_LIBS)
     add_executable(bench_method_s ${SRC_FILES} ${HPP_FILES})
     if (MSVC)
-      target_link_libraries(bench_method_s rttr_core_s ${Boost_CHRONO_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
+      target_link_libraries(bench_method_s RTTR::Core_STL ${Boost_CHRONO_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
     else()
-      target_link_libraries(bench_method_s rttr_core_s ${CMAKE_THREAD_LIBS_INIT})
+      target_link_libraries(bench_method_s RTTR::Core_STL ${CMAKE_THREAD_LIBS_INIT})
     endif()
 
-    target_include_directories(bench_method_s PUBLIC ${RTTR_3RD_PARTY_DIR} ${Boost_INCLUDE_DIR})
+    target_include_directories(bench_method_s PUBLIC ${NONIUS_DIR} ${Boost_INCLUDE_DIR})
     target_compile_definitions(bench_method_s PUBLIC BOOST_ALL_NO_LIB)
     if(MSVC)
         set_target_properties(bench_method_s PROPERTIES COMPILE_FLAGS "/Zm200 /bigobj")
     endif()
 
-    set_target_properties(bench_method_s PROPERTIES DEBUG_POSTFIX _d)
+    set_target_properties(bench_method_s PROPERTIES DEBUG_POSTFIX _d
+                                                    FOLDER "Benchmarks")
 
-    add_dependencies(bench_method_s rttr_core_s)
-    
+    add_dependencies(bench_method_s RTTR::Core_STL)
+
     if (MSVC)
         target_compile_options(bench_method_s PUBLIC "/MT$<$<CONFIG:Debug>:d>")
     elseif(CMAKE_COMPILER_IS_GNUCXX)
         set_target_properties(bench_method_s PROPERTIES LINK_FLAGS ${GNU_STATIC_LINKER_FLAGS})
+    elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set_target_properties(bench_method_s PROPERTIES LINK_FLAGS ${CLANG_STATIC_LINKER_FLAGS})
     else()
         message(SEND_ERROR "Do now know how to statically link against the standard library with this compiler.")
     endif()
 
     install(TARGETS bench_method_s
             RUNTIME DESTINATION ${RTTR_BIN_INSTALL_DIR})
-            
+
     if (BUILD_STATIC)
         add_executable(bench_method_lib_s ${SRC_FILES} ${HPP_FILES})
         if (MSVC)
-          target_link_libraries(bench_method_lib_s rttr_core_lib_s ${Boost_CHRONO_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
+          target_link_libraries(bench_method_lib_s RTTR::Core_Lib_STL ${Boost_CHRONO_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
         else()
-          target_link_libraries(bench_method_lib_s rttr_core_lib_s ${CMAKE_THREAD_LIBS_INIT})
+          target_link_libraries(bench_method_lib_s RTTR::Core_Lib_STL ${CMAKE_THREAD_LIBS_INIT})
         endif()
 
-        target_include_directories(bench_method_lib_s PUBLIC ${RTTR_3RD_PARTY_DIR} ${Boost_INCLUDE_DIR})
+        target_include_directories(bench_method_lib_s PUBLIC ${NONIUS_DIR} ${Boost_INCLUDE_DIR})
         target_compile_definitions(bench_method_lib_s PUBLIC BOOST_ALL_NO_LIB)
         if(MSVC)
             set_target_properties(bench_method_lib_s PROPERTIES COMPILE_FLAGS "/Zm200 /bigobj")
         endif()
 
-        set_target_properties(bench_method_lib_s PROPERTIES DEBUG_POSTFIX _d)
+        set_target_properties(bench_method_lib_s PROPERTIES DEBUG_POSTFIX _d
+                                                            FOLDER "Benchmarks")
 
-        add_dependencies(bench_method_lib_s rttr_core_lib_s)
-        
+        add_dependencies(bench_method_lib_s RTTR::Core_Lib_STL)
+
         if (MSVC)
             target_compile_options(bench_method_lib_s PUBLIC "/MT$<$<CONFIG:Debug>:d>")
         elseif(CMAKE_COMPILER_IS_GNUCXX)
             set_target_properties(bench_method_lib_s PROPERTIES LINK_FLAGS ${GNU_STATIC_LINKER_FLAGS})
+        elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            set_target_properties(bench_method_lib_s PROPERTIES LINK_FLAGS ${CLANG_STATIC_LINKER_FLAGS})
         else()
             message(SEND_ERROR "Do now know how to statically link against the standard library with this compiler.")
         endif()
@@ -146,6 +153,6 @@ if (BUILD_WITH_STATIC_RUNTIME_LIBS)
                 RUNTIME DESTINATION ${RTTR_BIN_INSTALL_DIR})
     endif()
 endif()
-        
+
 message(STATUS "Scanning " ${PROJECT_NAME} " module finished!")
 message(STATUS "")

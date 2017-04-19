@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -57,7 +57,12 @@ struct method_test
     void method_with_ptr(int* ptr)   { method_with_ptr_called = true; }
 
     void method_fun_ptr_arg(void(*func_ptr)(int)) { method_func_ptr_arg_called = true; m_func_ptr = func_ptr; }
-    
+
+    bool set_func_via_variant(const rttr::variant& var)
+    {
+        return (var == 23) ? true : false;
+    }
+
     double dummy_data = 12;
     std::string dummy_text = "Hello World";
     int method_3_value = 0;
@@ -84,11 +89,11 @@ struct method_test
 struct method_test_derived : method_test
 {
 
-    virtual void method_8()         { method_8_derived_called = true; }
-    void method_10(int value)       { method_10_derived_called = true;} // here we want to check if a base ptr can be converted to the middle
+    virtual void method_8()         { method_8_derived_called = true; } // new implementation from base class
+    void method_11(int value)       { method_11_derived_called = true;} // here we want to check if a base ptr can be converted to the middle
 
     bool method_8_derived_called    = false;
-    bool method_10_derived_called   = false;
+    bool method_11_derived_called   = false;
 
     RTTR_ENABLE(method_test)
 };

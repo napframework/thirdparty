@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -64,7 +64,7 @@ RTTR_REGISTRATION
         .property("val_4", &prop_access_level_test::value_4, registration::public_access)
         .property("val_5", &prop_access_level_test::value_5) // default, should be "public_access"
         (
-            metadata(23, 42)
+            metadata(23, 42) // this metadata is just for testing, whether the accessor will be forwarded when using additional binding data
         )
         .property("val_6", &prop_access_level_test::value_6, registration::protected_access)
         (
@@ -127,11 +127,11 @@ RTTR_REGISTRATION
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("property - access_levels test - object ptr", "[property]") 
+TEST_CASE("property - access_levels test - object ptr", "[property]")
 {
     type t = type::get_by_name("prop_access_level_test");
     REQUIRE(t.is_valid() == true);
-    
+
     // has to be checked, because get_access_level() default return value is public_access
     CHECK(t.get_property("val_1").is_valid() == true);
     CHECK(t.get_property("val_1").get_access_level() == access_levels::public_access);
@@ -151,11 +151,11 @@ TEST_CASE("property - access_levels test - object ptr", "[property]")
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("property - access_levels test - getter/setter function", "[property]") 
+TEST_CASE("property - access_levels test - getter/setter function", "[property]")
 {
     type t = type::get_by_name("prop_access_level_test");
     REQUIRE(t.is_valid() == true);
-    
+
     // has to be checked, because get_access_level() default return value is public_access
     CHECK(t.get_property("prop_func_1").is_valid() == true);
     CHECK(t.get_property("prop_func_1").get_access_level() == access_levels::public_access);
@@ -175,11 +175,11 @@ TEST_CASE("property - access_levels test - getter/setter function", "[property]"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("property - access_levels test - readonly property", "[property]") 
+TEST_CASE("property - access_levels test - readonly property", "[property]")
 {
     type t = type::get_by_name("prop_access_level_test");
     REQUIRE(t.is_valid() == true);
-    
+
     // has to be checked, because get_access_level() default return value is public_access
     CHECK(t.get_property("const_val_1").is_valid() == true);
     CHECK(t.get_property("const_val_1").get_access_level() == access_levels::public_access);
@@ -195,6 +195,17 @@ TEST_CASE("property - access_levels test - readonly property", "[property]")
     CHECK(t.get_property("const_val_6").get_access_level() == access_levels::protected_access);
     CHECK(t.get_property("const_val_7").get_access_level() == access_levels::private_access);
     CHECK(t.get_property("const_val_8").get_access_level() == access_levels::public_access);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+TEST_CASE("property - NEGATIVE - access_levels", "[property]")
+{
+    type t = type::get_by_name("prop_access_level_test");
+    REQUIRE(t.is_valid() == true);
+
+    CHECK(t.get_property("").is_valid() == false);
+    CHECK(t.get_property("").get_access_level() == access_levels::public_access);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

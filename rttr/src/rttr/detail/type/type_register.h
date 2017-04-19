@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -29,6 +29,8 @@
 #define RTTR_TYPE_REGISTER_H_
 
 #include "rttr/detail/base/core_prerequisites.h"
+
+#include "rttr/string_view.h"
 
 #include <memory>
 #include <string>
@@ -63,11 +65,13 @@ using get_derived_func      = derived_info(*)(void*);
 template<typename T, typename Enable>
 struct type_getter;
 
+struct type_data;
+
 class metadata;
 
 /*!
  * This class contains all functions to register properties, methods etc.. for a specific type.
- * This is a static pimpl, it will just forward the data to the \ref type_database class.
+ * This is a static pimpl, it will just forward the data to the \ref type_register_private class.
  */
 class RTTR_API type_register
 {
@@ -87,13 +91,19 @@ public:
 
     static void enumeration(const type& t, std::unique_ptr<enumeration_wrapper_base> enum_data);
 
-    static void custom_name(const type& t, std::string );
+    static void custom_name(type& t, string_view name);
 
     static void metadata( const type& t, std::vector<metadata> data);
 
     static void converter(const type& t, std::unique_ptr<type_converter_base> converter);
 
     static void comparator(const type& t, type_comparator_base* comparator);
+
+    static void equal_comparator(const type& t, type_comparator_base* comparator);
+
+    static void less_than_comparator(const type& t, type_comparator_base* comparator);
+
+    static void register_base_class(const type& derived_type, const base_class_info& base_info);
 
     /*!
      * \brief Register the type info for the given name
@@ -103,23 +113,7 @@ public:
      *
      * \return A valid type object.
      */
-    static uint16_t type_reg(const char* name, 
-                             const type& raw_type,
-                             const type& wrapped_type,
-                             const type& array_raw_type,
-                             std::vector<base_class_info> base_classes, 
-                             get_derived_func derived_func_ptr,
-                             variant_create_func var_func_ptr,
-                             std::size_t type_size,
-                             bool is_class,
-                             bool is_enum,
-                             bool is_array,
-                             bool is_pointer,
-                             bool is_arithmetic,
-                             bool is_function_pointer,
-                             bool is_member_object_pointer,
-                             bool is_member_function_pointer,
-                             std::size_t pointer_dimension);
+    static type type_reg(type_data& info) RTTR_NOEXCEPT;
 
 private:
 

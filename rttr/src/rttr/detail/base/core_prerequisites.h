@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -35,6 +35,7 @@ namespace rttr
 
 #define RTTR_PLATFORM_WINDOWS 1
 #define RTTR_PLATFORM_LINUX 2
+#define RTTR_PLATFORM_APPLE 3
 
 #define RTTR_COMPILER_MSVC 1
 #define RTTR_COMPILER_GNUC 2
@@ -51,6 +52,8 @@ namespace rttr
 /////////////////////////////////////////////////////////////////////////////////////////
 #if defined( __WIN32__ ) || defined( _WIN32 )
 #   define RTTR_PLATFORM RTTR_PLATFORM_WINDOWS
+#elif defined( __APPLE_CC__)
+#   define RTTR_PLATFORM RTTR_PLATFORM_APPLE
 #else
 #   define RTTR_PLATFORM RTTR_PLATFORM_LINUX
 #endif
@@ -72,7 +75,7 @@ namespace rttr
 #   define RTTR_COMPILER RTTR_COMPILER_MSVC
 #   define RTTR_COMP_VER _MSC_VER
 #else
-#   error "No known compiler. Abort! Abort!" 
+#   error "No known compiler. Abort! Abort!"
 #endif
 
 
@@ -126,7 +129,7 @@ namespace rttr
 #endif
 
 #ifdef RTTR_DLL // compiled as a DLL
-#   ifdef RTTR_DLL_EXPORTS // defined if we are building the DLL 
+#   ifdef RTTR_DLL_EXPORTS // defined if we are building the DLL
 #       define RTTR_API RTTR_HELPER_DLL_EXPORT
 #   else
 #       define RTTR_API RTTR_HELPER_DLL_IMPORT
@@ -143,14 +146,31 @@ namespace rttr
 
 
 #if RTTR_COMPILER == RTTR_COMPILER_MSVC
-#   if RTTR_COMP_VER <= 1800
-#       define RTTR_NO_CXX11_CONSTEXPR
+#   if RTTR_COMP_VER <= 190023026
+#       define RTTR_NO_CXX11_NOEXCEPT
 #   endif
-#
-#   if RTTR_COMP_VER <= 1800
-#       define BOOST_NO_CXX11_NOEXCEPT
+#   if !defined(__cpp_constexpr) || (__cpp_constexpr < 201304)
+#       define RTTR_NO_CXX11_CONSTEXPR
+#       define RTTR_NO_CXX14_CONSTEXPR
 #   endif
 #endif
+
+#if RTTR_COMPILER == RTTR_COMPILER_GNUC
+#   if !defined(__cpp_constexpr) || (__cpp_constexpr < 201304)
+#       define RTTR_NO_CXX14_CONSTEXPR
+#   endif
+#endif
+
+#if RTTR_COMPILER == RTTR_COMPILER_CLANG
+#   if !__has_feature(__cxx_generic_lambdas__) || !__has_feature(__cxx_relaxed_constexpr__)
+#       define RTTR_NO_CXX14_CONSTEXPR
+#   endif
+#   if !__has_feature(cxx_noexcept)
+#       define RTTR_NO_CXX11_NOEXCEPT
+#   endif
+#endif
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 #if defined(RTTR_NO_CXX11_CONSTEXPR)
 #   define RTTR_CONSTEXPR
@@ -160,7 +180,14 @@ namespace rttr
 #   define RTTR_CONSTEXPR_OR_CONST constexpr
 #endif
 
-#ifdef BOOST_NO_CXX11_NOEXCEPT
+
+#if defined(RTTR_NO_CXX14_CONSTEXPR)
+#   define RTTR_CXX14_CONSTEXPR
+#else
+#   define RTTR_CXX14_CONSTEXPR constexpr
+#endif
+
+#ifdef RTTR_NO_CXX11_NOEXCEPT
 #   define RTTR_NOEXCEPT
 #   define RTTR_NOEXCEPT_OR_NOTHROW throw()
 #else

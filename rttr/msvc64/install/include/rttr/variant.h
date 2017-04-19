@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -32,7 +32,7 @@
 #include "rttr/detail/misc/misc_type_traits.h"
 #include "rttr/detail/variant/variant_data.h"
 #include "rttr/detail/misc/argument_wrapper.h"
-#include "rttr/detail/variant/variant_compare_less.h"
+#include "rttr/detail/variant/variant_compare.h"
 
 #include <type_traits>
 #include <cstddef>
@@ -43,6 +43,7 @@ namespace rttr
 {
 
 class variant_array_view;
+class variant_associative_view;
 class type;
 class variant;
 class argument;
@@ -69,13 +70,13 @@ namespace detail
 
 /*!
  * The \ref variant class allows to store data of any type and convert between these types transparently.
- * 
+ *
  * This class serves as container for any given single \ref get_type() "type". It can hold one value at a time
  * (using containers you can hold multiple types e.g. `std::vector<int>`). Remark that the content is copied
  * into the variant class. Even raw arrays (e.g. `int[10]`) are copied. However, the internal implementation of variant
  * has an optimization for storing small types, which avoid heap allocation.
  *
- * The main purpose of this class is to be the return value for \ref property::get_value() "property" and 
+ * The main purpose of this class is to be the return value for \ref property::get_value() "property" and
  * \ref method::invoke() "method" invokes or as container for storing meta data.
  *
  * Copying and Assignment
@@ -84,18 +85,18 @@ namespace detail
  *
  * Typical Usage
  * -------------
- * 
+ *
  * \code{.cpp}
  *  variant var;
  *  var = 23;                               // copy integer
  *  int x = var.to_int();                   // x = 23
- *  
+ *
  *  var = "Hello World";                    // var contains now a std::string (implicit conversion of string literals to std::string)
  *  int y = var.to_int();                   // y = 0, because invalid conversion
- *  
+ *
  *  var = "42";                             // contains a std::string
  *  std::cout << var.to_int();              // convert std::string to integer and prints "42"
- *  
+ *
  *  int my_array[100];
  *  var = my_array;                         // copies the content of my_array into var
  *  auto& arr = var.get_value<int[100]>();  // extracts the content of var by reference
@@ -115,7 +116,7 @@ namespace detail
  *  {
  *     //...
  *  };
- *  
+ *
  *  variant var = custom_type{};
  *  if (var.is_type<custom_type>())                             // yields to true
  *    const custom_type& value = var.get_value<custom_type>();  // extracts the value by reference
@@ -125,12 +126,12 @@ namespace detail
  * ----------
  * The \ref variant class offers three possibilities to convert to a new type.
  * - \ref convert(const type& target_type) "convert(const type& target_type)" - convert the variant internally to a new type
- * - \ref variant::convert(bool* ok) "convert\<T\>(bool *ok)" - convert the contained value to an internally default created value of type \p T
+ * - \ref variant::convert(bool* ok) "convert\<T\>(bool *ok)" - convert the contained value to an internally default created value of type \p T and returns this new value
  * - \ref variant::convert(T& value) "convert\<T\>(T& value)" - convert the contained value to a given \p value of type \p T
  *
  * See following example code:
  * \code{.cpp}
- *  variant var = 500;                          // var contains an int
+ *  variant var = 23;                           // var contains an int
  *  if(var.can_convert<std::string>())          // check whether conversion is possible
  *  {
  *    var.convert(type::get<std::string>());    // var contains now a std::string, with value => "23"
@@ -142,12 +143,12 @@ namespace detail
  *  // or
  *  uint8_t small_int = 0;
  *  bool result = var.convert<uint8_t>(small_int); // result == false, because small_int cannot hold the value '500'
- * 
+ *
  * \endcode
  *
  * \remark
  * It is possible that \ref can_convert() will return `true`, but \ref convert() will actually fail and return `false`.
- * The reason for this is \ref can_convert() will return the general ability of converting between types given suitable data; 
+ * The reason for this is \ref can_convert() will return the general ability of converting between types given suitable data;
  * when no suitable data is given, the conversion cannot be performed.
  *
  * A good example is the conversion from `std::string` to `int`.
@@ -163,7 +164,7 @@ namespace detail
  *
  * Custom Converter
  * ----------------
- * The variant class allows to convert from and to user-defined types, 
+ * The variant class allows to convert from and to user-defined types,
  * therefore you have to register a conversion function.
  *
  * See following example code:
@@ -174,13 +175,13 @@ namespace detail
  *      // convert value to std::string
  *      return std::string(...);
  *  }
- *  
+ *
  *  //...
  *  variant var = custom_type(...);
  *  var.can_convert<std::string>();     // return 'false'
  *  // register the conversion function
  *  type::register_converter_func(converter_func);
- *  
+ *
  *  var.can_convert<std::string>();     // return 'true'
  *  var.to_string();                    // converts from 'custom_type' to 'std::string'
  * \endcode
@@ -194,7 +195,7 @@ class RTTR_API variant
     public:
         /*!
          * \brief Constructs an invalid variant. That means a valid which contains no data.
-         *  
+         *
          * \see is_valid()
          */
         RTTR_INLINE variant();
@@ -245,11 +246,11 @@ class RTTR_API variant
 
         /*!
          * \brief Compares this variant with \p other and returns `true` if they are equal; otherwise returns `false`.
-         * 
+         *
          * The variant uses the equality operator of the containing \ref get_type() "type" to check for equality.
          * When \p other is not of the same type as the containing type, it will try to convert to it and do then the equality check.
          *
-         * \remark In order to use this function with template types, like `std::tuple<int, std::string>`, 
+         * \remark In order to use this function with template types, like `std::tuple<int, std::string>`,
          *         you need to register the comparison operator to the type system with \ref type::register_comparators<T>().
          *         The reason for that is, template types might define the `==` operator, but not the contained template type.
          *
@@ -262,7 +263,7 @@ class RTTR_API variant
         /*!
          * \brief Compares this variant with \p other and returns `true` if they are **not** equal; otherwise returns `false`.
          *
-         * \remark In order to use this function with template types, like `std::tuple<int, std::string>`, 
+         * \remark In order to use this function with template types, like `std::tuple<int, std::string>`,
          *         you need to register the comparison operator to the type system with \ref type::register_comparators<T>().
          *         The reason for that is, template types might define the `!=` operator, but not the contained template type.
          *
@@ -274,11 +275,11 @@ class RTTR_API variant
 
         /*!
          * \brief Compares this variant with \p other and returns `true` if this is *less than* \p other, otherwise returns `false`.
-         * 
+         *
          * The variant uses the *less than* operator of the containing \ref get_type() "type".
          * When \p other is not of the same type as the containing type, it will try to convert to it and do then the *less than* check.
          *
-         * \remark In order to use this function with template types, like `std::tuple<int, std::string>`, 
+         * \remark In order to use this function with template types, like `std::tuple<int, std::string>`,
          *         you need to register the comparison operator to the type system with \ref type::register_comparators<T>().
          *         The reason for that is, template types might define the `<` operator, but not the contained template type.
          *
@@ -299,10 +300,10 @@ class RTTR_API variant
          * \brief Swaps the content of this variant with \p other variant.
          */
         void swap(variant& other);
-        
+
         /*!
          * \brief Returns `true` if the containing variant data is of the given template type `T`.
-         * 
+         *
          * \return True if variant data is of type `T`, otherwise false.
          */
         template<typename T>
@@ -312,7 +313,7 @@ class RTTR_API variant
          * \brief Returns the \ref type object of underlying data.
          *
          * \remark When the variant has not stored any data, then an invalid \ref type object is returned.
-         * 
+         *
          * \return \ref type of the underlying data type.
          */
         type get_type() const;
@@ -325,7 +326,7 @@ class RTTR_API variant
          * \remark A variant can also hold `void` data, this is used to indicate that a method call,
          *         which has no return value, was successfully. In this case, there is no data actually stored,
          *         but this function will return true.
-         * 
+         *
          * \return `True` if this variant is valid, otherwise `false`.
          */
         bool is_valid() const;
@@ -340,13 +341,21 @@ class RTTR_API variant
         explicit operator bool() const;
 
         /*!
-         * \brief When the \ref variant::get_type "type" or its \ref type::get_raw_type() "raw type" 
+         * \brief When the \ref variant::get_type "type" or its \ref type::get_raw_type() "raw type"
          *        or the \ref type::get_wrapped_type() "wrapped type" is an \ref type::is_array() "array",
          *        then this function will return true, otherwise false.
-         * 
+         *
          * \return True if the containing value is an array; otherwise false.
          */
         bool is_array() const;
+
+        /*!
+         * \brief Returns true, when for the underlying or the \ref type::get_wrapped_type() "wrapped type"
+         *        an associative_mapper exists.
+         *
+         * \return True if the containing value is an associative container; otherwise false.
+         */
+        bool is_associative_container() const;
 
         /*!
          * \brief Returns a reference to the containing value as type \p T.
@@ -356,7 +365,7 @@ class RTTR_API variant
          *  {
          *     //...
          *  };
-         *  
+         *
          *  variant var = custom_type{};
          *  if (var.is_type<custom_type>())                             // yields to true
          *    const custom_type& value = var.get_value<custom_type>();  // extracts the value by reference
@@ -375,9 +384,54 @@ class RTTR_API variant
         const T& get_value() const;
 
         /*!
+         * \brief Returns a reference to the contained wrapped value as type \p T.
+         *
+         * \code{.cpp}
+         *  int value = 23;
+         *  variant var = std::ref(value);
+         *
+         *  if (var.get_type().get_wrapped_type() == type::get<int>())  // yields to true
+         *    const int& ref_value = var.get_wrapped_value<int>();  // extracts the value by reference
+         * \endcode
+         *
+         * \remark Only call this method when it is possible to return the containing value as the given type \p T.
+         *         Use therefore the method \ref rttr::type::get_wrapped_type() "get_wrapped_type()".
+         *         Otherwise the call leads to undefined behaviour.
+         *
+         * \see rttr::type::get_wrapped_type()
+         *
+         * \return A reference to the stored wrapped value.
+         */
+        template<typename T>
+        const T& get_wrapped_value() const;
+
+        /*!
+         * \brief Extracts the wrapped value and copies its content into a new variant.
+         *
+         * \code{.cpp}
+         *  int value1 = 23;
+         *  variant var1 = std::ref(value1);
+         *
+         *  if (var1.get_type().get_wrapped_type() == type::get<int>())  // yields to true
+         *  {
+         *     variant var2 = var1.extract_wrapped_value(); // value will be copied into "var2"
+         *     var2.get_type() == type::get<int>(); // yields to true
+         *     const int& value2 = var2.get_value<int>();
+         *     std::cout << value2 << std::endl;    // prints "23"
+         *  }
+         * \endcode
+         *
+         * \remark Calling this method works only for wrapped types which are copiable.
+         *         When you work with custom types, which are not copyable, the variant will be \ref is_valid "invalid"
+         *
+         * \return A variant with the wrapped value.
+         */
+        variant extract_wrapped_value() const;
+
+        /*!
          * \brief Returns `true` if the contained value can be converted to the given type \p T.
          *        Otherwise `false`.
-         * 
+         *
          * \return `True` if this variant can be converted to `T`; otherwise `false`.
          */
         template<typename T>
@@ -389,16 +443,16 @@ class RTTR_API variant
          *
          * The returned value indicates that a conversion is in general possible.
          * However a conversion might still fail when doing the actual conversion with \ref convert().
-         * An example is the conversion from a string to a number. 
+         * An example is the conversion from a string to a number.
          * When the string does not contain non-numeric characters, the conversion will not succeed.
-         * 
+         *
          * \return `True` if this variant can be converted to \p target_type; otherwise `false`.
          */
         bool can_convert(const type& target_type) const;
 
         /*!
          * \brief Converts the containing variant internally to the given type \p target_type.
-         *        When the conversion was successfully the function will return `true`. 
+         *        When the conversion was successfully the function will return `true`.
          *        When the conversion fails, then the containing variant value stays the same and the function will return `false`.
          *
          * A variant containing a pointer to a custom type will be also converted and return `true`
@@ -415,7 +469,7 @@ class RTTR_API variant
          * \endcode
          *
          * \see can_convert()
-         * 
+         *
          * \return `True` if this variant can be converted to \p target_type; otherwise `false`.
          */
         bool convert(const type& target_type);
@@ -476,7 +530,7 @@ class RTTR_API variant
 
         /*!
          * \brief Creates a \ref variant_array_view from the containing value,
-         *        when the \ref variant::get_type "type" or its \ref type::get_raw_type() "raw type" 
+         *        when the \ref variant::get_type "type" or its \ref type::get_raw_type() "raw type"
          *        or the \ref type::get_wrapped_type() "wrapped type" is an \ref type::is_array() "array".
          *        Otherwise a default constructed variant_array_view will be returned.
          *        For shorten this check, use the function \ref is_array().
@@ -485,10 +539,10 @@ class RTTR_API variant
          *
          * \code{.cpp}
          *   int obj_array[100];
-         *   variant var = obj_array;                            // copies the content of obj_array into var
-         *   variant_array_view array = var.create_array_view(); // copies the content of var to a variant_array object
-         *   auto x = array.get_size();                          // set x to 100
-         *   array.set_value(0, 42);                             // set the first index to the value 42
+         *   variant var = obj_array;                           // copies the content of obj_array into var
+         *   variant_array_view view = var.create_array_view(); // creates a view of the hold array in the variant (data is not copied!)
+         *   std::size_t x = view.get_size();                   // return number of elements x = 100
+         *   view.set_value(0, 42);                             // set the first index to the value 42
          * \endcode
          *
          * \see can_convert(), convert()
@@ -500,13 +554,46 @@ class RTTR_API variant
         variant_array_view create_array_view() const;
 
         /*!
+         * \brief Creates a \ref variant_associative_view from the containing value,
+         *        when the \ref variant::get_type "type" or its \ref type::get_raw_type() "raw type"
+         *        or the \ref type::get_wrapped_type() "wrapped type" is an \ref type::is_associative_container() "associative container".
+         *        Otherwise a default constructed variant_associative_view will be returned.
+         *
+         * A typical example is the following:
+         *
+         * \code{.cpp}
+         *   std::map<int, std::string> my_map;
+         *   my_map.insert({1, "One"});
+         *   my_map.insert({2, "Two"});
+         *   my_map.insert({3, "Three"});
+         *
+         *   variant var = my_map;                                          // copies the content of my_map into var
+         *   variant_associative_view view = var.create_associative_view(); // creates a view of the hold container in the variant (data is not copied!)
+         *   std::size_t x = view.get_size();                               // return number of elements x = 3
+         *   for (auto& item : view)                                        // iterates over all items stored in the container
+         *   {
+         *      auto key = item.first.extract_wrapped_value().to_string();
+         *      auto value = item.second.extract_wrapped_value().to_string();
+         *      std::cout << "key: " << key << " value: " << value << std::endl;
+         *   }
+         * \endcode
+         *
+         * \see can_convert(), convert()
+         *
+         * \remark This function will return an \ref variant_associative_view::is_valid() "invalid" object, when the \ref variant::get_type "type" is no associative container.
+         *
+         * \return A variant_associative_view object.
+         */
+        variant_associative_view create_associative_view() const;
+
+        /*!
          * \brief Returns the variant as a `bool` if this variant is of \ref is_type() "type" `bool`.
          *
          * Returns `true` if the variant contains an \ref type::is_arithmetic() "arithmetic type" which value is non-zero
          * or if the variant contains a `std::string` and its lower-case content is not one of the following:
          * `""` (empty), `"0"` or `"false"`; otherwise returns `false`.
          *
-         * Also any user-defined \ref type::register_converter_func() "conversion function" from the 
+         * Also any user-defined \ref type::register_converter_func() "conversion function" from the
          * \ref is_type() "source type" to `bool` will be executed when necessary.
          *
          * \see can_convert(), is_type()
@@ -517,9 +604,9 @@ class RTTR_API variant
 
         /*!
          * \brief Returns the containing variant as an `int` when the \ref is_type() "type" is an `integer`.
-         *       
+         *
          * When the variant contains an \ref type::is_arithmetic() "arithmetic type" or an `std::string` then a conversion to `int`
-         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `int` 
+         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `int`
          * will be executed when necessary.
          *
          * If \p ok is non-null: \p *ok is set to `true` if the value could be converted to an `int`; otherwise \p *ok is set to `false`.
@@ -536,9 +623,9 @@ class RTTR_API variant
 
         /*!
          * \brief Returns the containing variant as a `float` when the \ref is_type() "type" is a `float`.
-         *       
+         *
          * When the variant contains an \ref type::is_arithmetic() "arithmetic type" or an `std::string` then a conversion to `float`
-         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `float` 
+         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `float`
          * will be executed when necessary.
          *
          * If \p ok is non-null: \p *ok is set to `true` if the value could be converted to an `float`; otherwise \p *ok is set to `false`.
@@ -555,9 +642,9 @@ class RTTR_API variant
 
         /*!
          * \brief Returns the containing variant as a `double` when the \ref is_type() "type" is a `double`.
-         *       
+         *
          * When the variant contains an \ref type::is_arithmetic() "arithmetic type" or an `std::string` then a conversion to `double`
-         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `double` 
+         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `double`
          * will be executed when necessary.
          *
          * If \p ok is non-null: \p *ok is set to `true` if the value could be converted to an `double`; otherwise \p *ok is set to `false`.
@@ -576,7 +663,7 @@ class RTTR_API variant
          * \brief Returns the containing variant as a `std::string` when the \ref is_type() "type" is a `std::string`.
          *
          * When the variant contains an \ref type::is_arithmetic() "arithmetic type" then a conversion to `std::string` will be done.
-         * Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `std::string` 
+         * Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `std::string`
          * will be executed when necessary.
          *
          * If \p ok is non-null: \p *ok is set to `true` if the value could be converted to an `std::string`; otherwise \p *ok is set to `false`.
@@ -589,9 +676,9 @@ class RTTR_API variant
 
         /*!
          * \brief Returns the containing variant as an `int8_t` when the \ref is_type() "type" is an `int8_t`.
-         *       
+         *
          * When the variant contains an \ref type::is_arithmetic() "arithmetic type" or an `std::string` then a conversion to `int8_t`
-         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `int8_t` 
+         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `int8_t`
          * will be executed when necessary.
          *
          * If \p ok is non-null: \p *ok is set to `true` if the value could be converted to an `int8_t`; otherwise \p *ok is set to `false`.
@@ -608,9 +695,9 @@ class RTTR_API variant
 
         /*!
          * \brief Returns the containing variant as an `int16_t` when the \ref is_type() "type" is an `int16_t`.
-         *       
+         *
          * When the variant contains an \ref type::is_arithmetic() "arithmetic type" or an `std::string` then a conversion to `int16_t`
-         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `int16_t` 
+         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `int16_t`
          * will be executed when necessary.
          *
          * If \p ok is non-null: \p *ok is set to `true` if the value could be converted to an `int16_t`; otherwise \p *ok is set to `false`.
@@ -627,9 +714,9 @@ class RTTR_API variant
 
         /*!
          * \brief Returns the containing variant as an `int32_t` when the \ref is_type() "type" is an `int32_t`.
-         *       
+         *
          * When the variant contains an \ref type::is_arithmetic() "arithmetic type" or an `std::string` then a conversion to `int32_t`
-         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `int32_t` 
+         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `int32_t`
          * will be executed when necessary.
          *
          * If \p ok is non-null: \p *ok is set to `true` if the value could be converted to an `int32_t`; otherwise \p *ok is set to `false`.
@@ -646,9 +733,9 @@ class RTTR_API variant
 
         /*!
          * \brief Returns the containing variant as an `int64_t` when the \ref is_type() "type" is an `int64_t`.
-         *       
+         *
          * When the variant contains an \ref type::is_arithmetic() "arithmetic type" or an `std::string` then a conversion to `int64_t`
-         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `int64_t` 
+         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `int64_t`
          * will be executed when necessary.
          *
          * If \p ok is non-null: \p *ok is set to `true` if the value could be converted to an `int64_t`; otherwise \p *ok is set to `false`.
@@ -665,9 +752,9 @@ class RTTR_API variant
 
         /*!
          * \brief Returns the containing variant as an `uint8_t` when the \ref is_type() "type" is an `uint8_t`.
-         *       
+         *
          * When the variant contains an \ref type::is_arithmetic() "arithmetic type" or an `std::string` then a conversion to `uint8_t`
-         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `uint8_t` 
+         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `uint8_t`
          * will be executed when necessary.
          *
          * If \p ok is non-null: \p *ok is set to `true` if the value could be converted to an `uint8_t`; otherwise \p *ok is set to `false`.
@@ -685,9 +772,9 @@ class RTTR_API variant
 
         /*!
          * \brief Returns the containing variant as an `uint16_t` when the \ref is_type() "type" is an `uint16_t`.
-         *       
+         *
          * When the variant contains an \ref type::is_arithmetic() "arithmetic type" or an `std::string` then a conversion to `uint16_t`
-         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `uint16_t` 
+         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `uint16_t`
          * will be executed when necessary.
          *
          * If \p ok is non-null: \p *ok is set to `true` if the value could be converted to an `uint16_t`; otherwise \p *ok is set to `false`.
@@ -705,9 +792,9 @@ class RTTR_API variant
 
         /*!
          * \brief Returns the containing variant as an `uint32_t` when the \ref is_type() "type" is an `uint32_t`.
-         *       
+         *
          * When the variant contains an \ref type::is_arithmetic() "arithmetic type" or an `std::string` then a conversion to `uint32_t`
-         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `uint32_t` 
+         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `uint32_t`
          * will be executed when necessary.
          *
          * If \p ok is non-null: \p *ok is set to `true` if the value could be converted to an `uint32_t`; otherwise \p *ok is set to `false`.
@@ -725,9 +812,9 @@ class RTTR_API variant
 
         /*!
          * \brief Returns the containing variant as an `uint64_t` when the \ref is_type() "type" is an `uint64_t`.
-         *       
+         *
          * When the variant contains an \ref type::is_arithmetic() "arithmetic type" or an `std::string` then a conversion to `uint64_t`
-         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `uint64_t` 
+         * will be tried. Also any user-defined \ref type::register_converter_func() "conversion function" from the \ref is_type() "source type" to `uint64_t`
          * will be executed when necessary.
          *
          * If \p ok is non-null: \p *ok is set to `true` if the value could be converted to an `uint8_t`; otherwise \p *ok is set to `false`.
@@ -767,7 +854,7 @@ class RTTR_API variant
 
         /*!
          * \brief Returns a pointer to the underlying data.
-         *        This will return 
+         *        This will return
          *
          * \remark You do not have to use this method directly.
          *
@@ -780,7 +867,10 @@ class RTTR_API variant
         detail::enable_if_t<std::is_arithmetic<T>::value, T> convert_impl(bool* ok = nullptr) const;
 
         template<typename T>
-        detail::enable_if_t<!std::is_arithmetic<T>::value, T> convert_impl(bool* ok = nullptr) const;
+        detail::enable_if_t<!std::is_arithmetic<T>::value && !std::is_enum<T>::value, T> convert_impl(bool* ok = nullptr) const;
+
+        template<typename T>
+        detail::enable_if_t<std::is_enum<T>::value, T> convert_impl(bool* ok = nullptr) const;
 
         /*!
          * \brief Returns a pointer to the underlying object pointer wrapped in a smart_ptr.

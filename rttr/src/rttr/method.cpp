@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -35,9 +35,27 @@ using namespace std;
 namespace rttr
 {
 
+namespace detail
+{
+
+template<>
+method create_item(const method_wrapper_base* wrapper)
+{
+    return method(wrapper);
+}
+
+template<>
+method create_invalid_item()
+{
+    static const method_wrapper_base invalid_wrapper(string_view(), detail::get_invalid_type());
+    return method(&invalid_wrapper);
+}
+
+} // end namespace detail;
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
-method::method(const detail::method_wrapper_base* wrapper)
+method::method(const detail::method_wrapper_base* wrapper) RTTR_NOEXCEPT
 :   m_wrapper(wrapper)
 {
 
@@ -45,190 +63,142 @@ method::method(const detail::method_wrapper_base* wrapper)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool method::is_valid() const
+bool method::is_valid() const RTTR_NOEXCEPT
 {
-    return (m_wrapper ? true : false);
+    return m_wrapper->is_valid();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-method::operator bool() const
+method::operator bool() const RTTR_NOEXCEPT
 {
-    return (m_wrapper ? true : false);
+    return m_wrapper->is_valid();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-string method::get_name() const
+string_view method::get_name() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_name();
-    else
-        return string();
+    return m_wrapper->get_name();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-access_levels method::get_access_level() const
+access_levels method::get_access_level() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_access_level();
-    else
-        return access_levels::public_access;
+    return m_wrapper->get_access_level();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool method::is_static() const
+bool method::is_static() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->is_static();
-    else
-        return false;
+    return m_wrapper->is_static();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-type method::get_return_type() const
+type method::get_return_type() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_return_type();
-    else
-        return detail::get_invalid_type();
+    return m_wrapper->get_return_type();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-type method::get_declaring_type() const
+type method::get_declaring_type() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_declaring_type();
-    else
-        return detail::get_invalid_type();
+    return m_wrapper->get_declaring_type();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-std::vector<parameter_info> method::get_parameter_infos() const
+array_range<parameter_info> method::get_parameter_infos() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_parameter_infos();
-    else
-        return std::vector<parameter_info>();
+    return m_wrapper->get_parameter_infos();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-string method::get_signature() const
+string_view method::get_signature() const RTTR_NOEXCEPT
 {
-    if (is_valid())
-        return m_wrapper->get_signature();
-    else
-        return string();
+    return m_wrapper->get_signature();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 variant method::get_metadata(const variant& key) const
 {
-    if (is_valid())
-        return m_wrapper->get_metadata(key);
-    else
-        return variant();
+    return m_wrapper->get_metadata(key);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 variant method::invoke(instance object) const
 {
-    if (is_valid())
-        return m_wrapper->invoke(object);
-    else
-        return variant();
+    return m_wrapper->invoke(object);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 variant method::invoke(instance object, argument arg1) const
 {
-    if (is_valid())
-        return m_wrapper->invoke(object, arg1);
-    else
-        return variant();
+    return m_wrapper->invoke(object, arg1);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 variant method::invoke(instance object, argument arg1, argument arg2) const
 {
-    if (is_valid())
-        return m_wrapper->invoke(object, arg1, arg2);
-    else
-        return variant();
+    return m_wrapper->invoke(object, arg1, arg2);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 variant method::invoke(instance object, argument arg1, argument arg2, argument arg3) const
 {
-    if (is_valid())
-        return m_wrapper->invoke(object, arg1, arg2, arg3);
-    else
-        return variant();
+    return m_wrapper->invoke(object, arg1, arg2, arg3);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 variant method::invoke(instance object, argument arg1, argument arg2, argument arg3, argument arg4) const
 {
-    if (is_valid())
-        return m_wrapper->invoke(object, arg1, arg2, arg3, arg4);
-    else
-        return variant();
+    return m_wrapper->invoke(object, arg1, arg2, arg3, arg4);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-variant method::invoke(instance object, argument arg1, argument arg2, argument arg3, argument arg4, 
+variant method::invoke(instance object, argument arg1, argument arg2, argument arg3, argument arg4,
                        argument arg5) const
 {
-    if (is_valid())
-        return m_wrapper->invoke(object, arg1, arg2, arg3, arg4, arg5);
-    else
-        return variant();
+    return m_wrapper->invoke(object, arg1, arg2, arg3, arg4, arg5);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-variant method::invoke(instance object, argument arg1, argument arg2, argument arg3, argument arg4, 
+variant method::invoke(instance object, argument arg1, argument arg2, argument arg3, argument arg4,
                        argument arg5, argument arg6) const
 {
-    if (is_valid())
-        return m_wrapper->invoke(object, arg1, arg2, arg3, arg4, arg5, arg6);
-    else
-        return variant();
+    return m_wrapper->invoke(object, arg1, arg2, arg3, arg4, arg5, arg6);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 variant method::invoke_variadic(instance object, std::vector<argument> args) const
 {
-    if (is_valid())
-        return m_wrapper->invoke_variadic(object, args);
-    else
-        return variant();
+    return m_wrapper->invoke_variadic(object, args);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool method::operator==(const method& other) const
+bool method::operator==(const method& other) const RTTR_NOEXCEPT
 {
     return (m_wrapper == other.m_wrapper);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool method::operator!=(const method& other) const
+bool method::operator!=(const method& other) const RTTR_NOEXCEPT
 {
     return (m_wrapper != other.m_wrapper);
 }

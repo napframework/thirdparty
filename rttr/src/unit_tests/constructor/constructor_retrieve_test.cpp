@@ -1,6 +1,6 @@
 /************************************************************************************
 *                                                                                   *
-*   Copyright (c) 2014, 2015 - 2016 Axel Menzel <info@rttr.org>                     *
+*   Copyright (c) 2014, 2015 - 2017 Axel Menzel <info@rttr.org>                     *
 *                                                                                   *
 *   This file is part of RTTR (Run Time Type Reflection)                            *
 *   License: MIT License                                                            *
@@ -45,48 +45,61 @@ RTTR_REGISTRATION
 {
     registration::class_<ctor_test>("ctor_test")
         .constructor<>()
+        (
+            policy::ctor::as_object
+        )
         .constructor<const ctor_test&>()
+        (
+            policy::ctor::as_object
+        )
         .constructor<int, double>()
+        (
+            policy::ctor::as_object
+        )
         .constructor(&ctor_test::create_object)
         .constructor(&global_create_object);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-TEST_CASE("constructor - retrieve", "[constructor]") 
+TEST_CASE("constructor - retrieve", "[constructor]")
 {
     type t = type::get<ctor_test>();
     REQUIRE(t.is_valid() == true);
-    
+
     SECTION("retrieve default ctor")
     {
         constructor ctor = t.get_constructor();
         CHECK(ctor.is_valid() == true);
+        CHECK(static_cast<bool>(ctor) == true);
     }
 
     SECTION("retrieve copy-ctor")
     {
         constructor ctor = t.get_constructor({type::get<ctor_test>()});
         CHECK(ctor.is_valid() == true);
+        CHECK(static_cast<bool>(ctor) == true);
     }
 
     SECTION("retrieve custom ctor")
     {
         constructor ctor = t.get_constructor({type::get<int>(), type::get<double>()});
         CHECK(ctor.is_valid() == true);
+        CHECK(static_cast<bool>(ctor) == true);
     }
 
     SECTION("retrieve all ctors")
     {
-        std::vector<constructor> ctor_list = t.get_constructors();
-        CHECK(ctor_list.size() == 5);
+        auto range = t.get_constructors();
+        std::vector<constructor> ctor_list(range.cbegin(), range.cend());
+        REQUIRE(ctor_list.size() == 5);
         auto ctor_name = t.get_name();
         // check order
-        CHECK(ctor_list[0].get_signature() == ctor_name + "( )");
-        CHECK(ctor_list[1].get_signature() == ctor_name + "( ctor_test const & )");
-        CHECK(ctor_list[2].get_signature() == ctor_name + "( int, double )");
-        CHECK(ctor_list[3].get_signature() == ctor_name + "( )");
-        CHECK(ctor_list[4].get_signature() == ctor_name + "( )");
+        CHECK(ctor_list[0].get_signature() == std::string(ctor_name) + "( )");
+        CHECK(ctor_list[1].get_signature() == std::string(ctor_name) + "( ctor_test const & )");
+        CHECK(ctor_list[2].get_signature() == std::string(ctor_name) + "( int, double )");
+        CHECK(ctor_list[3].get_signature() == std::string(ctor_name) + "( )");
+        CHECK(ctor_list[4].get_signature() == std::string(ctor_name) + "( )");
     }
 }
 
