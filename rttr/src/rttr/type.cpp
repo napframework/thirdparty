@@ -78,6 +78,28 @@ static array_range<T> get_items_for_type(const type& t,
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
+std::vector<type> type::get_raw_types() RTTR_NOEXCEPT
+{
+	auto& type_data_storage = detail::type_register_private::get_type_data_storage();
+
+	std::vector<type> types;
+	types.reserve(type_data_storage.size());
+
+	for (auto&& type_data : type_data_storage)
+	{
+		if (std::find(types.begin(), types.end(), type(type_data->raw_type_data)) != types.end())
+			continue;
+
+		types.emplace_back(type(type_data->raw_type_data));
+	}
+
+	return types;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 bool type::is_derived_from(const type& other) const RTTR_NOEXCEPT
 {
     auto& src_raw_type = m_type_data->raw_type_data;
@@ -155,6 +177,24 @@ array_range<type> type::get_derived_classes() const RTTR_NOEXCEPT
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+vector<type> type::get_raw_derived_classes() const
+{
+	vector<type> result;
+
+	for (auto& derived_type : m_type_data->get_class_data().m_derived_types)
+	{
+		type raw_type = derived_type.get_raw_type();
+		if (std::find(result.begin(), result.end(), raw_type) != result.end())
+			continue;
+
+		result.emplace_back(raw_type);
+	}
+
+	return result;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 array_range<type> type::get_types() RTTR_NOEXCEPT
 {
     auto& type_list = detail::type_register_private::get_type_storage();
@@ -180,6 +220,13 @@ variant type::create(vector<argument> args) const
     }
 
     return variant();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+variant type::create_from_type(const char* name, std::vector<argument> args)
+{
+	return get_by_name(name).create(args);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -454,6 +501,13 @@ type type::get_by_name(string_view name) RTTR_NOEXCEPT
 const detail::type_converter_base* type::get_type_converter(const type& target_type) const RTTR_NOEXCEPT
 {
     return detail::type_register_private::get_converter(*this, target_type);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+bool type::can_create_instance() const RTTR_NOEXCEPT
+{
+	return !get_constructors().empty();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

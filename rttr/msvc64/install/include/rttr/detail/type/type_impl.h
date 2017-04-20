@@ -401,6 +401,21 @@ RTTR_INLINE bool type::is_derived_from() const RTTR_NOEXCEPT
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+template<typename T>
+RTTR_INLINE T* type::create(std::vector<argument> args) const
+{
+	if (!is_derived_from<T>())
+		return nullptr;
+
+	variant result = type::create(args);
+	if (!result.get_type().is_derived_from<T*>())
+		return nullptr;
+
+	return result.get_value<T*>();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 template<typename F>
 RTTR_INLINE void type::register_converter_func(F func)
 {

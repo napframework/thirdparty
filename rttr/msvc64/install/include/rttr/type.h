@@ -266,6 +266,15 @@ class RTTR_API type
          */
         RTTR_FORCE_INLINE type get_raw_type() const RTTR_NOEXCEPT;
 
+		/*!
+         * \brief Returns a list of all raw types
+         *        A raw type, is a type type without any qualifiers (const and volatile) nor any pointer.
+         *
+         *
+         * \return All raw types
+         */
+        static std::vector<type> get_raw_types() RTTR_NOEXCEPT;
+
         /*!
          * \brief Returns a type object which represent the wrapped type.
          *        A wrapper type is a class which encapsulate an instance of another type.
@@ -287,6 +296,13 @@ class RTTR_API type
          * \return The type object of the wrapped type.
          */
         RTTR_FORCE_INLINE type get_wrapped_type() const RTTR_NOEXCEPT;
+
+		/*!
+         * \brief Returns an empty (invalid) type object
+         *
+         * \return Empty type object
+         */
+		static type empty() RTTR_NOEXCEPT { return detail::get_invalid_type(); }
 
         /*!
          * \brief Returns a type object for the given template type \a T.
@@ -488,6 +504,18 @@ class RTTR_API type
          */
         array_range<type> get_derived_classes() const RTTR_NOEXCEPT;
 
+		/*!
+         * \brief Returns a list of all raw derived classes of this type.
+         *
+         * \remark Make sure that the complete class hierarchy has the macro RTTR_ENABLE
+         *         inside the class declaration, otherwise the returned information of this function
+         *         is **not correct**. The order of this list depends on the declaration order of classes
+         *         inside RTTR_ENABLE. E.g. RTTR_ENABLE(A1, A2) => A1 will be for A2 in the list.
+         *
+         * \return A list of type objects.
+         */
+        std::vector<type> get_raw_derived_classes() const RTTR_NOEXCEPT;
+
         /////////////////////////////////////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////////////////////////////
@@ -501,6 +529,13 @@ class RTTR_API type
          * \return A variant object, containing arbitrary data.
          */
         variant get_metadata(const variant& key) const;
+
+		/*!
+         * \brief Checks whether an instance of this type can be created (i.e. whether any constructors are registered)
+         *
+         * \return Whether an instance of this type can be constructor
+         */
+        bool can_create_instance() const RTTR_NOEXCEPT;
 
         /*!
          * \brief Returns a public constructor whose parameters match the types in the specified list.
@@ -574,6 +609,17 @@ class RTTR_API type
          */
         array_range<constructor> get_constructors(filter_items filter) const RTTR_NOEXCEPT;
 
+		/*!
+         * \brief Creates an instance of the current type, with the given arguments \p args for the constructor.
+         *
+         * \remark When the argument types does not match the parameter list of the constructor then the he will not be invoked.
+         *         Constructors with registered \ref default_arguments will be honored.
+         * 
+         * \return Returns an instance of the given type.
+         */
+		template<typename T>
+		T* create(std::vector<argument> args = std::vector<argument>()) const;
+
         /*!
          * \brief Creates an instance of the current type, with the given arguments \p args for the constructor.
          *
@@ -583,6 +629,16 @@ class RTTR_API type
          * \return Returns an instance of the given type.
          */
         variant create(std::vector<argument> args = std::vector<argument>()) const;
+
+		/*!
+         * \brief Creates an instance of the type with the specified name \p name, with the given arguments \p args for the constructor.
+         *
+         * \remark When the argument types does not match the parameter list of the constructor then the he will not be invoked.
+         *         Constructors with registered \ref default_arguments will be honored.
+         * 
+         * \return Returns an instance of the given type.
+         */
+		static variant create_from_type(const char* name, std::vector<argument> args = std::vector<argument>());
 
         /*!
          * \brief Returns the corresponding destructor for this type.
@@ -1064,6 +1120,7 @@ class RTTR_API type
         template<typename T, typename Enable>
         friend struct detail::type_getter;
         friend class instance;
+		friend class argument;
         friend class detail::type_register;
         friend type detail::get_invalid_type() RTTR_NOEXCEPT;
         friend class detail::type_register_private;
