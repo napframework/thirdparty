@@ -81,9 +81,17 @@ argument::argument(T& data) RTTR_NOEXCEPT
 template<typename T>
 RTTR_INLINE argument::ptr_type<T> argument::is_type() const RTTR_NOEXCEPT
 {
-    return ((rttr::type::get<T>() == m_type) ||
-             m_type == type::get<std::nullptr_t>() ||
-             (m_variant && type::get<variant*>() == type::get<T>()));
+	type derived_type = m_type;
+	if (m_data != nullptr)
+	{
+		void* ptr = *reinterpret_cast<void**>(const_cast<void *>(m_data));
+		if (ptr != nullptr)
+			derived_type = type::get_derived_type(ptr, m_type);
+	}
+
+	return (derived_type.is_derived_from<T>() ||
+		m_type == type::get<std::nullptr_t>() ||
+		(m_variant && type::get<variant*>() == type::get<T>()));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
