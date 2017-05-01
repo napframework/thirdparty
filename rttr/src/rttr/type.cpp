@@ -177,7 +177,7 @@ array_range<type> type::get_derived_classes() const RTTR_NOEXCEPT
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-vector<type> type::get_raw_derived_classes() const
+vector<type> type::get_raw_derived_classes() const RTTR_NOEXCEPT
 {
 	vector<type> result;
 
