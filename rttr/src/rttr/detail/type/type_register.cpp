@@ -65,6 +65,11 @@ void type_register::property(const type& t, unique_ptr<property_wrapper_base> pr
    type_register_private::property(t, move(prop));
 }
 
+void type_register::register_base_properties(const type& t)
+{
+	type_register_private::register_base_properties(t);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void type_register::method(const type& t, std::unique_ptr<method_wrapper_base> method)
@@ -564,7 +569,7 @@ void type_register_private::property(const type& t, std::unique_ptr<property_wra
 
         property_list.emplace_back(detail::create_item<::rttr::property>(prop.get()));
         get_property_storage().push_back(std::move(prop));
-        update_class_list(t, &detail::class_data::m_properties);
+        //update_class_list(t, &detail::class_data::m_properties);
     }
     else
     {
@@ -575,6 +580,11 @@ void type_register_private::property(const type& t, std::unique_ptr<property_wra
         get_global_property_storage().insert(std::move(name), std::move(p));
         get_property_storage().push_back(std::move(prop));
     }
+}
+
+void type_register_private::register_base_properties(const type& t)
+{
+	update_class_list(t, &detail::class_data::m_properties);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

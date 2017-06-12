@@ -105,6 +105,8 @@ public:
 
     static void register_base_class(const type& derived_type, const base_class_info& base_info);
 
+	static void register_base_properties(const type& t);
+
     /*!
      * \brief Register the type info for the given name
      *
