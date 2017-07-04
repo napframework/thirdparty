@@ -61,8 +61,12 @@ class property_wrapper<member_object_ptr, A(C::*), void, Acc_Level, return_as_co
 			C* ptr = object.try_convert<C>();
 
 			argument actual_arg = arg;
+			variant wrapped_value;
 			if (get_type().is_wrapper() && !arg.get_type().is_wrapper())
-				actual_arg = create_wrapped_value<A>(arg);
+			{
+				wrapped_value = create_wrapped_value<A>(arg);
+				actual_arg = wrapped_value;
+			}				
 
 			if (ptr && actual_arg.is_type<A>())
 				return property_accessor<A>::set_value((ptr->*m_acc), actual_arg);
