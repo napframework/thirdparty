@@ -73,6 +73,7 @@ public:
     static void property(const type& t, std::unique_ptr<property_wrapper_base> prop);
     static void method(const type& t, std::unique_ptr<method_wrapper_base> meth);
     static void register_custom_name(type& t, string_view custom_name);
+	static void register_base_properties(const type& t);
 
     /////////////////////////////////////////////////////////////////////////////////////
     static flat_multimap<string_view, ::rttr::property>& get_global_property_storage();

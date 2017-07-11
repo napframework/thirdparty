@@ -112,6 +112,9 @@ registration::class_<Class_Type>::~class_()
 {
     // make sure that all base classes are registered
     detail::base_classes<Class_Type>::get_types();
+
+	if (m_reg_exec == nullptr)
+		detail::type_register::register_base_properties(rttr::type::get<Class_Type>());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

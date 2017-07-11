@@ -359,8 +359,18 @@ struct array_accessor_impl<Array_Type, std::true_type>
     static bool set_value(Array_Type& obj, argument& arg, Indices... indices)
     {
         using arg_type = typename rank_type<Array_Type, sizeof...(Indices)>::type;
-        if (arg.is_type<arg_type>())
-            return set_value_to_array<Array_Type>(obj, arg.get_value<arg_type>(), indices...);
+
+		argument actual_arg = arg;
+		variant wrapped_value;
+		if (type::get<arg_type>().is_wrapper() && !arg.get_type().is_wrapper())
+		{
+			wrapped_value = create_wrapped_value<arg_type>(arg);
+			actual_arg = wrapped_value;
+		}
+			
+
+        if (actual_arg.is_type<arg_type>())
+            return set_value_to_array<Array_Type>(obj, actual_arg.get_value<arg_type>(), indices...);
         else
             return false;
     }
