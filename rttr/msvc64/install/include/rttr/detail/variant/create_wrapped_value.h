@@ -4,6 +4,7 @@
 #include "rttr/detail/misc/misc_type_traits.h"
 #include "rttr/detail/misc/std_type_traits.h"
 #include "rttr/detail/impl/wrapper_mapper_impl.h"
+#include "rttr/argument.h"
 
 namespace rttr
 {
@@ -20,7 +21,7 @@ enable_if_t<is_copyable<Tp>::value &&
 	is_wrapper<T>::value, variant> create_wrapped_value(argument& value)
 {
 	using raw_wrapper_type = remove_cv_t<remove_reference_t<T>>;
-	using wrapped_type = wrapper_mapper<raw_wrapper_type>::wrapped_type;
+	using wrapped_type = typename wrapper_mapper<raw_wrapper_type>::wrapped_type;
 
 	if (value.is_type<wrapped_type>())
 		return variant(wrapper_mapper<raw_wrapper_type>::create(value.get_value<wrapped_type>()));
