@@ -4,6 +4,7 @@
 #include "rttr/detail/misc/misc_type_traits.h"
 #include "rttr/detail/misc/std_type_traits.h"
 #include "rttr/detail/impl/wrapper_mapper_impl.h"
+#include "rttr/argument.h"
 
 namespace rttr
 {
