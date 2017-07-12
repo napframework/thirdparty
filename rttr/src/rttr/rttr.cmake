@@ -145,6 +145,7 @@ set(HEADER_FILES access_levels.h
                  detail/variant/variant_data_converter.h
                  detail/variant/variant_data_policy.h
                  detail/variant/variant_impl.h
+				 detail/variant/create_wrapped_value.h
                  detail/variant_array_view/variant_array_view_impl.h
                  detail/variant_array_view/variant_array_view_creator.h
                  detail/variant_array_view/variant_array_view_creator_impl.h
