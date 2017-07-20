@@ -3,5 +3,5 @@
 cmake-build-debug/
 build/
 rapidjson/thirdparty/
-rttr/xcode
+xcode
 *.o
