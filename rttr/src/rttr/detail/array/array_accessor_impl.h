@@ -30,6 +30,7 @@
 
 #include "rttr/detail/base/core_prerequisites.h"
 #include "rttr/detail/misc/utility.h"
+#include "rttr/detail/variant/create_wrapped_value.h"
 #include "rttr/argument.h"
 #include "rttr/array_mapper.h"
 #include "rttr/variant.h"

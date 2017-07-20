@@ -25,6 +25,8 @@
 *                                                                                   *
 *************************************************************************************/
 
+#include "rttr/detail/variant/create_wrapped_value.h"
+
 #ifndef RTTR_PROPERTY_WRAPPER_MEMBER_OBJECT_H_
 #define RTTR_PROPERTY_WRAPPER_MEMBER_OBJECT_H_
 

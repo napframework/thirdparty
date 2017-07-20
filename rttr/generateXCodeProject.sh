@@ -1,2 +1,2 @@
-cmake -H. -Bxcode -G Xcode -DCMAKE_BUILD_TYPE=Debug
+cmake -H. -Bxcode -G Xcode -DBUILD_WITH_RTTI=OFF
 
