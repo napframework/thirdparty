@@ -6,5 +6,6 @@ rapidjson/thirdparty/
 *.o
 rttr/xcode/* 
 !rttr/xcode/rttr.xcodeproj
+!rttr/xcode/install
 rttr/.DS_Store
 .DS_Store
