@@ -60,7 +60,7 @@
         }                                                                     \
     }                                                                         \
     PYBIND11_EMBEDDED_MODULE_IMPL(name)                                       \
-    pybind11::detail::embedded_module name(#name, pybind11_init_impl_##name); \
+    pybind11::detail::embedded_module embedded_module_##name(#name, pybind11_init_impl_##name); \
     void pybind11_init_##name(pybind11::module &variable)
 
 
