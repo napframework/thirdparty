@@ -3,5 +3,8 @@
 cmake-build-debug/
 build/
 rapidjson/thirdparty/
-xcode
 *.o
+rttr/xcode/* 
+!rttr/xcode/rttr.xcodeproj
+rttr/.DS_Store
+.DS_Store
