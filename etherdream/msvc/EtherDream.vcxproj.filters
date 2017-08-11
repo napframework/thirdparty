@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="EtherDream.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="headers">
+      <UniqueIdentifier>{229c9de3-69bd-4958-9bc1-6ac16fd886a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{35cc83d7-88c3-461c-b52f-d19713471f89}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\conn.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dac.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\j4cDAC.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\conn.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dac.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\j4cDAC.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\protocol.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
