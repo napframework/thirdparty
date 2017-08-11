@@ -11,3 +11,5 @@ rttr/msvc64/*
 !rttr/msvc64/install
 rttr/.DS_Store
 .DS_Store
+assimp/test/*
+assimp/*.db
