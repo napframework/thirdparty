@@ -20,3 +20,11 @@ assimp/*.cmake-build-debug
 *.user
 *.ilk
 *.opendb
+*.tlog
+*.obj
+*.log
+*.iobj
+*.ipdb
+*.pdb
+*EtherDreamLog.txt*
+*EtherDreamTestApp.exe*
