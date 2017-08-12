@@ -7,20 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F455EA981F3F266B006DE930 /* etherdream.c in Sources */ = {isa = PBXBuildFile; fileRef = F455EA921F3F266B006DE930 /* etherdream.c */; };
-		F455EA991F3F266B006DE930 /* etherdream.h in Headers */ = {isa = PBXBuildFile; fileRef = F455EA931F3F266B006DE930 /* etherdream.h */; };
-		F455EA9A1F3F266B006DE930 /* protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = F455EA961F3F266B006DE930 /* protocol.h */; };
-		F455EA9B1F3F266B006DE930 /* settings.h in Headers */ = {isa = PBXBuildFile; fileRef = F455EA971F3F266B006DE930 /* settings.h */; };
+		F455EA9E1F3F40AE006DE930 /* etherdream.c in Sources */ = {isa = PBXBuildFile; fileRef = F455EA9C1F3F40AE006DE930 /* etherdream.c */; };
+		F455EA9F1F3F40AE006DE930 /* etherdream.h in Headers */ = {isa = PBXBuildFile; fileRef = F455EA9D1F3F40AE006DE930 /* etherdream.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		F455EA791F3F23CF006DE930 /* libEtherDream.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libEtherDream.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		F455EA921F3F266B006DE930 /* etherdream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = etherdream.c; path = ../../../src/common/etherdream.c; sourceTree = "<group>"; };
-		F455EA931F3F266B006DE930 /* etherdream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = etherdream.h; path = ../../../src/common/etherdream.h; sourceTree = "<group>"; };
-		F455EA941F3F266B006DE930 /* inc */ = {isa = PBXFileReference; lastKnownFileType = folder; name = inc; path = ../../../src/common/inc; sourceTree = "<group>"; };
-		F455EA951F3F266B006DE930 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = ../../../src/common/lib; sourceTree = "<group>"; };
-		F455EA961F3F266B006DE930 /* protocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = protocol.h; path = ../../../src/common/protocol.h; sourceTree = "<group>"; };
-		F455EA971F3F266B006DE930 /* settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = settings.h; path = ../../../src/common/settings.h; sourceTree = "<group>"; };
+		F455EA9C1F3F40AE006DE930 /* etherdream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = etherdream.c; path = ../../../src/driver/libetherdream/etherdream.c; sourceTree = "<group>"; };
+		F455EA9D1F3F40AE006DE930 /* etherdream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = etherdream.h; path = ../../../src/driver/libetherdream/etherdream.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,12 +47,8 @@
 		F455EA7B1F3F23CF006DE930 /* EtherDream */ = {
 			isa = PBXGroup;
 			children = (
-				F455EA921F3F266B006DE930 /* etherdream.c */,
-				F455EA931F3F266B006DE930 /* etherdream.h */,
-				F455EA941F3F266B006DE930 /* inc */,
-				F455EA951F3F266B006DE930 /* lib */,
-				F455EA961F3F266B006DE930 /* protocol.h */,
-				F455EA971F3F266B006DE930 /* settings.h */,
+				F455EA9C1F3F40AE006DE930 /* etherdream.c */,
+				F455EA9D1F3F40AE006DE930 /* etherdream.h */,
 			);
 			path = EtherDream;
 			sourceTree = "<group>";
@@ -70,9 +60,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F455EA9B1F3F266B006DE930 /* settings.h in Headers */,
-				F455EA9A1F3F266B006DE930 /* protocol.h in Headers */,
-				F455EA991F3F266B006DE930 /* etherdream.h in Headers */,
+				F455EA9F1F3F40AE006DE930 /* etherdream.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -134,7 +122,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F455EA981F3F266B006DE930 /* etherdream.c in Sources */,
+				F455EA9E1F3F40AE006DE930 /* etherdream.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,6 +221,7 @@
 		F455EA851F3F23CF006DE930 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				DEVELOPMENT_TEAM = RLCGMG2ZB7;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -240,6 +229,7 @@
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				"HEADER_SEARCH_PATHS[arch=*]" = /Users/cklosters/Documents/Repositories/thirdparty/etherdream/osx/src/common;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -247,6 +237,7 @@
 		F455EA861F3F23CF006DE930 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				DEVELOPMENT_TEAM = RLCGMG2ZB7;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -254,6 +245,7 @@
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				"HEADER_SEARCH_PATHS[arch=*]" = /Users/cklosters/Documents/Repositories/thirdparty/etherdream/osx/src/common;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
