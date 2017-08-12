@@ -1,0 +1,284 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F455EA8E1F3F2428006DE930 /* etherdream.c in Sources */ = {isa = PBXBuildFile; fileRef = F455EA881F3F2428006DE930 /* etherdream.c */; };
+		F455EA8F1F3F2428006DE930 /* etherdream.h in Headers */ = {isa = PBXBuildFile; fileRef = F455EA891F3F2428006DE930 /* etherdream.h */; };
+		F455EA901F3F2428006DE930 /* protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = F455EA8C1F3F2428006DE930 /* protocol.h */; };
+		F455EA911F3F2428006DE930 /* settings.h in Headers */ = {isa = PBXBuildFile; fileRef = F455EA8D1F3F2428006DE930 /* settings.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F455EA791F3F23CF006DE930 /* libEtherDream.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libEtherDream.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		F455EA881F3F2428006DE930 /* etherdream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = etherdream.c; path = ../../../libs/common/etherdream.c; sourceTree = "<group>"; };
+		F455EA891F3F2428006DE930 /* etherdream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = etherdream.h; path = ../../../libs/common/etherdream.h; sourceTree = "<group>"; };
+		F455EA8A1F3F2428006DE930 /* inc */ = {isa = PBXFileReference; lastKnownFileType = folder; name = inc; path = ../../../libs/common/inc; sourceTree = "<group>"; };
+		F455EA8B1F3F2428006DE930 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = ../../../libs/common/lib; sourceTree = "<group>"; };
+		F455EA8C1F3F2428006DE930 /* protocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = protocol.h; path = ../../../libs/common/protocol.h; sourceTree = "<group>"; };
+		F455EA8D1F3F2428006DE930 /* settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = settings.h; path = ../../../libs/common/settings.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F455EA761F3F23CF006DE930 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F455EA701F3F23CF006DE930 = {
+			isa = PBXGroup;
+			children = (
+				F455EA7B1F3F23CF006DE930 /* EtherDream */,
+				F455EA7A1F3F23CF006DE930 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F455EA7A1F3F23CF006DE930 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F455EA791F3F23CF006DE930 /* libEtherDream.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F455EA7B1F3F23CF006DE930 /* EtherDream */ = {
+			isa = PBXGroup;
+			children = (
+				F455EA881F3F2428006DE930 /* etherdream.c */,
+				F455EA891F3F2428006DE930 /* etherdream.h */,
+				F455EA8A1F3F2428006DE930 /* inc */,
+				F455EA8B1F3F2428006DE930 /* lib */,
+				F455EA8C1F3F2428006DE930 /* protocol.h */,
+				F455EA8D1F3F2428006DE930 /* settings.h */,
+			);
+			path = EtherDream;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		F455EA771F3F23CF006DE930 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F455EA911F3F2428006DE930 /* settings.h in Headers */,
+				F455EA901F3F2428006DE930 /* protocol.h in Headers */,
+				F455EA8F1F3F2428006DE930 /* etherdream.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		F455EA781F3F23CF006DE930 /* EtherDream */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F455EA841F3F23CF006DE930 /* Build configuration list for PBXNativeTarget "EtherDream" */;
+			buildPhases = (
+				F455EA751F3F23CF006DE930 /* Sources */,
+				F455EA761F3F23CF006DE930 /* Frameworks */,
+				F455EA771F3F23CF006DE930 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EtherDream;
+			productName = EtherDream;
+			productReference = F455EA791F3F23CF006DE930 /* libEtherDream.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F455EA711F3F23CF006DE930 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0830;
+				ORGANIZATIONNAME = "Coen Klosters";
+				TargetAttributes = {
+					F455EA781F3F23CF006DE930 = {
+						CreatedOnToolsVersion = 8.3.3;
+						DevelopmentTeam = RLCGMG2ZB7;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = F455EA741F3F23CF006DE930 /* Build configuration list for PBXProject "EtherDream" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = F455EA701F3F23CF006DE930;
+			productRefGroup = F455EA7A1F3F23CF006DE930 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F455EA781F3F23CF006DE930 /* EtherDream */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F455EA751F3F23CF006DE930 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F455EA8E1F3F2428006DE930 /* etherdream.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F455EA821F3F23CF006DE930 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		F455EA831F3F23CF006DE930 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		F455EA851F3F23CF006DE930 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEVELOPMENT_TEAM = RLCGMG2ZB7;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F455EA861F3F23CF006DE930 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEVELOPMENT_TEAM = RLCGMG2ZB7;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F455EA741F3F23CF006DE930 /* Build configuration list for PBXProject "EtherDream" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F455EA821F3F23CF006DE930 /* Debug */,
+				F455EA831F3F23CF006DE930 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F455EA841F3F23CF006DE930 /* Build configuration list for PBXNativeTarget "EtherDream" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F455EA851F3F23CF006DE930 /* Debug */,
+				F455EA861F3F23CF006DE930 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F455EA711F3F23CF006DE930 /* Project object */;
+}
