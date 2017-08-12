@@ -7,19 +7,10 @@ ifneq ($(UNAME), Darwin)
 CFLAGS += -lrt
 endif
 
-all: test
-
-ifeq ($(UNAME), Darwin)
-all: etherdream.dylib
-endif
-
-test: etherdream.c etherdream.h test.c
-	$(CC) $(CFLAGS) -g etherdream.c test.c -o $@
-
-etherdream.dylib: etherdream.c
-	gcc $(CFLAGS) -dynamiclib etherdream.c -o etherdream.dylib
+etherdream.so: etherdream.c
+	gcc $(CFLAGS) -shared -o libetherdream.so -fPIC etherdream.c
 
 .PHONY: clean
 
 clean:
-	rm -rf etherdream.dylib etherdream.c.* test test.dSYM
+	rm -rf etherdream.so etherdream.c.*
