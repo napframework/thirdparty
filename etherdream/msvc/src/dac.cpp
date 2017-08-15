@@ -114,7 +114,7 @@ dac_t * dac_get(int num) {
 }
 
 void dac_get_name(dac_t *d, char *buf, int max) {
-    snprintf(buf, max, "Ether Dream %02x%02x%02x",
+    snprintf(buf, max, "%02x%02x%02x",
             d->identity.mac_address[3], d->identity.mac_address[4], d->identity.mac_address[5]);
 }
 
