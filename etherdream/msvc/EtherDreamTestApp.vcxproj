@@ -152,17 +152,17 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="EtherDream.vcxproj">
-      <Project>{92e5e32f-6d8c-4037-a1d4-7c351a9ed55f}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="test\EtherdreamTestApp.cpp" />
     <ClCompile Include="test\stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test\stdafx.h" />
     <ClInclude Include="test\targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="EtherDream.vcxproj">
+      <Project>{e44bf677-6aab-4b57-992c-8e1cf2407dd3}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

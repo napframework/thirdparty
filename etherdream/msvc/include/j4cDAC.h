@@ -1,7 +1,18 @@
 #pragma once
 
 #include <stdint.h>
-#define J4CDAC_API extern "C"
+
+/**
+* Auto switch between dll import / export
+* Useful when building modules. This ensures that when building the module
+* and the SHARED_LIB flag is enabled, the symbols are exported. When
+* using the library the symbols are imported
+*/
+#ifdef SHARED_LIB
+	#define J4CDAC_API extern "C" __declspec(dllexport)
+#else
+	#define J4CDAC_API extern "C" __declspec(dllimport)
+#endif // NAP_SHARED_LIBRARY
 
 struct EL_Pnt_s {
     uint16_t X;
