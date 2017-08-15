@@ -29,3 +29,4 @@ assimp/*.cmake-build-debug
 *EtherDreamLog.txt*
 *EtherDreamTestApp.exe*
 etherdream/msvc/x64/Debug/vc140.idb
+*.cache
