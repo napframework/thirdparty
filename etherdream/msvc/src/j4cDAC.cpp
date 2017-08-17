@@ -404,7 +404,7 @@ EXPORT bool __stdcall EtherDreamStop(const int *CardNum){
     d->state = ST_READY;
     d->worker_cond.notify_all();
 
-    return 0;
+    return 1;
 }
 
 EXPORT bool __stdcall EtherDreamClose(void){
