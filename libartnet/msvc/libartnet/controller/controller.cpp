@@ -253,17 +253,15 @@ int do_fade(artnet_node node, opts_t *ops) {
 		else
 			p = 1.0;
 
-		std::cout << (float)val*p << "\n";
-
 		dmx[chan] = (int)(float)val*p;
 
 		msleep(40);
-		//  printf("%f %i %i %f %li\n", p, chan, dmx[chan] , fadetime, t-tstart);
+		std::cout << (int)dmx[chan] << "\n";
 
 		// we have to call raw_send here as it sends a sequence number of 0
 		// otherwise each execution of artnet_setdmx starts the sequence from 0
 		// which confuses some devices
-		if (artnet_raw_send_dmx(node, ops->port_addr, chan + 1, dmx)) {
+		if (artnet_send_dmx(node, ops->port_addr, chan + 1, dmx)) {
 			printf("failed to send: %s\n", artnet_strerror());
 		}
 
@@ -303,7 +301,7 @@ int main(int argc, char *argv[])
 	if (ops.value < 0 || ops.value > 255)
 		display_help_and_exit(&ops, argv);
 
-	if (ops.port_addr < 0 || ops.port_addr > 4)
+	if (ops.port_addr < 0 || ops.port_addr > 15)
 		display_help_and_exit(&ops, argv);
 
 	// create new artnet node, and set config values
@@ -311,7 +309,7 @@ int main(int argc, char *argv[])
 
 	artnet_set_short_name(node, SHORT_NAME);
 	artnet_set_long_name(node, LONG_NAME);
-	artnet_set_node_type(node, ARTNET_RAW);
+	artnet_set_node_type(node, ARTNET_SRV);
 
 	artnet_set_port_type(node, 0, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX);
 	artnet_set_port_addr(node, 0, ARTNET_INPUT_PORT, ops.port_addr);
