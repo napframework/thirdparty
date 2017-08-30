@@ -33,7 +33,7 @@ portaudio-2.0.pc
 # Compiled Static libraries
 *.lai
 *.la
-*.a
+# *.a
 # *.lib
 
 # Executables
