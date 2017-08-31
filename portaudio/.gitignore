@@ -23,16 +23,16 @@ portaudio-2.0.pc
 *.pch
 
 # Compiled Dynamic libraries
-*.so
-*.dylib
+# *.so
+# *.dylib
 # *.dll
 
 # Fortran module files
 *.mod
 
 # Compiled Static libraries
-*.lai
-*.la
+# *.lai
+# *.la
 # *.a
 # *.lib
 
