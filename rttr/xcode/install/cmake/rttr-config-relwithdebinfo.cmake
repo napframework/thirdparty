@@ -1,15 +1,15 @@
 #----------------------------------------------------------------
-# Generated CMake target import file for configuration "Release".
+# Generated CMake target import file for configuration "RelWithDebInfo".
 #----------------------------------------------------------------
 
 # Commands may need to know the format version.
 set(CMAKE_IMPORT_FILE_VERSION 1)
 
-# Import target "RTTR::Core" for configuration "Release"
-set_property(TARGET RTTR::Core APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+# Import target "RTTR::Core" for configuration "RelWithDebInfo"
+set_property(TARGET RTTR::Core APPEND PROPERTY IMPORTED_CONFIGURATIONS RELWITHDEBINFO)
 set_target_properties(RTTR::Core PROPERTIES
-  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/bin/librttr_core.0.9.6.dylib"
-  IMPORTED_SONAME_RELEASE "librttr_core.0.9.6.dylib"
+  IMPORTED_LOCATION_RELWITHDEBINFO "${_IMPORT_PREFIX}/bin/librttr_core.0.9.6.dylib"
+  IMPORTED_SONAME_RELWITHDEBINFO "librttr_core.0.9.6.dylib"
   )
 
 list(APPEND _IMPORT_CHECK_TARGETS RTTR::Core )

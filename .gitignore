@@ -5,7 +5,6 @@ build/
 rapidjson/thirdparty/
 *.o
 rttr/xcode/*
-!rttr/xcode/rttr.xcodeproj
 !rttr/xcode/install
 rttr/msvc64/*
 !rttr/msvc64/install
