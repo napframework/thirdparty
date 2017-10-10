@@ -8,6 +8,8 @@ rttr/xcode/*
 !rttr/xcode/install
 rttr/msvc64/*
 !rttr/msvc64/install
+rttr/linux/*
+!rttr/linux/install
 rttr/.DS_Store
 .DS_Store
 assimp/xcode/*
