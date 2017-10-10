@@ -29,7 +29,7 @@
  * This should be incremented at least each time a new symbol is added
  * to the header.
  */
-#define OUT123_API_VERSION @OUTAPI_VERSION@
+#define OUT123_API_VERSION 2
 
 #ifndef MPG123_EXPORT
 /** Defines needed for MS Visual Studio(tm) DLL builds.

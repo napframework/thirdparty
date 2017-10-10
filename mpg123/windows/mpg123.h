@@ -1,5 +1,5 @@
 /*
-	libmpg123: MPEG Audio Decoder library (version @PACKAGE_VERSION@)
+	libmpg123: MPEG Audio Decoder library (version 1.25.6)
 
 	copyright 1995-2015 by the mpg123 project
 	free software under the terms of the LGPL 2.1
@@ -17,7 +17,7 @@
  * This should be incremented at least each time a new symbol is added
  * to the header.
  */
-#define MPG123_API_VERSION @API_VERSION@
+#define MPG123_API_VERSION 44
 
 #ifndef MPG123_EXPORT
 /** Defines needed for MS Visual Studio(tm) DLL builds.
@@ -49,8 +49,8 @@ typedef ptrdiff_t ssize_t;
 #endif
 
 #ifndef MPG123_NO_CONFIGURE /* Enable use of this file without configure. */
-@INCLUDE_STDLIB_H@
-@INCLUDE_SYS_TYPE_H@
+#include <stdlib.h>
+#include <sys/types.h>
 
 /* Simplified large file handling.
 	I used to have a check here that prevents building for a library with conflicting large file setup
