@@ -38,7 +38,7 @@ if test ! -f ../tests/sfversion.c ; then
 echo -n "    Pedantic header test           : "
 
 # Only do this if the compiler is GCC.
-if test -n "" ; then
+if test -n "6" ; then
 
 	CC=`echo "gcc" | sed "s/.*shave cc //"`
 	# Compile with -Werror and -pedantic.

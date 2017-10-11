@@ -2,13 +2,13 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Set to 1 if the compile is GNU GCC. */
-#define COMPILER_IS_GCC 0
+#define COMPILER_IS_GCC 1
 
 /* Target processor clips on negative float to int conversion. */
-#define CPU_CLIPS_NEGATIVE 0
+#define CPU_CLIPS_NEGATIVE 1
 
 /* Target processor clips on positive float to int conversion. */
-#define CPU_CLIPS_POSITIVE 0
+#define CPU_CLIPS_POSITIVE 1
 
 /* Target processor is big endian. */
 #define CPU_IS_BIG_ENDIAN 0
@@ -20,10 +20,10 @@
 #define ENABLE_EXPERIMENTAL_CODE 0
 
 /* Define to 1 if you have the <alsa/asoundlib.h> header file. */
-/* #undef HAVE_ALSA_ASOUNDLIB_H */
+#define HAVE_ALSA_ASOUNDLIB_H 1
 
 /* Define to 1 if you have the <byteswap.h> header file. */
-/* #undef HAVE_BYTESWAP_H */
+#define HAVE_BYTESWAP_H 1
 
 /* Define to 1 if you have the `calloc' function. */
 #define HAVE_CALLOC 1
@@ -38,7 +38,7 @@
 #define HAVE_DLFCN_H 1
 
 /* Define to 1 if you have the <endian.h> header file. */
-/* #undef HAVE_ENDIAN_H */
+#define HAVE_ENDIAN_H 1
 
 /* Will be set to 1 if flac, ogg and vorbis are available. */
 #define HAVE_EXTERNAL_XIPH_LIBS 0
@@ -104,7 +104,7 @@
 #define HAVE_LSEEK 1
 
 /* Define to 1 if you have the `lseek64' function. */
-/* #undef HAVE_LSEEK64 */
+#define HAVE_LSEEK64 1
 
 /* Define to 1 if you have the `malloc' function. */
 #define HAVE_MALLOC 1
@@ -180,7 +180,7 @@
 #define HAVE_WRITE 1
 
 /* The host triplet of the compiled binary. */
-#define HOST_TRIPLET "x86_64-apple-darwin16.5.0"
+#define HOST_TRIPLET "armv7l-unknown-linux-gnueabihf"
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
@@ -228,7 +228,7 @@
 #define SIZEOF_INT64_T 8
 
 /* The size of `long', as computed by sizeof. */
-#define SIZEOF_LONG 8
+#define SIZEOF_LONG 4
 
 /* The size of `long long', as computed by sizeof. */
 #define SIZEOF_LONG_LONG 8
@@ -243,10 +243,10 @@
 #define SIZEOF_SHORT 2
 
 /* The size of `size_t', as computed by sizeof. */
-#define SIZEOF_SIZE_T 8
+#define SIZEOF_SIZE_T 4
 
 /* The size of `void*', as computed by sizeof. */
-#define SIZEOF_VOIDP 8
+#define SIZEOF_VOIDP 4
 
 /* The size of `wchar_t', as computed by sizeof. */
 #define SIZEOF_WCHAR_T 4
@@ -297,7 +297,7 @@
 #endif
 
 /* Number of bits in a file offset, on hosts where this is settable. */
-/* #undef _FILE_OFFSET_BITS */
+#define _FILE_OFFSET_BITS 64
 
 /* Define for large files, on AIX-style hosts. */
 /* #undef _LARGE_FILES */

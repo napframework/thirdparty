@@ -31,7 +31,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-HOST_TRIPLET=x86_64-apple-darwin16.5.0
+HOST_TRIPLET=armv7l-unknown-linux-gnueabihf
 PACKAGE_VERSION=1.0.28
 LIB_VERSION=$(echo $PACKAGE_VERSION | sed "s/[a-z].*//")
 

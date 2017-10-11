@@ -8,7 +8,7 @@ EXEEXT =
 
 PACKAGE_VERSION = 1.0.28
 
-HOST_TRIPLET = x86_64-apple-darwin16.5.0
+HOST_TRIPLET = armv7l-unknown-linux-gnueabihf
 
 SRC_BINDIR = src/
 TEST_BINDIR = tests/
