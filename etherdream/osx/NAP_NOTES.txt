@@ -1,0 +1,3 @@
+Afterwards:
+install_name_tool -id @rpath/libEtherDream.dylib Release/libEtherDream.dylib
+install_name_tool -id @rpath/libEtherDream.dylib Debug/libEtherDream.dylib
