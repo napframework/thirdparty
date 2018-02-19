@@ -1,3 +1,5 @@
+Built from ffmpeg-3.4.2.tar.bz2
+
 Configured with options:
 --enable-shared --disable-static --disable-programs --disable-doc
 
