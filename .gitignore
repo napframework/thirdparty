@@ -32,4 +32,4 @@ assimp/*.cmake-build-debug
 *.idb
 *.cache
 *.ipch
-
+pyvenv.cfg
