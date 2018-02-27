@@ -1,0 +1,4 @@
+ Built from SDL2-2.0.7.tar.gz on Ubuntu 12.04
+ 
+ Configure flags:
+./configure --prefix=`pwd`/linux/install --enable-static=no
