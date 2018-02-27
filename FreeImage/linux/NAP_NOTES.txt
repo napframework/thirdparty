@@ -1,0 +1,2 @@
+Build on Ubuntu 12.04 from FreeImage3170.zip
+
