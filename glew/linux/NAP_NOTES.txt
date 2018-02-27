@@ -1,0 +1,7 @@
+Built on Ubuntu 12.04 from glew-2.1.0.tgz
+
+Built with:
+
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=`pwd`/install/linux ./cmake/
+make install

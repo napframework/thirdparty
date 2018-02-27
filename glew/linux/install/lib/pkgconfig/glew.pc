@@ -1,0 +1,11 @@
+prefix=/home/nap/workspaces/thirdpartybuild/glew-2.1.0/build/install/linux
+exec_prefix=${prefix}
+libdir=/home/nap/workspaces/thirdpartybuild/glew-2.1.0/build/install/linux/lib/x86_64-linux-gnu
+includedir=${prefix}/include
+
+Name: glew
+Description: The OpenGL Extension Wrangler library
+Version: 2.1.0
+Cflags: -I${includedir} 
+Libs: -L${libdir} -lGLEW
+Requires: glu
