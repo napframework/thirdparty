@@ -1,0 +1,14 @@
+prefix=/home/nap/workspaces/thirdpartybuild/ffmpeg-3.4.2/install/linux
+exec_prefix=${prefix}
+libdir=/home/nap/workspaces/thirdpartybuild/ffmpeg-3.4.2/install/linux/lib
+includedir=/home/nap/workspaces/thirdpartybuild/ffmpeg-3.4.2/install/linux/include
+
+Name: libswresample
+Description: FFmpeg audio resampling library
+Version: 2.9.100
+Requires: 
+Requires.private: libavutil >= 55.78.100
+Conflicts:
+Libs: -L${libdir}  -lswresample 
+Libs.private: -lm
+Cflags: -I${includedir}
