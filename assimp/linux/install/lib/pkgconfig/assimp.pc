@@ -1,0 +1,11 @@
+prefix=/home/nap/workspaces/thirdparty/assimp/linux/install
+exec_prefix=/home/nap/workspaces/thirdparty/assimp/linux/install/bin
+libdir=/home/nap/workspaces/thirdparty/assimp/linux/install/lib
+includedir=/home/nap/workspaces/thirdparty/assimp/linux/install/include/assimp
+
+Name: Assimp
+Description: Import various well-known 3D model formats in an uniform manner.
+Version: 3.3.1
+Libs: -L${libdir} -lassimp
+Libs.private: -lstdc++ 
+Cflags: -I${includedir}
