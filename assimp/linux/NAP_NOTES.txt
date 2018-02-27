@@ -1,4 +1,4 @@
-Build on Ubuntu 12.04 from repo source
+Build on Ubuntu 12.04 from source in NAP thirdparty repo
 
 Configured with:
 cmake -DCMAKE_INSTALL_PREFIX=`pwd`/linux/install -DBUILD_SHARED_LIBS=ON -DCMAKE_C_FLAGS=-fPIC -DCMAKE_CXX_FLAGS=-fPIC CMakeLists.txt -G 'Unix Makefiles'
