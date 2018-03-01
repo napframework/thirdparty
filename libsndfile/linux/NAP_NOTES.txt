@@ -1,0 +1,55 @@
+Compiled from libsndfile-1.0.28.tar.gz on Ubuntu 12.04
+
+FLAC support required building FLAC from source on that box to get a new enough version.  If we can confirm we're doing FLAC across all platforms I can get it done.
+
+Other content of libsndfile/linux not under install are from previous commit by Stijn, intention is to remove them (atleast for x86_64) once packaging changes have been merged.
+
+# TODO confirm libsndfile options with Stijn?
+# TODO Remove older x86_64 contents once packaging changes have been merged (and re-arrange arm build)
+
+Configure output:
+
+...
+checking for flac >= 1.3.1 ... no
+checking for ogg >= 1.1.3 ... yes
+checking for vorbis >= 1.2.3 ... yes
+checking for vorbisenc >= 1.2.3 ... yes
+
+configure: WARNING: *** One or more of the external libraries (ie libflac, libogg and
+configure: WARNING: *** libvorbis) is either missing (possibly only the development
+configure: WARNING: *** headers) or is of an unsupported version.
+configure: WARNING: ***
+configure: WARNING: *** Unfortunately, for ease of maintenance, the external libs
+configure: WARNING: *** are an all or nothing affair.
+...
+
+  Configuration summary :
+
+    libsndfile version : .................. 1.0.28
+
+    Host CPU : ............................ x86_64
+    Host Vendor : ......................... pc
+    Host OS : ............................. linux-gnu
+
+    Experimental code : ................... no
+    Using ALSA in example programs : ...... yes
+    External FLAC/Ogg/Vorbis : ............ no
+
+  Tools :
+
+    Compiler is Clang : ................... no
+    Compiler is GCC : ..................... yes
+    GCC version : ......................... 4.6
+    Sanitizer enabled : ................... no
+    Stack smash protection : .............. no
+
+  Installation directories :
+
+    Library directory : ................... /home/nap/workspaces/thirdpartybuild/libsndfile-1.0.28/install-linux/lib
+    Program directory : ................... /home/nap/workspaces/thirdpartybuild/libsndfile-1.0.28/install-linux/bin
+    Pkgconfig directory : ................. /home/nap/workspaces/thirdpartybuild/libsndfile-1.0.28/install-linux/lib/pkgconfig
+    HTML docs directory : ................. /home/nap/workspaces/thirdpartybuild/libsndfile-1.0.28/install-linux/share/doc/
+
+Compiling some other packages against libsndfile may require
+the addition of '/home/nap/workspaces/thirdpartybuild/libsndfile-1.0.28/install-linux/lib/pkgconfig' to the
+PKG_CONFIG_PATH environment variable.
