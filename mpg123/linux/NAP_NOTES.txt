@@ -1,13 +1,11 @@
-Compiled from source included in repo (1.25.6) on Ubuntu 12.04
+Compiled from source included in repo (1.25.6) on Ubuntu 16.04 with GCC 5.4.0
 
 Contents of mpg123/bin/ are from previous commit by Stijn, intention is to clean this up once packaging changes have been merged.
 
-# TODO confirm mpg123 options with Stijn?
 # TODO Clean up mpg123/bin contents once packaging changes have been merged
 
 Output:
 
-  Install path ............ /home/nap/workspaces/thirdpartybuild/mpg123-1.25.6/linux-install
   CPU Optimization ........ x86-64
   Compiler Optimization ... 2
   Gapless Support ......... enabled
@@ -52,10 +50,11 @@ Note: Disabling core features is not commonly done and some combinations might n
 
   Modules ................. enabled
   Checked audio modules ... alsa tinyalsa oss coreaudio sndio sun win32 win32_wasapi os2 esd jack portaudio pulse sdl nas arts openal dummy
-  Detected audio support .. alsa oss dummy
+  Detected audio support .. alsa oss jack dummy
   Default output module ... alsa
 
 
   CPPFLAGS=' -DOPT_MULTI -DOPT_X86_64 -DOPT_GENERIC -DOPT_GENERIC_DITHER -DREAL_IS_FLOAT -DOPT_AVX '
   CFLAGS='-O2 -fomit-frame-pointer -funroll-all-loops -finline-functions -ffast-math  -g -O2'
   LIBS='-lm -ldl '
+

@@ -1,4 +1,4 @@
-prefix=/home/nap/workspaces/thirdpartybuild/mpg123-1.25.6/linux-install
+prefix=/home/creywood/workspaces/naivi/thirdpartybuild/mpg123-1.25.6/linux-install
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include

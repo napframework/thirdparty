@@ -1,4 +1,4 @@
-#!/home/nap/workspaces/thirdpartybuild/Python-3.6.4/installpref/linux/bin/python3.6m
+#!/home/creywood/workspaces/naivi/thirdpartybuild/Python-3.6.4/linux-install/bin/python3.6m
 # -*- python -*-
 
 # Keep this script in sync with python-config.sh.in

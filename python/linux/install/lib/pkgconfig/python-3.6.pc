@@ -1,5 +1,5 @@
 # See: man pkg-config
-prefix=/home/nap/workspaces/thirdpartybuild/Python-3.6.4/installpref/linux
+prefix=/home/creywood/workspaces/naivi/thirdpartybuild/Python-3.6.4/linux-install
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
@@ -8,6 +8,6 @@ Name: Python
 Description: Python library
 Requires: 
 Version: 3.6
-Libs.private: -lpthread -ldl  -lutil -lrt
+Libs.private: -lpthread -ldl  -lutil
 Libs: -L${libdir} -lpython3.6m
 Cflags: -I${includedir}/python3.6m

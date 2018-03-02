@@ -1,6 +1,6 @@
-prefix=/home/nap/workspaces/thirdpartybuild/glew-2.1.0/build/install/linux
+prefix=/home/creywood/workspaces/naivi/thirdpartybuild/glew-2.1.0/build/install/linux
 exec_prefix=${prefix}
-libdir=/home/nap/workspaces/thirdpartybuild/glew-2.1.0/build/install/linux/lib/x86_64-linux-gnu
+libdir=/home/creywood/workspaces/naivi/thirdpartybuild/glew-2.1.0/build/install/linux/lib
 includedir=${prefix}/include
 
 Name: glew

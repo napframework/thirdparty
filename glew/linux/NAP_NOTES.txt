@@ -1,4 +1,5 @@
-Built on Ubuntu 12.04 from glew-2.1.0.tgz
+Built from glew-2.1.0.tgz on Ubuntu 16.04 with GCC 5.4.0
+
 
 Built with:
 

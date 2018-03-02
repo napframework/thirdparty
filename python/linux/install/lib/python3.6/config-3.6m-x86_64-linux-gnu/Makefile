@@ -29,8 +29,8 @@ MODLIBS=        $(LOCALMODLIBS) $(BASEMODLIBS)
 VERSION=	3.6
 srcdir=		.
 
-abs_srcdir=	/home/nap/workspaces/thirdpartybuild/Python-3.6.4
-abs_builddir=	/home/nap/workspaces/thirdpartybuild/Python-3.6.4
+abs_srcdir=	/home/creywood/workspaces/naivi/thirdpartybuild/Python-3.6.4
+abs_builddir=	/home/creywood/workspaces/naivi/thirdpartybuild/Python-3.6.4
 
 
 CC=		gcc -pthread
@@ -120,7 +120,7 @@ MULTIARCH=	x86_64-linux-gnu
 MULTIARCH_CPPFLAGS = -DMULTIARCH=\"x86_64-linux-gnu\"
 
 # Install prefix for architecture-independent files
-prefix=		/home/nap/workspaces/thirdpartybuild/Python-3.6.4/installpref/linux
+prefix=		/home/creywood/workspaces/naivi/thirdpartybuild/Python-3.6.4/linux-install
 
 # Install prefix for architecture-dependent files
 exec_prefix=	${prefix}
@@ -177,7 +177,7 @@ LIPO_32BIT_FLAGS=
 OTHER_LIBTOOL_OPT=
 
 # Environment to run shared python without installed libraries
-RUNSHARED=       LD_LIBRARY_PATH=/home/nap/workspaces/thirdpartybuild/Python-3.6.4
+RUNSHARED=       LD_LIBRARY_PATH=/home/creywood/workspaces/naivi/thirdpartybuild/Python-3.6.4
 
 # ensurepip options
 ENSUREPIP=      upgrade
@@ -189,7 +189,7 @@ EXEMODE=	755
 FILEMODE=	644
 
 # configure script arguments
-CONFIG_ARGS=	 '--prefix=/home/nap/workspaces/thirdpartybuild/Python-3.6.4/installpref/linux' '--enable-shared'
+CONFIG_ARGS=	 '--enable-shared' '--prefix=/home/creywood/workspaces/naivi/thirdpartybuild/Python-3.6.4/linux-install'
 
 
 # Subdirectories with code
@@ -214,7 +214,7 @@ LDLIBRARYDIR=
 INSTSONAME=	libpython$(LDVERSION).so.1.0
 
 
-LIBS=		-lpthread -ldl  -lutil -lrt
+LIBS=		-lpthread -ldl  -lutil
 LIBM=		-lm
 LIBC=		
 SYSLIBS=	$(LIBM) $(LIBC)
@@ -230,8 +230,8 @@ LIBOBJS=
 PYTHON=		python$(EXE)
 BUILDPYTHON=	python$(BUILDEXE)
 
-PYTHON_FOR_REGEN=python
-UPDATE_FILE=python $(srcdir)/Tools/scripts/update_file.py
+PYTHON_FOR_REGEN=python3
+UPDATE_FILE=python3 $(srcdir)/Tools/scripts/update_file.py
 PYTHON_FOR_BUILD=./$(BUILDPYTHON) -E
 _PYTHON_HOST_PLATFORM=
 BUILD_GNU_TYPE=	x86_64-pc-linux-gnu

@@ -1,4 +1,4 @@
-Built from Python-3.6.4.tar.xz
+Built from Python-3.6.4.tar.xz on Ubuntu 16.04 with GCC 5.4.0
 
 Configured with options:
 --enable-shared
@@ -17,4 +17,4 @@ To find the necessary bits, look in setup.py in detect_modules() for the module'
 
 The following modules found by detect_modules() in setup.py, have been
 built by the Makefile instead, as configured by the Setup files:
-atexit                pwd                   time    
+atexit                pwd                   time               

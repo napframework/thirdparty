@@ -1,6 +1,5 @@
-Compiled from source in repo (3.0.0) on Ubuntu 12.04
+Compiled from source in repo (3.0.0) on Ubuntu 16.04 with GCC 5.4.0
 
 Other content of rtmidi/bin/linux are from previous commit by Stijn, intention is to remove them (atleast for x86_64) once packaging changes have been merged.
 
-# TODO confirm rtmidi options with Stijn?
 # TODO Clean up older x86_64 contents once packaging changes have been merged (and re-arrange arm build)

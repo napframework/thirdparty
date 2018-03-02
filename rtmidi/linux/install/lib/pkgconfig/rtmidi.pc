@@ -1,4 +1,4 @@
-prefix=/home/nap/workspaces/thirdpartybuild/rtmidi-3.0.0/install/linux
+prefix=/home/creywood/workspaces/naivi/thirdpartybuild/rtmidi-3.0.0/linux-install
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include/rtmidi
@@ -9,4 +9,4 @@ Version: 3.0.0
 Requires:  alsa 
 Libs: -L${libdir} -lrtmidi
 Libs.private: -lpthread
-Cflags: -pthread -I${includedir}  -I/home/nap/workspaces/thirdpartybuild/rtmidi-3.0.0/install/linux/include/rtmidi  -D__LINUX_ALSA__
+Cflags: -pthread -I${includedir}  -I/home/creywood/workspaces/naivi/thirdpartybuild/rtmidi-3.0.0/linux-install/include/rtmidi  -D__LINUX_ALSA__

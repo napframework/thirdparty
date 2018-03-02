@@ -1,7 +1,7 @@
-prefix=/home/nap/workspaces/thirdpartybuild/ffmpeg-3.4.2/install/linux
+prefix=/home/creywood/workspaces/naivi/thirdpartybuild/ffmpeg-3.4.2/install/linux
 exec_prefix=${prefix}
-libdir=/home/nap/workspaces/thirdpartybuild/ffmpeg-3.4.2/install/linux/lib
-includedir=/home/nap/workspaces/thirdpartybuild/ffmpeg-3.4.2/install/linux/include
+libdir=/home/creywood/workspaces/naivi/thirdpartybuild/ffmpeg-3.4.2/install/linux/lib
+includedir=/home/creywood/workspaces/naivi/thirdpartybuild/ffmpeg-3.4.2/install/linux/include
 
 Name: libavdevice
 Description: FFmpeg device handling library
@@ -10,5 +10,5 @@ Requires:
 Requires.private: libavfilter >= 6.107.100, libswscale >= 4.8.100, libavformat >= 57.83.100, libavcodec >= 57.107.100, libswresample >= 2.9.100, libavutil >= 55.78.100
 Conflicts:
 Libs: -L${libdir}  -lavdevice 
-Libs.private: -lxcb -lasound -lm -ldl -pthread -pthread -lrt
+Libs.private: -lxcb -lxcb-xfixes -lxcb-render -lxcb-shape -lxcb -lxcb-shape -lxcb -lm -ldl -lz -pthread -pthread
 Cflags: -I${includedir}
