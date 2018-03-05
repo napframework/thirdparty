@@ -5,6 +5,11 @@ Configured with options:
 
 # TODO flesh out configuration options, based on any missing modules below that we want
 
+After build:
+
+patchelf --set-rpath \$ORIGIN/../lib bin/python3.6
+patchelf --set-rpath \$ORIGIN/../lib bin/python3.6m
+
 Output:
 
 Python build finished successfully!
