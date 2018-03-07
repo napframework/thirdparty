@@ -9,6 +9,9 @@ After build:
 
 patchelf --set-rpath \$ORIGIN/../lib bin/python3.6
 patchelf --set-rpath \$ORIGIN/../lib bin/python3.6m
+rm -r lib/python3.6/test
+rm -r lib/python3.6/tkinter
+rm lib/python3.6/config-3.6m-x86_64-linux-gnu/libpython3.6m.a
 
 Output:
 
