@@ -1,0 +1,17 @@
+Compiled from pa_stable_v190600_20161030.tgz on Ubuntu 16.04 with GCC 5.4.0
+
+Other contents of portaudio/linux not in 'install' are from previous commit by Stijn, intention is to rearrange them (atleast for x86_64) once packaging changes have been merged.
+
+# TODO Rearrange previous build contents once packaging changes have been merged
+
+Configure output:
+
+  Target ...................... x86_64-unknown-linux-gnu
+  C++ bindings ................ no
+  Debug output ................ no
+
+  ALSA ........................ yes
+  ASIHPI ...................... no
+
+  OSS ......................... yes
+  JACK ........................ yes

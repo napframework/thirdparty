@@ -1,0 +1,2 @@
+Afterwards:
+install_name_tool -id @rpath/libGLEW.dylib libGLEW.dylib

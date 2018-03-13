@@ -1,0 +1,78 @@
+Built from ffmpeg-3.4.2.tar.bz2
+
+Configured with options:
+--enable-shared --disable-static --disable-programs --disable-doc
+
+TODO consolidate option across platforms.  Can't use --enable-gpl or --enable-nonfree anywhere: https://ffmpeg.org/legal.html
+
+Afterwards:
+
+TODO this is a brittle mess, replace with a scripted approach
+
+install_name_tool -id @rpath/libavcodec.57.107.100.dylib libavcodec.57.107.100.dylib
+install_name_tool -id @rpath/libavdevice.57.10.100.dylib libavdevice.57.10.100.dylib
+install_name_tool -id @rpath/libavfilter.6.107.100.dylib libavfilter.6.107.100.dylib
+install_name_tool -id @rpath/libavformat.57.83.100.dylib libavformat.57.83.100.dylib
+install_name_tool -id @rpath/libavutil.55.78.100.dylib libavutil.55.78.100.dylib
+install_name_tool -id @rpath/libswresample.2.9.100.dylib libswresample.2.9.100.dylib
+install_name_tool -id @rpath/libswscale.4.8.100.dylib libswscale.4.8.100.dylib
+
+
+install_name_tool -change `pwd`/libswresample.2.dylib @loader_path/libswresample.2.dylib libavcodec.57.107.100.dylib
+install_name_tool -change `pwd`/libavutil.55.dylib @loader_path/libavutil.55.dylib libavcodec.57.107.100.dylib
+
+
+install_name_tool -change `pwd`/libavfilter.6.dylib @loader_path/libavfilter.6.dylib libavdevice.57.10.100.dylib
+install_name_tool -change `pwd`/libswscale.4.dylib @loader_path/libswscale.4.dylib libavdevice.57.10.100.dylib
+install_name_tool -change `pwd`/libavformat.57.dylib  @loader_path/libavformat.57.dylib libavdevice.57.10.100.dylib
+install_name_tool -change `pwd`/libavcodec.57.dylib  @loader_path/libavcodec.57.dylib libavdevice.57.10.100.dylib
+install_name_tool -change `pwd`/libswresample.2.dylib @loader_path/libswresample.2.dylib libavdevice.57.10.100.dylib
+install_name_tool -change `pwd`/libavutil.55.dylib @loader_path/libavutil.55.dylib libavdevice.57.10.100.dylib
+
+
+install_name_tool -change `pwd`/libavdevice.57.10.100.dylib  @loader_path/libavdevice.57.10.100.dylib libavfilter.6.107.100.dylib
+install_name_tool -change `pwd`/libavcodec.57.dylib  @loader_path/libavcodec.57.dylib libavfilter.6.107.100.dylib
+install_name_tool -change `pwd`/libavformat.57.dylib  @loader_path/libavformat.57.dylib libavfilter.6.107.100.dylib
+install_name_tool -change `pwd`/libavutil.55.dylib @loader_path/libavutil.55.dylib libavfilter.6.107.100.dylib
+install_name_tool -change `pwd`/libswscale.4.dylib @loader_path/libswscale.4.dylib libavfilter.6.107.100.dylib
+install_name_tool -change `pwd`/libswresample.2.dylib @loader_path/libswresample.2.dylib libavfilter.6.107.100.dylib
+
+
+
+install_name_tool -change `pwd`/libavdevice.57.10.100.dylib  @loader_path/libavdevice.57.10.100.dylib libavformat.57.83.100.dylib
+install_name_tool -change `pwd`/libavcodec.57.dylib  @loader_path/libavcodec.57.dylib libavformat.57.83.100.dylib
+install_name_tool -change `pwd`/libavfilter.6.dylib @loader_path/libavfilter.6.dylib libavformat.57.83.100.dylib
+install_name_tool -change `pwd`/libavutil.55.dylib @loader_path/libavutil.55.dylib libavformat.57.83.100.dylib
+install_name_tool -change `pwd`/libswscale.4.dylib @loader_path/libswscale.4.dylib libavformat.57.83.100.dylib
+install_name_tool -change `pwd`/libswresample.2.dylib @loader_path/libswresample.2.dylib libavformat.57.83.100.dylib
+
+install_name_tool -change `pwd`/libavdevice.57.10.100.dylib  @loader_path/libavdevice.57.10.100.dylib libavutil.55.78.100.dylib
+install_name_tool -change `pwd`/libavcodec.57.dylib  @loader_path/libavcodec.57.dylib libavutil.55.78.100.dylib
+install_name_tool -change `pwd`/libavfilter.6.dylib @loader_path/libavfilter.6.dylib libavutil.55.78.100.dylib
+install_name_tool -change `pwd`/libavformat.57.dylib  @loader_path/libavformat.57.dylib libavutil.55.78.100.dylib
+install_name_tool -change `pwd`/libswscale.4.dylib @loader_path/libswscale.4.dylib libavutil.55.78.100.dylib
+install_name_tool -change `pwd`/libswresample.2.dylib @loader_path/libswresample.2.dylib libavutil.55.78.100.dylib
+
+install_name_tool -change `pwd`/libavdevice.57.10.100.dylib  @loader_path/libavdevice.57.10.100.dylib libswresample.2.9.100.dylib
+install_name_tool -change `pwd`/libavcodec.57.dylib  @loader_path/libavcodec.57.dylib libswresample.2.9.100.dylib
+install_name_tool -change `pwd`/libavfilter.6.dylib @loader_path/libavfilter.6.dylib libswresample.2.9.100.dylib
+install_name_tool -change `pwd`/libavformat.57.dylib  @loader_path/libavformat.57.dylib libswresample.2.9.100.dylib
+install_name_tool -change `pwd`/libavutil.55.dylib @loader_path/libavutil.55.dylib libswresample.2.9.100.dylib
+install_name_tool -change `pwd`/libswscale.4.dylib @loader_path/libswscale.4.dylib libswresample.2.9.100.dylib
+
+install_name_tool -change `pwd`/libavdevice.57.10.100.dylib  @loader_path/libavdevice.57.10.100.dylib libswscale.4.8.100.dylib
+install_name_tool -change `pwd`/libavcodec.57.dylib  @loader_path/libavcodec.57.dylib libswscale.4.8.100.dylib
+install_name_tool -change `pwd`/libavfilter.6.dylib @loader_path/libavfilter.6.dylib libswscale.4.8.100.dylib
+install_name_tool -change `pwd`/libavformat.57.dylib  @loader_path/libavformat.57.dylib libswscale.4.8.100.dylib
+install_name_tool -change `pwd`/libavutil.55.dylib @loader_path/libavutil.55.dylib libswscale.4.8.100.dylib
+install_name_tool -change `pwd`/libswresample.2.dylib @loader_path/libswresample.2.dylib libswscale.4.8.100.dylib
+
+
+
+
+
+
+
+
+
+

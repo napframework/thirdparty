@@ -1,0 +1,8 @@
+Built from glew-2.1.0.tgz on Ubuntu 16.04 with GCC 5.4.0
+
+
+Built with:
+
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=`pwd`/install/linux ./cmake/
+make install
