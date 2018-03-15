@@ -81,13 +81,13 @@ MAKESETUP=      $(srcdir)/Modules/makesetup
 OPT=		-DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes
 BASECFLAGS=	 -Wno-unused-result -Wsign-compare -Wunreachable-code
 BASECPPFLAGS=	
-CONFIGURE_CFLAGS=	
+CONFIGURE_CFLAGS=	-arch i386 -arch x86_64 -isysroot /Users/cheywood/workspaces/naivi/thirdpartybuild/MacOSX-SDKs/MacOSX10.9.sdk/ 
 # CFLAGS_NODIST is used for building the interpreter and stdlib C extensions.
 # Use it when a compiler flag should _not_ be part of the distutils CFLAGS
 # once Python is installed (Issue #21121).
 CONFIGURE_CFLAGS_NODIST= -std=c99 -Wextra -Wno-unused-result -Wno-unused-parameter -Wno-missing-field-initializers
-CONFIGURE_CPPFLAGS=	
-CONFIGURE_LDFLAGS=	
+CONFIGURE_CPPFLAGS=	-isysroot /Users/cheywood/workspaces/naivi/thirdpartybuild/MacOSX-SDKs/MacOSX10.9.sdk/ 
+CONFIGURE_LDFLAGS=	-arch i386 -arch x86_64 -isysroot /Users/cheywood/workspaces/naivi/thirdpartybuild/MacOSX-SDKs/MacOSX10.9.sdk/ 
 # Avoid assigning CFLAGS, LDFLAGS, etc. so users can use them on the
 # command line to append to these values without stomping the pre-set
 # values.
@@ -120,7 +120,7 @@ MULTIARCH=	darwin
 MULTIARCH_CPPFLAGS = -DMULTIARCH=\"darwin\"
 
 # Install prefix for architecture-independent files
-prefix=		/Users/cheywood/Downloads/Python-3.6.4/install-prefix/osx
+prefix=		/Users/cheywood/Downloads/Python-3.6.4/osx-install
 
 # Install prefix for architecture-dependent files
 exec_prefix=	${prefix}
@@ -156,7 +156,7 @@ EXE=
 BUILDEXE=	.exe
 
 # Short name and location for Mac OS X Python framework
-UNIVERSALSDK=
+UNIVERSALSDK=/Users/cheywood/workspaces/naivi/thirdpartybuild/MacOSX-SDKs/MacOSX10.9.sdk/
 PYTHONFRAMEWORK=	
 PYTHONFRAMEWORKDIR=	no-framework
 PYTHONFRAMEWORKPREFIX=	
@@ -164,14 +164,14 @@ PYTHONFRAMEWORKINSTALLDIR=
 # Deployment target selected during configure, to be checked
 # by distutils. The export statement is needed to ensure that the
 # deployment target is active during build.
-MACOSX_DEPLOYMENT_TARGET=10.9
+MACOSX_DEPLOYMENT_TARGET=10.13
 export MACOSX_DEPLOYMENT_TARGET
 
 # Option to install to strip binaries
 STRIPFLAG=-s
 
 # Flags to lipo to produce a 32-bit-only universal executable
-LIPO_32BIT_FLAGS=
+LIPO_32BIT_FLAGS=-extract i386
 
 # Options to enable prebinding (for fast startup prior to Mac OS X 10.3)
 OTHER_LIBTOOL_OPT=
@@ -189,7 +189,7 @@ EXEMODE=	755
 FILEMODE=	644
 
 # configure script arguments
-CONFIG_ARGS=	 '--prefix=/Users/cheywood/Downloads/Python-3.6.4/install-prefix/osx/' 'MACOSX_DEPLOYMENT_TARGET=10.9' '--enable-shared'
+CONFIG_ARGS=	 '--enable-shared' '--enable-universalsdk=/Users/cheywood/workspaces/naivi/thirdpartybuild/MacOSX-SDKs/MacOSX10.9.sdk/' '--prefix=/Users/cheywood/Downloads/Python-3.6.4/osx-install/'
 
 
 # Subdirectories with code
@@ -234,8 +234,8 @@ PYTHON_FOR_REGEN=python
 UPDATE_FILE=python $(srcdir)/Tools/scripts/update_file.py
 PYTHON_FOR_BUILD=./$(BUILDPYTHON) -E
 _PYTHON_HOST_PLATFORM=
-BUILD_GNU_TYPE=	x86_64-apple-darwin16.7.0
-HOST_GNU_TYPE=	x86_64-apple-darwin16.7.0
+BUILD_GNU_TYPE=	x86_64-apple-darwin17.4.0
+HOST_GNU_TYPE=	x86_64-apple-darwin17.4.0
 
 # Tcl and Tk config info from --with-tcltk-includes and -libs options
 TCLTK_INCLUDES=	

@@ -1,5 +1,5 @@
 # See: man pkg-config
-prefix=/Users/cheywood/Downloads/Python-3.6.4/install-prefix/osx
+prefix=/Users/cheywood/Downloads/Python-3.6.4/osx-install
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
