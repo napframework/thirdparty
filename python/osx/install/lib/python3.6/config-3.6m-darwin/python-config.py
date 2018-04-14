@@ -1,4 +1,4 @@
-#!/Users/cheywood/Downloads/Python-3.6.4/install-prefix/osx/bin/python3.6m
+#!/Users/cheywood/Downloads/Python-3.6.4/osx-install/bin/python3.6m
 # -*- python -*-
 
 # Keep this script in sync with python-config.sh.in
