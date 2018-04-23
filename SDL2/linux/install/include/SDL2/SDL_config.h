@@ -1,7 +1,7 @@
 /* include/SDL_config.h.  Generated from SDL_config.h.in by configure.  */
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -136,19 +136,34 @@
 /* #undef HAVE_SNPRINTF */
 #define HAVE_VSNPRINTF 1
 #define HAVE_M_PI /**/
-#define HAVE_ATAN 1
-#define HAVE_ATAN2 1
 #define HAVE_ACOS 1
+#define HAVE_ACOSF 1
 #define HAVE_ASIN 1
+#define HAVE_ASINF 1
+#define HAVE_ATAN 1
+#define HAVE_ATANF 1
+#define HAVE_ATAN2 1
+#define HAVE_ATAN2F 1
 #define HAVE_CEIL 1
+#define HAVE_CEILF 1
 #define HAVE_COPYSIGN 1
+#define HAVE_COPYSIGNF 1
 #define HAVE_COS 1
 #define HAVE_COSF 1
 #define HAVE_FABS 1
+#define HAVE_FABSF 1
 #define HAVE_FLOOR 1
+#define HAVE_FLOORF 1
+#define HAVE_FMOD 1
+#define HAVE_FMODF 1
 #define HAVE_LOG 1
+#define HAVE_LOGF 1
+#define HAVE_LOG10 1
+#define HAVE_LOG10F 1
 #define HAVE_POW 1
+#define HAVE_POWF 1
 #define HAVE_SCALBN 1
+#define HAVE_SCALBNF 1
 #define HAVE_SIN 1
 #define HAVE_SINF 1
 #define HAVE_SQRT 1
@@ -181,11 +196,12 @@
 #endif /* HAVE_LIBC */
 
 /* #undef HAVE_ALTIVEC_H */
-/* #undef HAVE_LIBUDEV_H */
 #define HAVE_DBUS_DBUS_H 1
-/* #undef HAVE_IBUS_IBUS_H */
 /* #undef HAVE_FCITX_FRONTEND_H */
+/* #undef HAVE_IBUS_IBUS_H */
+#define HAVE_IMMINTRIN_H 1
 /* #undef HAVE_LIBSAMPLERATE_H */
+#define HAVE_LIBUDEV_H 1
 
 /* #undef HAVE_DDRAW_H */
 /* #undef HAVE_DINPUT_H */
@@ -239,15 +255,14 @@
 #define SDL_AUDIO_DRIVER_OSS 1
 /* #undef SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H */
 /* #undef SDL_AUDIO_DRIVER_PAUDIO */
-/* #undef SDL_AUDIO_DRIVER_PULSEAUDIO */
-/* #undef SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC */
+#define SDL_AUDIO_DRIVER_PULSEAUDIO 1
+#define SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC "libpulse-simple.so.0"
 /* #undef SDL_AUDIO_DRIVER_QSA */
-/* #undef SDL_AUDIO_DRIVER_SNDIO */
+#define SDL_AUDIO_DRIVER_SNDIO 1
 /* #undef SDL_AUDIO_DRIVER_SNDIO_DYNAMIC */
 /* #undef SDL_AUDIO_DRIVER_SUNAUDIO */
 /* #undef SDL_AUDIO_DRIVER_WASAPI */
 /* #undef SDL_AUDIO_DRIVER_WINMM */
-/* #undef SDL_AUDIO_DRIVER_XAUDIO2 */
 
 /* Enable various input drivers */
 #define SDL_INPUT_LINUXEV 1
@@ -265,6 +280,7 @@
 /* #undef SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H */
 /* #undef SDL_JOYSTICK_EMSCRIPTEN */
 /* #undef SDL_HAPTIC_DUMMY */
+/* #undef SDL_HAPTIC_ANDROID */
 #define SDL_HAPTIC_LINUX 1
 /* #undef SDL_HAPTIC_IOKIT */
 /* #undef SDL_HAPTIC_DINPUT */
@@ -313,19 +329,19 @@
 /* #undef SDL_VIDEO_DRIVER_EMSCRIPTEN */
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC "libX11.so.6"
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT "libXext.so.6"
-/* #undef SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR */
-/* #undef SDL_VIDEO_DRIVER_X11_DYNAMIC_XINERAMA */
-/* #undef SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 */
-/* #undef SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR */
-/* #undef SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS */
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR "libXcursor.so.1"
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XINERAMA "libXinerama.so.1"
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 "libXi.so.6"
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR "libXrandr.so.2"
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS "libXss.so.1"
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XVIDMODE "libXxf86vm.so.1"
-/* #undef SDL_VIDEO_DRIVER_X11_XCURSOR */
+#define SDL_VIDEO_DRIVER_X11_XCURSOR 1
 #define SDL_VIDEO_DRIVER_X11_XDBE 1
-/* #undef SDL_VIDEO_DRIVER_X11_XINERAMA */
-/* #undef SDL_VIDEO_DRIVER_X11_XINPUT2 */
-/* #undef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH */
-/* #undef SDL_VIDEO_DRIVER_X11_XRANDR */
-/* #undef SDL_VIDEO_DRIVER_X11_XSCRNSAVER */
+#define SDL_VIDEO_DRIVER_X11_XINERAMA 1
+#define SDL_VIDEO_DRIVER_X11_XINPUT2 1
+#define SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1
+#define SDL_VIDEO_DRIVER_X11_XRANDR 1
+#define SDL_VIDEO_DRIVER_X11_XSCRNSAVER 1
 #define SDL_VIDEO_DRIVER_X11_XSHAPE 1
 #define SDL_VIDEO_DRIVER_X11_XVIDMODE 1
 #define SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1
@@ -342,6 +358,7 @@
 /* #undef SDL_VIDEO_RENDER_OGL_ES */
 #define SDL_VIDEO_RENDER_OGL_ES2 1
 /* #undef SDL_VIDEO_RENDER_DIRECTFB */
+/* #undef SDL_VIDEO_RENDER_METAL */
 
 /* Enable OpenGL support */
 #define SDL_VIDEO_OPENGL 1
@@ -385,7 +402,7 @@
 #define SDL_USE_IME 1
 
 /* Enable dynamic udev support */
-/* #undef SDL_UDEV_DYNAMIC */
+#define SDL_UDEV_DYNAMIC "libudev.so.1"
 
 /* Enable dynamic libsamplerate support */
 /* #undef SDL_LIBSAMPLERATE_DYNAMIC */
