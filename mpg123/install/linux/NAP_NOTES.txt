@@ -1,9 +1,5 @@
 Compiled from source included in repo (1.25.6) on Ubuntu 16.04 with GCC 5.4.0
 
-Contents of mpg123/bin/ are from previous commit by Stijn, intention is to clean this up once packaging changes have been merged.
-
-# TODO Clean up mpg123/bin contents once packaging changes have been merged
-
 Output:
 
   CPU Optimization ........ x86-64
