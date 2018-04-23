@@ -39,15 +39,23 @@
 
 // Handle 32/64 bits int size issues
 #ifdef __x86_64__
-    #define uint32 unsigned int
-    #define uint64 unsigned long int
-    #define int32 int
-    #define int64 long int
+    using uint32 = unsigned int;
+    using uint64 = unsigned long int;
+    using int32 = int;
+    using int64 = long int;
+//    #define uint32 unsigned int
+//    #define uint64 unsigned long int
+//    #define int32 int
+//    #define int64 long int
 #else
-    #define uint32 unsigned int
-    #define uint64 unsigned long long int
-    #define int32 int
-    #define int64 long long int
+//    #define uint32 unsigned int
+//    #define uint64 unsigned long long int
+//    #define int32 int
+//    #define int64 long long int
+    using uint32 = unsigned int;
+    using uint64 = unsigned long long int;
+    using int32 = int;
+    using int64 = long long int;
 #endif
 
 #ifdef TARGET_OS_IPHONE
