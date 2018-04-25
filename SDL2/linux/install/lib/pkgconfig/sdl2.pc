@@ -11,5 +11,5 @@ Version: 2.0.8
 Requires:
 Conflicts:
 Libs: -L${libdir} -Wl,-rpath,${libdir} -Wl,--enable-new-dtags -lSDL2 
-Libs.private: -lSDL2   -Wl,--no-undefined -lm -ldl -lsndio -lpthread -lrt
+Libs.private: -lSDL2   -Wl,--no-undefined -lm -ldl -lpthread -lrt
 Cflags: -I${includedir}/SDL2   -D_REENTRANT
