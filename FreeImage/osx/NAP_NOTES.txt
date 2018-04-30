@@ -8,5 +8,3 @@ Built from FreeImage3170.zip using Makefile.osx alongside this file
 Post build steps:
 
 The install_name_tool step above. 
-
-TODO: Remove content of lib/osx after release-packaging-fixes-the-second branch merge

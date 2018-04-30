@@ -2,7 +2,7 @@ Compiled from libsndfile-1.0.28.tar.gz on Ubuntu 16.04 with GCC 5.4.0
 
 Other content of libsndfile/linux not under install are from previous commit by Stijn, intention is to remove them (atleast for x86_64) once packaging changes have been merged.
 
-# TODO Remove older x86_64 contents once packaging changes have been merged (and re-arrange arm build)
+# TODO Re-arrange arm build
 
 Configure output:
 
