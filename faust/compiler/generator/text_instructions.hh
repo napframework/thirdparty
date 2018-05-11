@@ -114,9 +114,15 @@ class TextInstVisitor : public InstVisitor {
         virtual void visit(IndexedAddress* indexed)
         {
             indexed->fAddress->accept(this);
-            *fOut << "["; indexed->fIndex->accept(this); *fOut << "]";
+            DeclareStructTypeInst* struct_type = isStructType(indexed->getName());
+            if (struct_type) {
+                Int32NumInst* field_index = dynamic_cast<Int32NumInst*>(indexed->fIndex);
+                *fOut << "->" << struct_type->fType->getName(field_index->fNum);
+            } else {
+                *fOut << "["; indexed->fIndex->accept(this); *fOut << "]";
+            }
         }
-        
+    
         virtual void visit(LoadVarInst* inst)
         {
             inst->fAddress->accept(this);
@@ -258,11 +264,11 @@ class TextInstVisitor : public InstVisitor {
                 (*it)->accept(this);
                 // Compile parameters
                 *fOut << fObjectAccess << fun_name << "(";
-                generateFunCallArgs(++it, inst->fArgs.end(), inst->fArgs.size() - 1);
+                generateFunCallArgs(++it, inst->fArgs.end(), int(inst->fArgs.size()) - 1);
             } else {
                 *fOut << fun_name << "(";
                 // Compile parameters
-                generateFunCallArgs(inst->fArgs.begin(), inst->fArgs.end(), inst->fArgs.size());
+                generateFunCallArgs(inst->fArgs.begin(), inst->fArgs.end(), int(inst->fArgs.size()));
             }
             *fOut << ")";
         }

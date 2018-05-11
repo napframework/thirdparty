@@ -60,10 +60,26 @@ string checkReal(double val);
 
 string indent(string const& str, int tabs);
 string replaceChar(string str, char ch1, char ch2);
+string replaceCharList(string str, const vector<char>& ch1, char ch2);
+
+inline bool checkMin(const string& str)
+{
+    return ((str == "min") || (str == "min_i") || (str == "min_f") || (str == "min_"));
+}
+
+inline bool checkMax(const string& str)
+{
+    return ((str == "max") || (str == "max_i") || (str == "max_f") || (str == "max_"));
+}
+
+inline bool checkMinMax(const string& str)
+{
+    return checkMin(str) || checkMax(str);
+}
 
 inline bool startWith(const string& str, const string& prefix)
 {
-    return (str.find(prefix) != string::npos);
+    return (str.substr(0, prefix.size()) == prefix);
 }
 
 inline bool endWith(const string& str, const string& suffix)
@@ -74,7 +90,7 @@ inline bool endWith(const string& str, const string& suffix)
 
 inline string startWithRes(const string& str, const string& prefix)
 {   
-    return (str.find(prefix) != string::npos) ? str.substr(prefix.size()) : "";
+    return (str.substr(0, prefix.size()) == prefix) ? str.substr(prefix.size()) : "";
 }
 
 inline bool startWithRes(const string& str, const string& prefix, string& res)
@@ -89,7 +105,7 @@ inline bool startWithRes(const string& str, const string& prefix, string& res)
 
 inline string removeChar(const string& str, char c)
 {
-    std::string res;
+    string res;
     res.reserve(str.size()); // optional, avoids buffer reallocations in the loop
     for (size_t i = 0; i < str.size(); ++i) {
         if (str[i] != c) res += str[i];
@@ -109,9 +125,9 @@ inline bool replaceExtension(const string& str, const string& term, string& res)
     }
 }
 
-inline std::string flatten(const std::string& src)
+inline string flatten(const string& src)
 {
-    std::stringstream dst;
+    stringstream dst;
     size_t size = src.size();
     for (size_t i = 0; i < src.size(); i++) {
         switch (src[i]) {
@@ -132,9 +148,9 @@ inline std::string flatten(const std::string& src)
     return dst.str();
 }
 
-inline std::string pathToContent(const std::string& path)
+inline string pathToContent(const string& path)
 {
-    std::ifstream file(path.c_str(), std::ifstream::binary);
+    ifstream file(path.c_str(), ifstream::binary);
     
     file.seekg(0, file.end);
     int size = int(file.tellg());

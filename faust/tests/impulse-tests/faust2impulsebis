@@ -29,13 +29,12 @@ for f in $FILES; do
   	# compile Faust to c++
     faust -e "$f"
     cd $dirname
-    faust $OPTIONS -i -a impulsearch.cpp $name_exp -o "$name.cpp" || exit
+    faust $OPTIONS -i -A .. -a impulsearch.cpp $name_exp -o "$name.cpp" || exit
 
 	# compile c++ to binary
 	(
 		${CXX=g++} ${CXXFLAGS=-O3 -pthread -std=c++11} $OMP "$name.cpp" -o "$name"
 	) > /dev/null || exit
-
 
 	# run the resulting binary to generate the impulse response
 	./"$name" -n 60000

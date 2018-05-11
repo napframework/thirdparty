@@ -185,7 +185,7 @@ class FIRInterpreter  {
                 for (int i = fWriteIndex - 1; i >= 0; i--) {
                     *out << fExecTrace[i];
                 }
-                for (int i = fExecTrace.size() - 1; i >= fWriteIndex; i--) {
+                for (int i = int(fExecTrace.size()) - 1; i >= fWriteIndex; i--) {
                     *out << fExecTrace[i];
                 }
             }
@@ -639,7 +639,7 @@ class FIRInterpreter  {
                     
                     do_kBlockStoreReal:
                     {
-                        FIRBlockStoreRealInstruction<T>* inst = dynamic_cast<FIRBlockStoreRealInstruction<T>*>(*it);
+                        FIRBlockStoreRealInstruction<T>* inst = static_cast<FIRBlockStoreRealInstruction<T>*>(*it);
                         faustassert(inst);
                         for (int i = 0; i < inst->fOffset2; i++) {
                             fRealHeap[inst->fOffset1 + i] = inst->fNumTable[i];
@@ -649,7 +649,7 @@ class FIRInterpreter  {
                     
                     do_kBlockStoreInt:
                     {
-                        FIRBlockStoreIntInstruction<T>* inst = dynamic_cast<FIRBlockStoreIntInstruction<T>*>(*it);
+                        FIRBlockStoreIntInstruction<T>* inst = static_cast<FIRBlockStoreIntInstruction<T>*>(*it);
                         faustassert(inst);
                         for (int i = 0; i < inst->fOffset2; i++) {
                             fIntHeap[inst->fOffset1 + i] = inst->fNumTable[i];

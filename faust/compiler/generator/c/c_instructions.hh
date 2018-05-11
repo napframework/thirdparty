@@ -176,6 +176,14 @@ class CInstVisitor : public TextInstVisitor {
             << ", " << checkReal(inst->fMax) << ")";          
             EndLine();
         }
+    
+        virtual void visit(AddSoundfileInst* inst)
+        {
+            *fOut << "ui_interface->addSoundFile(ui_interface->uiInterface, " << quote(inst->fLabel)
+            << ", " << quote(inst->fURL)
+            << ", &dsp->" << inst->fVarname << ")";
+            EndLine();
+        }
 
         virtual void visit(DeclareVarInst* inst)
         {
@@ -204,7 +212,7 @@ class CInstVisitor : public TextInstVisitor {
             }
             
             // Defined as macro in the architecture file...
-            if (startWith(inst->fName, "min") || startWith(inst->fName, "max")) {
+            if (checkMinMax(inst->fName)) {
                 return;
             }
       
@@ -269,9 +277,9 @@ class CInstVisitor : public TextInstVisitor {
         {
             // Integer and real min/max are mapped on polymorphic ones
             string name;
-            if (startWith(inst->fName, "min")) {
+            if (checkMin(inst->fName)) {
                 name = "min";
-            } else if (startWith(inst->fName, "max")) {
+            } else if (checkMax(inst->fName)) {
                 name = "max";
             } else {
                 name = inst->fName;

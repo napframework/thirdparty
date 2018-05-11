@@ -3,7 +3,7 @@
 #####################################################################
 #                                                                   #
 #               Compiles Faust programs to iOS applications         #
-#               (c) Grame, 2012-2013                                #
+#               (c) Grame, 2012-2018                                #
 #                                                                   #
 #####################################################################
 
@@ -38,6 +38,7 @@ do
         echo "Use '-midi' to activate MIDI control"
         echo "Use '-osc' to activate OSC control"
         echo "Use '-soundfile' when compiling DSP using 'soundfile' primitive, to add needed resources"
+    	exit
     fi
 
     if [ "$p" = -icc ]; then

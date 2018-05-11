@@ -49,6 +49,9 @@ function Heap2Str(buf)
 */
 faust.mydsp = function (dsp_instance, context, buffer_size) {
 
+    // Resume audio context each time...
+    context.resume();
+    
     // Keep JSON parsed object
     var json_object = null;
     try {
@@ -367,7 +370,7 @@ faust.mydsp = function (dsp_instance, context, buffer_size) {
     }
 
     /**
-    * Controller
+    * Control change
     *
     * @param channel - the MIDI channel (0..15, not used for now)
     * @param ctrl - the MIDI controller number (0..127)
@@ -522,3 +525,4 @@ faust.createmydsp = function(context, buffer_size, callback)
     .then(dsp_module => callback(faust.mydsp(dsp_module.instance, context, buffer_size)))
     .catch(function(error) { console.log(error); faust.error_msg = "Faust mydsp cannot be loaded or compiled"; callback(null); });
 }
+

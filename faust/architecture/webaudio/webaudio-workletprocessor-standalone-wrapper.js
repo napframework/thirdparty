@@ -1,6 +1,5 @@
 /*
- faust2wasm
- Additional code: GRAME 2017
+ faust2wasm: GRAME 2017-2018
 */
  
 'use strict';
@@ -166,14 +165,15 @@ class mydspProcessor extends AudioWorkletProcessor {
         this.ptr_size = 4;
         this.sample_size = 4;
         
-        this.factory = mydspProcessor.mydsp_instance.exports;
-        this.HEAP = mydspProcessor.mydsp_instance.exports.memory.buffer;
+        this.mydsp_instance = new WebAssembly.Instance(mydspProcessor.wasm_module, mydspProcessor.importObject);
+  	   	this.factory = this.mydsp_instance.exports;
+        this.HEAP = this.mydsp_instance.exports.memory.buffer;
         this.HEAP32 = new Int32Array(this.HEAP);
         this.HEAPF32 = new Float32Array(this.HEAP);
 
-        console.log(this.HEAP);
-        console.log(this.HEAP32);
-        console.log(this.HEAPF32);
+        //console.log(this.HEAP);
+        //console.log(this.HEAP32);
+        //console.log(this.HEAPF32);
 
         // bargraph
         this.outputs_timer = 5;
@@ -331,6 +331,17 @@ class mydspProcessor extends AudioWorkletProcessor {
         var input = inputs[0];
         var output = outputs[0];
         
+        // Check inputs
+        if (this.numIn > 0 && ((input === undefined) || (input[0].length === 0))) {
+            //console.log("Process input error");
+            return true;
+        }
+        // Check outputs
+        if (this.numOut > 0 && ((output === undefined) || (output[0].length === 0))) {
+            //console.log("Process output error");
+            return true;
+        }
+        
         // Copy inputs
         if (input !== undefined) {
             for (var chan = 0; chan < Math.min(this.numIn, input.length) ; ++chan) {
@@ -353,7 +364,6 @@ class mydspProcessor extends AudioWorkletProcessor {
         
         // Copy outputs
         if (output !== undefined) {
-            //console.log("output.length " + output.length);
             for (var chan = 0; chan < Math.min(this.numOut, output.length); ++chan) {
                 var dspOutput = this.dspOutChannnels[chan];
                 output[chan].set(dspOutput);
@@ -424,9 +434,10 @@ mydspProcessor.importObject = {
 
 // Synchronously compile and instantiate the WASM module
 try {
-    let wasm_module = new WebAssembly.Module(mydspProcessor.atob(getBase64Codemydsp()));
-    mydspProcessor.mydsp_instance = new WebAssembly.Instance(wasm_module, mydspProcessor.importObject);
-    registerProcessor('mydsp', mydspProcessor);
+    if (mydspProcessor.wasm_module == undefined) {
+        mydspProcessor.wasm_module = new WebAssembly.Module(mydspProcessor.atob(getBase64Codemydsp()));
+        registerProcessor('mydsp', mydspProcessor);
+    }
 } catch (e) {
     console.log(e); console.log("Faust mydsp cannot be loaded or compiled");
 }

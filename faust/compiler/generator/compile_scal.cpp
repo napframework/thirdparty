@@ -87,13 +87,11 @@ string ScalarCompiler::getFreshID(const string& prefix)
 						    prepare
 *****************************************************************************/
 
-//extern bool gDumpNorm;
-
 Tree ScalarCompiler::prepare(Tree LS)
 {
     startTiming("ScalarCompiler::prepare");
     //  startTiming("first simplification");
-    //     LS = simplify(LS);
+    //  LS = simplify(LS);
     //  endTiming("first simplification");
     startTiming("deBruijn2Sym");
     Tree L1 = deBruijn2Sym(LS);   	// convert debruijn recursion into symbolic recursion
@@ -106,16 +104,16 @@ Tree ScalarCompiler::prepare(Tree LS)
     conditionAnnotation(L3);
     //conditionStatistics(L3);        // count condition occurences
 
-	// dump normal form
-	if (gGlobal->gDumpNorm) {
-		cout << ppsig(L3) << endl;
-		exit(0);
-	}
+    // dump normal form
+    if (gGlobal->gDumpNorm) {
+        cout << ppsig(L3) << endl;
+        throw faustexception("Dump normal form finished...\n");
+    }
 
 	recursivnessAnnotation(L3);		// Annotate L3 with recursivness information
 
     startTiming("typeAnnotation");
-        typeAnnotation(L3);				// Annotate L3 with type information
+    typeAnnotation(L3);				// Annotate L3 with type information
     endTiming("typeAnnotation");
 
     sharingAnalysis(L3);			// annotate L3 with sharing count
@@ -289,9 +287,10 @@ bool ScalarCompiler::getCompiledExpression(Tree sig, string& cexp)
 string ScalarCompiler::setCompiledExpression(Tree sig, const string& cexp)
 {
     //cerr << "ScalarCompiler::setCompiledExpression : " << cexp << " ==> " << ppsig(sig) << endl;
-    string old; if (fCompileProperty.get(sig, old) && (old != cexp)) {
-        cerr << "ERROR already a compiled expression attached : " << old << " replaced by " << cexp << endl;
-        exit(1);
+    string old;
+    if (fCompileProperty.get(sig, old) && (old != cexp)) {
+        //cerr << "ERROR already a compiled expression attached : " << old << " replaced by " << cexp << endl;
+        //exit(1);
     }
     fCompileProperty.set(sig, cexp);
 	return cexp;
@@ -309,9 +308,11 @@ string ScalarCompiler::CS(Tree sig)
 
     if (!getCompiledExpression(sig, code)) {
         // not compiled yet
-/*        if (getRecursivness(sig) != contextRecursivness.get()) {
+        /*
+        if (getRecursivness(sig) != contextRecursivness.get()) {
             contextRecursivness.set(getRecursivness(sig));
-        }*/
+        }
+        */
         code = generateCode(sig);
         setCompiledExpression(sig, code);
     }
@@ -345,54 +346,54 @@ string ScalarCompiler::generateCode(Tree sig)
 	else if ( isSigInt(sig, &i) ) 					{ return generateNumber(sig, T(i)); }
 	else if ( isSigReal(sig, &r) ) 					{ return generateNumber(sig, T(r)); }
     else if ( isSigWaveform(sig) )                  { return generateWaveform(sig); }
-	else if ( isSigInput(sig, &i) ) 				{ return generateInput 	(sig, T(i)); 			}
-	else if ( isSigOutput(sig, &i, x) ) 			{ return generateOutput 	(sig, T(i), CS(x));}
+	else if ( isSigInput(sig, &i) ) 				{ return generateInput(sig, T(i)); }
+	else if ( isSigOutput(sig, &i, x) ) 			{ return generateOutput(sig, T(i), CS(x));}
 
-	else if ( isSigFixDelay(sig, x, y) ) 			{ return generateFixDelay 	(sig, x, y); 			}
-	else if ( isSigPrefix(sig, x, y) ) 				{ return generatePrefix 	(sig, x, y); 			}
-	else if ( isSigIota(sig, x) ) 					{ return generateIota 		(sig, x); 				}
+	else if ( isSigFixDelay(sig, x, y) ) 			{ return generateFixDelay(sig, x, y); }
+	else if ( isSigPrefix(sig, x, y) ) 				{ return generatePrefix(sig, x, y); }
+	else if ( isSigIota(sig, x) ) 					{ return generateIota(sig, x); }
 
-	else if ( isSigBinOp(sig, &i, x, y) )			{ return generateBinOp 	(sig, i, x, y); 		}
-	else if ( isSigFFun(sig, ff, largs) )			{ return generateFFun 		(sig, ff, largs); 		}
-    else if ( isSigFConst(sig, type, name, file) )  { return generateFConst(sig, tree2str(file), tree2str(name)); }
+	else if ( isSigBinOp(sig, &i, x, y) )			{ return generateBinOp(sig, i, x, y); }
+	else if ( isSigFFun(sig, ff, largs) )			{ return generateFFun (sig, ff, largs); }
+    else if ( isSigFConst(sig, type, name, file) )  { return generateFConst(sig, tree2str(file), tree2str(name));}
     else if ( isSigFVar(sig, type, name, file) )    { return generateFVar(sig, tree2str(file), tree2str(name)); }
 
-	else if ( isSigTable(sig, id, x, y) ) 			{ return generateTable 	(sig, x, y); 			}
-	else if ( isSigWRTbl(sig, id, x, y, z) )		{ return generateWRTbl 	(sig, x, y, z); 		}
-	else if ( isSigRDTbl(sig, x, y) ) 				{ return generateRDTbl 	(sig, x, y); 			}
+	else if ( isSigTable(sig, id, x, y) ) 			{ return generateTable(sig, x, y); }
+	else if ( isSigWRTbl(sig, id, x, y, z) )		{ return generateWRTbl(sig, x, y, z); }
+	else if ( isSigRDTbl(sig, x, y) ) 				{ return generateRDTbl(sig, x, y); }
 
-	else if ( isSigSelect2(sig, sel, x, y) ) 		{ return generateSelect2 	(sig, sel, x, y); 		}
-	else if ( isSigSelect3(sig, sel, x, y, z) ) 	{ return generateSelect3 	(sig, sel, x, y, z); 	}
+	else if ( isSigSelect2(sig, sel, x, y) ) 		{ return generateSelect2(sig, sel, x, y); }
+	else if ( isSigSelect3(sig, sel, x, y, z) ) 	{ return generateSelect3(sig, sel, x, y, z); }
 
-	else if ( isSigGen(sig, x) ) 					{ return generateSigGen 	(sig, x); 				}
+	else if ( isSigGen(sig, x) ) 					{ return generateSigGen(sig, x); }
 
-    else if ( isProj(sig, &i, x) )                  { return generateRecProj    (sig, x, i);    }
+    else if ( isProj(sig, &i, x) )                  { return generateRecProj(sig, x, i); }
 
-	else if ( isSigIntCast(sig, x) ) 				{ return generateIntCast   (sig, x); 				}
-	else if ( isSigFloatCast(sig, x) ) 				{ return generateFloatCast (sig, x); 				}
+	else if ( isSigIntCast(sig, x) ) 				{ return generateIntCast(sig, x); }
+	else if ( isSigFloatCast(sig, x) ) 				{ return generateFloatCast(sig, x); }
 
-	else if ( isSigButton(sig, label) ) 			{ return generateButton   	(sig, label); 			}
-	else if ( isSigCheckbox(sig, label) ) 			{ return generateCheckbox 	(sig, label); 			}
-	else if ( isSigVSlider(sig, label,c,x,y,z) )	{ return generateVSlider 	(sig, label, c,x,y,z); }
-	else if ( isSigHSlider(sig, label,c,x,y,z) )	{ return generateHSlider 	(sig, label, c,x,y,z); }
-	else if ( isSigNumEntry(sig, label,c,x,y,z) )	{ return generateNumEntry 	(sig, label, c,x,y,z); }
+	else if ( isSigButton(sig, label) ) 			{ return generateButton(sig, label); }
+	else if ( isSigCheckbox(sig, label) ) 			{ return generateCheckbox(sig, label); }
+	else if ( isSigVSlider(sig, label,c,x,y,z) )	{ return generateVSlider(sig, label, c,x,y,z); }
+	else if ( isSigHSlider(sig, label,c,x,y,z) )	{ return generateHSlider(sig, label, c,x,y,z); }
+	else if ( isSigNumEntry(sig, label,c,x,y,z) )	{ return generateNumEntry(sig, label, c,x,y,z); }
 
-	else if ( isSigVBargraph(sig, label,x,y,z) )	{ return generateVBargraph 	(sig, label, x, y, CS(z)); }
-	else if ( isSigHBargraph(sig, label,x,y,z) )	{ return generateHBargraph 	(sig, label, x, y, CS(z)); }
+	else if ( isSigVBargraph(sig, label,x,y,z) )	{ return generateVBargraph(sig, label, x, y, CS(z)); }
+	else if ( isSigHBargraph(sig, label,x,y,z) )	{ return generateHBargraph(sig, label, x, y, CS(z)); }
 
-	else if ( isSigSoundfile(sig, label) )	        { return generateSoundfile (sig, label); }
-	else if ( isSigSoundfileLength(sig, sf) )	    { return generateCacheCode (sig, subst("$0cache->length", CS(sf))); }
-	else if ( isSigSoundfileRate(sig, sf) )	        { return generateCacheCode (sig, subst("$0cache->rate", CS(sf))); }
-	else if ( isSigSoundfileChannel(sig,sf,x,y))    { return generateCacheCode (sig, subst("$0cache->channels[$1][$2]", CS(sf), CS(x), CS(y))); }
+	else if ( isSigSoundfile(sig, label) )	        { return generateSoundfile(sig, label); }
+	else if ( isSigSoundfileLength(sig, sf) )	    { return generateCacheCode(sig, subst("$0cache->fLength", CS(sf))); }
+	else if ( isSigSoundfileRate(sig, sf) )	        { return generateCacheCode(sig, subst("$0cache->fSampleRate", CS(sf))); }
+    else if ( isSigSoundfileChannels(sig, sf) )     { return generateCacheCode(sig, subst("$0cache->fChannels", CS(sf))); }
+    else if ( isSigSoundfileBuffer(sig,sf,x,y))     { return generateCacheCode(sig, subst("$0cache->fBuffers[$1][$2]", CS(sf), CS(x), CS(y))); }
 
 	else if ( isSigAttach(sig, x, y) )				{ CS(y); return generateCacheCode(sig, CS(x)); }
     else if ( isSigEnable(sig, x, y) )				{ return generateEnable(sig, x, y); }
     /* we should not have any control at this stage*/
 	else {
-		printf("Error in compiling signal, unrecognized signal : ");
-		print(sig);
-		printf("\n");
-		exit(1);
+        stringstream error;
+        error << "ERROR when compiling, unrecognized signal : " << ppsig(sig) << endl;
+        throw faustexception(error.str());
 	}
 	return "error in generate code";
 }
@@ -562,8 +563,9 @@ string ScalarCompiler::generateCacheCode(Tree sig, const string& exp)
         return exp;
 
 	} else {
-        cerr << "Error in sharing count (" << sharing << ") for " << *sig << endl;
-		exit(1);
+        stringstream error;
+        error << "ERROR in sharing count (" << sharing << ") for " << *sig << endl;
+        throw faustexception(error.str());
 	}
 
 	return "Error in generateCacheCode";
@@ -602,26 +604,22 @@ string ScalarCompiler::generateVariableStore(Tree sig, const string& exp)
     switch (t->variability()) {
 
         case kKonst:
-
             getTypedNames(t, "Const", ctype, vname);
             fClass->addDeclCode(subst("$0 \t$1;", ctype, vname));
             fClass->addInitCode(subst("$0 = $1;", vname, exp));
             break;
 
         case kBlock:
-
             getTypedNames(t, "Slow", ctype, vname);
             fClass->addFirstPrivateDecl(vname);
             fClass->addZone2(subst("$0 \t$1 = $2;", ctype, vname, exp));
             break;
 
         case kSamp:
-
             getTypedNames(t, "TempPerm", ctype, vname);
             // need to be preserved because of new enable and control primitives
             fClass->addDeclCode(subst("$0 \t$1;", ctype, vname));
             fClass->addInitCode(subst("$0 = 0;", vname));
-
             fClass->addExecCode(Statement(getConditionCode(sig), subst("$0 = $1;", vname, exp)));
             break;
     }
@@ -755,29 +753,28 @@ string ScalarCompiler::generateHBargraph(Tree sig, Tree path, Tree min, Tree max
 
 string ScalarCompiler::generateSoundfile(Tree sig, Tree path)
 {
-    string v = getFreshID("SF");
-    
+    string varname = getFreshID("fSoundfile");
+
     // SL
     //fClass->addIncludeFile("<atomic>");
     //fClass->addIncludeFile("\"faust/gui/soundfile.h\"");
-    
+
     // SL
-    //fClass->addDeclCode(subst("std::atomic<Soundfile*> \t$0;", v));
-    fClass->addDeclCode(subst("Soundfile* \t$0;", v));
-    
-    //fClass->addDeclCode(subst("Soundfile* \t$0cache;", v));
-	addUIWidget(reverse(tl(path)), uiWidget(hd(path), tree(v), sig));
-    
+    //fClass->addDeclCode(subst("std::atomic<Soundfile*> \t$0;", varname));
+    fClass->addDeclCode(subst("Soundfile* \t$0;", varname));
+
+    //fClass->addDeclCode(subst("Soundfile* \t$0cache;", varname));
+    addUIWidget(reverse(tl(path)), uiWidget(hd(path), tree(varname), sig));
+
     // SL
-    fClass->addInitUICode(subst("if (!$0) $0 = defaultsound;", v));
-    
-    fClass->addFirstPrivateDecl(subst("$0cache", v));
-    
+    fClass->addInitUICode(subst("if (!$0) $0 = defaultsound;", varname));
+    fClass->addFirstPrivateDecl(subst("$0cache", varname));
+
     // SL
-    //fClass->addZone2(subst("Soundfile* $0cache = $0.exchange(nullptr);", v));
-    fClass->addZone2(subst("Soundfile* $0cache = $0;", v));
-    fClass->addZone4(subst("$0 = $0cache;", v));
-    return v;
+    //fClass->addZone2(subst("Soundfile* $0cache = $0.exchange(nullptr);", varname));
+    fClass->addZone2(subst("Soundfile* $0cache = $0;", varname));
+    fClass->addZone4(subst("$0 = $0cache;", varname));
+    return varname;
 }
 
 /*****************************************************************************
@@ -836,12 +833,12 @@ string ScalarCompiler::generateTable(Tree sig, Tree tsize, Tree content)
     }
 
 	if (!isSigInt(tsize, &size)) {
-		//fprintf(stderr, "error in ScalarCompiler::generateTable()\n"); exit(1);
-		cerr << "error in ScalarCompiler::generateTable() : "
-			 << *tsize
-             << " is not a constant integer table size expression "
-			 << endl;
-        exit(1);
+        stringstream error;
+        error << "ERROR in generateTable : "
+            << *tsize
+            << " is not an integer expression "
+            << endl;
+        throw faustexception(error.str());
 	}
 	// definition du nom et du type de la table
 	// A REVOIR !!!!!!!!!
@@ -890,12 +887,12 @@ string ScalarCompiler::generateStaticTable(Tree sig, Tree tsize, Tree content)
     }
 
     if (!isSigInt(tsize, &size)) {
-		//fprintf(stderr, "error in ScalarCompiler::generateTable()\n"); exit(1);
-		cerr << "error in ScalarCompiler::generateTable() : "
-			 << *tsize
-             << " is not a constant integer table size expression "
-			 << endl;
-        exit(1);
+        stringstream error;
+        error << "ERROR in generateStaticTable : "
+            << *tsize
+            << " is not an integer expression "
+            << endl;
+        throw faustexception(error.str());
 	}
 
 	// definition du nom et du type de la table
@@ -951,8 +948,7 @@ string ScalarCompiler::generateRDTbl(Tree sig, Tree tbl, Tree idx)
 	//return subst("$0[$1]", CS(tEnv, tbl), CS(tEnv, idx));
 
 	//cerr << "generateRDTable " << *sig << endl;
-	// test the special case of a read only table that can be compiled
-	// has a static member
+	// test the special case of a read only table that can be compiled as a static member
 	Tree id, size, content;
 	if(	isSigTable(tbl, id, size, content) ) {
 		string tblname;
@@ -1065,7 +1061,7 @@ static bool isPowerOf2(int n)
 string ScalarCompiler::generateIota(Tree sig, Tree n)
 {
 	int size;
-	if (!isSigInt(n, &size)) { fprintf(stderr, "error in generateIota\n"); exit(1); }
+	if (!isSigInt(n, &size)) { throw faustexception("ERROR in generateIota\n"); }
 
 	string vperm = getFreshID("iota");
 

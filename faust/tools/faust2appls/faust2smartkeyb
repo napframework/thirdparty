@@ -12,6 +12,9 @@
 # change if you want to get the log of what's happening
 LOG="/dev/null"
 
+# FAUSTGRADLE environement variable. By default we use ./gradlew 
+FAUSTGRADLE=${FAUSTGRADLE:=./gradlew}
+
 # exit if a command fails
 set -e
 
@@ -85,6 +88,8 @@ do
 		shift
 		if [[ -f "$1" ]]; then
 			EFFECT=$1
+		elif [ $1 = "auto" ]; then
+			EFFECT=$1
 		else
 			echo "No file specified after -effect"
 			echoHelp
@@ -138,6 +143,7 @@ fi
 ###############################
 # Creating Default Project
 ###############################
+PLATFORM=$(uname)
 
 if [ $REUSE -eq 0 ] || [ ! -d "$BUILDDIR" ]; then
 	if [ -d "$BUILDDIR" ]; then # if BUILDIR exists, then delete it
@@ -154,7 +160,6 @@ if [ $REUSE -eq 0 ] || [ ! -d "$BUILDDIR" ]; then
 			cp -r $FAUSTLIB/smartKeyboard/android/* "$BUILDDIR"
 
 			# change 'faust' with real *APPNAME
-			PLATFORM=$(uname)
 
 			if [ $PLATFORM = "Darwin" ]; then
 				sed -i '' 's,com.ccrma.faust,com.ccrma.'$APPNAME',g' $BUILDDIR/app/build.gradle
@@ -181,9 +186,13 @@ if [ $REUSE -eq 0 ] || [ ! -d "$BUILDDIR" ]; then
 		elif [ $IOS -eq 1 ]; then
 			echo "Creating a new iOS project in $BUILDDIR" > $LOG
 			cp -r $FAUSTLIB/smartKeyboard/iOS/* "$BUILDDIR"
-
-			sed -i '' 's,$(TARGET_NAME),'$APPNAME',g' $BUILDDIR/Faust.xcodeproj/project.pbxproj
-			sed -i '' 's,ccrma.Faust,ccrma.'$APPNAME',g' $BUILDDIR/Faust.xcodeproj/project.pbxproj
+			if [ $PLATFORM = "Darwin" ]; then
+				sed -i '' 's,$(TARGET_NAME),'$APPNAME',g' $BUILDDIR/Faust.xcodeproj/project.pbxproj
+				sed -i '' 's,ccrma.Faust,ccrma.'$APPNAME',g' $BUILDDIR/Faust.xcodeproj/project.pbxproj
+			else
+				sed -i 's,$(TARGET_NAME),'$APPNAME',g' $BUILDDIR/Faust.xcodeproj/project.pbxproj
+				sed -i 's,ccrma.Faust,ccrma.'$APPNAME',g' $BUILDDIR/Faust.xcodeproj/project.pbxproj
+			fi
             # Put OSC in project in all cases, even if not compiled
             # cp -r $FAUSTLIB/osclib "$BUILDDIR"/Faust
         fi
@@ -231,7 +240,8 @@ if [ $SOURCE -eq 0 ]; then
 	if [ $ANDROID -eq 1 ]; then
 		echo "Starting Android compilation" > $LOG
 		cd $BUILDDIR
-		./gradlew assembleRelease > $LOG
+		chmod a+x ./gradlew
+		$FAUSTGRADLE assembleRelease > $LOG
 		cd ..
 		cp -r $BUILDDIR/app/build/outputs/apk/app-release.apk $APPNAME.apk > $LOG
 		echo "An Android app \"$APPNAME.apk\" was created in the current folder"

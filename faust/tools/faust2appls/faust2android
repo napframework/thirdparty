@@ -14,6 +14,9 @@
 # change if you want to get the log of what's happening
 LOG="/dev/null"
 
+# FAUSTGRADLE environement variable. By default we use ./gradlew 
+FAUSTGRADLE=${FAUSTGRADLE:=./gradlew}
+
 # exit if a command fails
 set -e
 
@@ -57,7 +60,7 @@ for p in $@; do
 		echo "-faust: only carries out the Faust compilation and install the generated C++ file in the JNI folder."
 		echo "-reuse: keep build directory and reuse it to speedup compilation."
 		echo "-debug: verbose output."
-		exit 1
+		exit
     elif [ ${p:0:1} = "-" ]; then
         OPTIONS="$OPTIONS $p"
 	else
@@ -147,7 +150,8 @@ faust $OPTIONS -i -a api/DspFaust.cpp "$FILE" -o "$JNIFOLDER/DspFaust.cpp" || ex
 
 # Run Gradle
 cd $BUILDDIR
-./gradlew assembleRelease > $LOG
+chmod a+x ./gradlew
+$FAUSTGRADLE assembleRelease > $LOG
 cd ..
 
 cp -r $BUILDDIR/app/build/outputs/apk/app-release.apk $APPNAME.apk

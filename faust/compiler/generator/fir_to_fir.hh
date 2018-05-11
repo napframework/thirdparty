@@ -28,7 +28,7 @@
 #include "typing_instructions.hh"
 
 // Tools to dump FIR
-inline void dump2FIR(StatementInst* inst, std::ostream* out = &cout)
+inline void dump2FIR(StatementInst* inst, std::ostream* out = &cerr)
 {
     *out << "========== dump2FIR " << inst << " statement begin ========== "<< std::endl;
     FIRInstVisitor fir_visitor(out);
@@ -36,7 +36,7 @@ inline void dump2FIR(StatementInst* inst, std::ostream* out = &cout)
     *out << "========== dump2FIR statement end ==========" << std::endl;
 }
 
-inline void dump2FIR(ValueInst* value, std::ostream* out = &cout)
+inline void dump2FIR(ValueInst* value, std::ostream* out = &cerr)
 {
     *out << "========== dump2FIR " << value << " value begin ========== "<< std::endl;
     FIRInstVisitor fir_visitor(out);
@@ -176,7 +176,7 @@ struct DspRenamer : public BasicCloneVisitor {
     
     BlockInst* getCode(BlockInst* src)
     {
-        return dynamic_cast<BlockInst*>(src->clone(this));
+        return static_cast<BlockInst*>(src->clone(this));
     }
     
 };
@@ -203,21 +203,21 @@ struct MoveVariablesInFront2 : public BasicCloneVisitor {
                 Typed::VarType ctype = array_typed->fType->getType();
                 if (array_typed->fSize > 0) {
                     if (ctype == Typed::kInt32) {
-                        Int32ArrayNumInst* int_array = dynamic_cast<Int32ArrayNumInst*>(inst->fValue);
+                        Int32ArrayNumInst* int_array = static_cast<Int32ArrayNumInst*>(inst->fValue);
                         for (int i = 0; i < array_typed->fSize; i++) {
                             fVarTable.push_back(InstBuilder::genStoreArrayStaticStructVar(inst->fAddress->getName(),
                                                                                           InstBuilder::genInt32NumInst(i),
                                                                                           InstBuilder::genInt32NumInst(int_array->getValue(i))));
                         }
                     } else if (ctype == Typed::kFloat || ctype == Typed::kFloatMacro) {
-                        FloatArrayNumInst* float_array = dynamic_cast<FloatArrayNumInst*>(inst->fValue);
+                        FloatArrayNumInst* float_array = static_cast<FloatArrayNumInst*>(inst->fValue);
                         for (int i = 0; i < array_typed->fSize; i++) {
                             fVarTable.push_back(InstBuilder::genStoreArrayStaticStructVar(inst->fAddress->getName(),
                                                                                           InstBuilder::genInt32NumInst(i),
                                                                                           InstBuilder::genFloatNumInst(float_array->getValue(i))));
                         }
                     } else if (ctype == Typed::kDouble) {
-                        DoubleArrayNumInst* double_array = dynamic_cast<DoubleArrayNumInst*>(inst->fValue);
+                        DoubleArrayNumInst* double_array = static_cast<DoubleArrayNumInst*>(inst->fValue);
                         for (int i = 0; i < array_typed->fSize; i++) {
                             fVarTable.push_back(InstBuilder::genStoreArrayStaticStructVar(inst->fAddress->getName(),
                                                                                           InstBuilder::genInt32NumInst(i),
@@ -247,7 +247,7 @@ struct MoveVariablesInFront2 : public BasicCloneVisitor {
     
     BlockInst* getCode(BlockInst* src, bool local = false)
     {
-        BlockInst* dst = dynamic_cast<BlockInst*>(src->clone(this));
+        BlockInst* dst = static_cast<BlockInst*>(src->clone(this));
         
         if (local) {
             // Separate with a list of pure DeclareVarInst (with no value), followed by a list of StoreVarInst
@@ -426,7 +426,7 @@ struct FunctionInliner {
                 } else {
                     BasicCloneVisitor cloner;
                     if (inst->fAddress->getName() == fNamed->fName) {
-                        if (dynamic_cast<SimpleValueInst*>(fArg) || (fOccurence == 1)) {
+                        if (fArg->isSimpleValue() || (fOccurence == 1)) {
                             return fArg->clone(&cloner);
                         } else {
                             // More complex expressions are computed and shared in a new stack variable

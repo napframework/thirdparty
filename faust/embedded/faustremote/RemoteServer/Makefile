@@ -16,7 +16,7 @@ LLVM_CONFIG = $(lastword $(wildcard /usr/bin/llvm-config* /opt/local/bin/llvm-co
 CC            = gcc -O3
 CXX           = g++ -O3 -fvisibility=hidden
 DEFINE	      = D_REENTRANT	 
-INCPATH       = -I. -I../ -I../../../architecture -I../../../compiler/generator/llvm -I../../../compiler/generator/interpreter  -I../../../compiler/utils -I/usr/include -I/opt/local/include 
+INCPATH       = -I. -I../ -I../../../architecture -I../../../compiler/generator -I../../../compiler/generator/llvm -I../../../compiler/generator/interpreter -I../../../compiler/utils -I/usr/include -I/opt/local/include 
 LINK          = g++
 
 system	?= $(shell uname -s)
@@ -25,9 +25,9 @@ sources =  $(wildcard *.cpp)
 objects = $(sources:.cpp=.o)
 
 ifeq ($(system), Darwin)
-	LIBS = ../../../compiler/libfaust.a -framework CoreAudio -framework AudioUnit -framework CoreServices -framework CoreFoundation -lportaudio -ljack -ljacknet -L/opt/local/lib ../../../architecture/osclib/libOSCFaust.a ../../../architecture/httpdlib/libHTTPDFaust.a -framework CoreMIDI -lmicrohttpd -lpthread `$(LLVM_CONFIG) --ldflags` `$(LLVM_CONFIG) --libs` -lz -lncurses -ldl -llo
+	LIBS = ../../../build/lib/libfaust.a -framework CoreAudio -framework AudioUnit -framework CoreServices -framework CoreFoundation -lportaudio -ljack -ljacknet -L/opt/local/lib ../../../build/lib/libOSCFaust.a ../../../architecture/httpdlib/libHTTPDFaust.a -framework CoreMIDI -lmicrohttpd -lpthread `$(LLVM_CONFIG) --ldflags` `$(LLVM_CONFIG) --libs` -lz -lncurses -ldl -llo
 else 
-	LIBS = ../../../compiler/libfaust.a ../../../architecture/osclib/libOSCFaust.a ../../../architecture/httpdlib/libHTTPDFaust.a -ljack -ljacknet -lmicrohttpd -lpthread `$(LLVM_CONFIG) --ldflags` `$(LLVM_CONFIG) --libs` -lz -lncurses -ldl -llo
+	LIBS = ../../../build/lib/libfaust.a ../../../build/lib/libOSCFaust.a ../../../architecture/httpdlib/libHTTPDFaust.a -ljack -ljacknet -lmicrohttpd -lpthread `$(LLVM_CONFIG) --ldflags` `$(LLVM_CONFIG) --libs` -lz -lncurses -ldl -llo
 endif
 
 ####### Files

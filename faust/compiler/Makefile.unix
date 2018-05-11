@@ -34,8 +34,8 @@ backend_objects = $(ba_asmjs:.cpp=.o) $(ba_c:.cpp=.o) $(ba_cpp:.cpp=.o) \
                 $(ba_js:.cpp=.o) $(ba_llvm:.cpp=.o) $(ba_rust:.cpp=.o) $(ba_wasm:.cpp=.o)
 
 # For Web compilation
-object_ba_asmjs = $(ba_asmjs:.cpp=.o)
-object_ba_wasm = $(ba_wasm:.cpp=.o)
+object_ba_asmjs = $(ba_asmjs:.cpp=.o) main-lib.o
+object_ba_wasm = $(ba_wasm:.cpp=.o) main-lib.o
 
 # For iOS compilation
 object_ba_interp = $(ba_interp:.cpp=.o)
@@ -67,7 +67,7 @@ ifeq ($(system), Darwin)
     LIB_EXT     = dylib
 else
     LIBFLAGS	:= --mode=link --tag=CXX
-    ifneq ($(findstring MINGW32, $(system)),)
+    ifneq ($(findstring MINGW, $(system)),)
         LIB_EXT = dll
     else
         LIB_EXT = so
@@ -88,7 +88,7 @@ endif
 LLVM_STATIC_LIBS = $(shell $(LLVM_CONFIG) --libs) $(LLVM_SYS_LIBS)
 
 ## On Windows (mingw32) we must link against the socket library.
-ifneq ($(findstring MINGW32, $(system)),)
+ifneq ($(findstring MINGW, $(system)),)
     LIBS = -lshell32 -lpsapi -limagehlp -lwsock32 -lz
     EXE = .exe
 endif
@@ -150,8 +150,13 @@ else ifeq ($(LLVM_VERSION),$(filter $(LLVM_VERSION), 4.0.0 4.0.1))
     CLANGLIBS=$(CLANGLIBSLIST)
     CXXFLAGS += -std=gnu++11
 
-else ifeq ($(LLVM_VERSION),$(filter $(LLVM_VERSION), 5.0.0))
+else ifeq ($(LLVM_VERSION),$(filter $(LLVM_VERSION), 5.0.0 5.0.1))
     LLVM_VERSION = LLVM_50
+    CLANGLIBS=$(CLANGLIBSLIST)
+    CXXFLAGS += -std=gnu++11
+
+else ifeq ($(LLVM_VERSION),$(filter $(LLVM_VERSION), 6.0.0 6.0.0svn))
+    LLVM_VERSION = LLVM_60
     CLANGLIBS=$(CLANGLIBSLIST)
     CXXFLAGS += -std=gnu++11
 
@@ -164,7 +169,7 @@ ifeq ($(system), Darwin)
     CXXFLAGS += -I /opt/local/include
     CXXFLAGS += -stdlib=libc++
 else
-    ifneq ($(findstring MINGW32, $(system)),)
+    ifneq ($(findstring MINGW, $(system)),)
         CXXFLAGS += -O1 -I/usr/include
     else
         CXXFLAGS += -O1 -fPIC -D__USE_MINGW_ANSI_STDIO
@@ -193,6 +198,9 @@ LLVMLIBS += $(shell $(LLVM_CONFIG) --libs) $(LLVM_SYS_LIBS) -lpthread
 all : OPT = -O3
 all : CXXFLAGS += $(OPT)
 all : faust libfaust.a
+ifneq ($(findstring MINGW, $(system)),)
+all : CXXFLAGS += -DWIN32
+endif
 
 ## Standard universal 32/64 bits target
 universal : OPT= -O3
@@ -238,6 +246,7 @@ asmjs : CXX = emcc
 asmjs : CXXFLAGS = -DEMCC -DASMJS_BUILD $(OPT) -Wall -Wuninitialized -Wno-overloaded-virtual -Wno-parentheses $(addprefix -I, $(subprojects)) -DINSTALL_PREFIX='"$(prefix)"'
 asmjs : libfaust.js libfaustworker.js
 asmjs : EXPORTED="['_createAsmCDSPFactoryFromString', '_expandCDSPFromString', '_getCLibFaustVersion', '_freeCMemory']"
+asmjs : EXTRA_EXPORTED="['cwrap','Pointer_stringify','stringToUTF8']"
 
 ## For the Web/WASM, only compile the WASM backend
 wasm : OPT = -O3
@@ -246,26 +255,30 @@ wasm : CXX = emcc
 wasm : CXXFLAGS = -DEMCC -DWASM_BUILD $(OPT) -Wall -Wuninitialized -Wno-overloaded-virtual -Wno-parentheses $(addprefix -I, $(subprojects)) -DINSTALL_PREFIX='"$(prefix)"'
 wasm : libfaust.wasm
 wasm : EXPORTED="['_createWasmCDSPFactoryFromString', '_expandCDSPFromString', '_getCLibFaustVersion', '_getWasmCModule', '_getWasmCModuleSize', '_getWasmCHelpers', '_freeWasmCModule', '_freeCMemory', '_cleanupAfterException', '_getErrorAfterException']"
+wasm : EXTRA_EXPORTED="['cwrap','Pointer_stringify','stringToUTF8']"
 
 ## This target only compiles the C/C++ backends
 light : OPT = -O3
 light : CC = cc
 light : CXX = c++
-light : CXXFLAGS = -std=c++11 -DC_BUILD -DCPP_BUILD $(OPT) -Wall -Wuninitialized -Wno-overloaded-virtual -Wno-parentheses -I../architecture $(addprefix -I, $(subprojects)) -DINSTALL_PREFIX='"$(prefix)"' 
+light : CXXFLAGS = -std=c++11 -DC_BUILD -DCPP_BUILD -DWASM_BUILD -DOCPP_BUILD  $(OPT) -Wall -Wuninitialized -Wno-overloaded-virtual -Wno-parentheses -I../architecture $(addprefix -I, $(subprojects)) -DINSTALL_PREFIX='"$(prefix)"' 
 light : faustlight
+ifneq ($(findstring MINGW, $(system)),)
+light : CXXFLAGS += -DWIN32
+endif
 
 libfaust.js : $(common_objects) $(object_ba_asmjs)
-	$(CXX) $(OPT) --memory-init-file 0 -s ASSERTIONS=2 -s TOTAL_MEMORY=134217728 -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORTED_FUNCTIONS=$(EXPORTED) \
+	$(CXX) $(OPT) --memory-init-file 0 -s ASSERTIONS=2 -s TOTAL_MEMORY=134217728 -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORTED_FUNCTIONS=$(EXPORTED)  -s EXTRA_EXPORTED_RUNTIME_METHODS=$(EXTRA_EXPORTED)\
             $(common_objects) $(object_ba_asmjs) -o libfaust.js
 	cp libfaust.js ../architecture/webaudio
 
 libfaustworker.js : $(common_objects) $(object_ba_asmjs)
-	$(CXX) $(OPT) --memory-init-file 0 -s BUILD_AS_WORKER=1 -s ASSERTIONS=2 -s TOTAL_MEMORY=134217728 -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORTED_FUNCTIONS=$(EXPORTED) \
+	$(CXX) $(OPT) --memory-init-file 0 -s BUILD_AS_WORKER=1 -s ASSERTIONS=2 -s TOTAL_MEMORY=134217728 -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORTED_FUNCTIONS=$(EXPORTED)  -s EXTRA_EXPORTED_RUNTIME_METHODS=$(EXTRA_EXPORTED)\
             $(common_objects) $(object_ba_asmjs) -o libfaustworker.js
 	cp libfaustworker.js ../architecture/webaudio
 
 libfaust.wasm : $(common_objects) $(object_ba_wasm)
-	$(CXX) $(OPT) --memory-init-file 0 -s WASM=1 -s EXPORT_NAME="'FaustModule'" -s MODULARIZE=1 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 -s DISABLE_EXCEPTION_CATCHING=1 -s EXPORTED_FUNCTIONS=$(EXPORTED) \
+	$(CXX) $(OPT) --memory-init-file 0 -s WASM=1 -s EXPORT_NAME="'FaustModule'" -s MODULARIZE=1 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 -s DISABLE_EXCEPTION_CATCHING=1 -s EXPORTED_FUNCTIONS=$(EXPORTED) -s EXTRA_EXPORTED_RUNTIME_METHODS=$(EXTRA_EXPORTED) \
             $(common_objects) $(object_ba_wasm) -o libfaust-wasm.js
 	cp libfaust-wasm.js libfaust-wasm.wasm ../architecture/webaudio
 
@@ -299,17 +312,17 @@ scheduler_exp.h : ../architecture/scheduler.cpp
 	xxd -i ../architecture/scheduler.cpp generator/llvm/scheduler_exp.h
 
 faust : $(common_objects) $(backend_objects) main-exe.o
-ifneq ($(findstring MINGW32, $(system)),)
+ifneq ($(findstring MINGW, $(system)),)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(common_objects) $(backend_objects) main-exe.o `$(LLVM_CONFIG) --ldflags` $(LLVMLIBS) $(CLANGLIBS) $(LIBS) -lpthread -o faust
 else
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(common_objects) $(backend_objects) main-exe.o `$(LLVM_CONFIG) --ldflags` $(LLVMLIBS) $(CLANGLIBS) -o faust
 endif
 
-faustlight : $(common_objects) $(ba_c) $(ba_cpp) main-exe.o
-ifneq ($(findstring MINGW32, $(system)),)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(common_objects) $(ba_c) $(ba_cpp) main-exe.o $(LIBS) -lpthread -o faust
+faustlight : $(common_objects) $(ba_c) $(ba_cpp) $(ba_wasm) main-exe.o
+ifneq ($(findstring MINGW, $(system)),)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(common_objects) $(ba_c) $(ba_cpp) $(ba_wasm) main-exe.o $(LIBS) -lpthread -o faust
 else
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(common_objects) $(ba_c) $(ba_cpp) main-exe.o -o faust
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(common_objects) $(ba_c) $(ba_cpp) $(ba_wasm) main-exe.o -pthread -o faust
 endif
 
 ifeq ($(system), Darwin)
@@ -320,7 +333,7 @@ ifeq ($(system), Darwin)
     libfaust.dylib : $(common_objects) $(backend_objects) main-lib.o
 	$(CXX) -dynamiclib $(ARCHFLAGS) $(LIBFLAGS) $(LDFLAGS) $(common_objects) $(backend_objects) main-lib.o `$(LLVM_CONFIG) --ldflags` $(LLVM_STATIC_LIBS) $(CLANGLIBS) -install_name /usr/local/lib/libfaust.dylib -o libfaust.dylib
 else
-ifneq ($(findstring MINGW32, $(system)),)
+ifneq ($(findstring MINGW, $(system)),)
     libfaust.a : $(common_objects) $(backend_objects) main-lib.o
 	rm -f $@
 	$(AR) cq $@ $(common_objects) $(backend_objects) main-lib.o
@@ -570,7 +583,6 @@ generator/code_container.o: generator/floats.hh generator/fir_function_builder.h
 generator/code_container.o: generator/json_instructions.hh dsp_factory.hh generator/export.hh signals/recursivness.hh
 generator/code_container.o: generator/type_manager.hh generator/text_instructions.hh generator/fir_to_fir.hh
 generator/code_container.o: generator/fir/fir_instructions.hh generator/typing_instructions.hh
-generator/code_container.o: generator/struct_manager.hh
 generator/compile.o: errors/timing.hh generator/compile.hh signals/signals.hh errors/exception.hh tlib/tlib.hh
 generator/compile.o: tlib/symbol.hh garbageable.hh tlib/node.hh tlib/tree.hh tlib/num.hh tlib/list.hh tlib/shlysis.hh
 generator/compile.o: signals/binop.hh generator/interpreter/fir_opcode.hh generator/klass.hh signals/sigtype.hh
@@ -956,13 +968,13 @@ libcode.o: generator/interpreter/interpreter_optimizer.hh generator/dsp_aux.hh
 libcode.o: generator/interpreter/interpreter_instructions.hh generator/struct_manager.hh
 libcode.o: generator/java/java_code_container.hh generator/java/java_instructions.hh generator/js/js_code_container.hh
 libcode.o: generator/js/js_instructions.hh generator/llvm/llvm_code_container.hh generator/llvm/llvm_instructions.hh
-libcode.o: generator/llvm/llvm_dsp_aux.hh generator/smartpointer.h utils/TMutex.h
-libcode.o: generator/llvm/clang_code_container.hh generator/compile_scal.hh generator/compile.hh generator/klass.hh
-libcode.o: parallelize/loop.hh generator/statement.hh parallelize/graphSorting.hh generator/old_occurences.hh
-libcode.o: tlib/dcond.hh generator/compile_vect.hh generator/compile_sched.hh generator/rust/rust_code_container.hh
-libcode.o: generator/rust/rust_instructions.hh generator/wasm/wasm_code_container.hh
-libcode.o: generator/wasm/wasm_instructions.hh generator/wasm/was_instructions.hh generator/wasm/wast_code_container.hh
-libcode.o: generator/wasm/wast_instructions.hh
+libcode.o: generator/llvm/llvm_dynamic_dsp_aux.hh generator/llvm/llvm_dsp_aux.hh generator/smartpointer.h
+libcode.o: utils/TMutex.h generator/llvm/clang_code_container.hh generator/compile_scal.hh generator/compile.hh
+libcode.o: generator/klass.hh parallelize/loop.hh generator/statement.hh parallelize/graphSorting.hh
+libcode.o: generator/old_occurences.hh tlib/dcond.hh generator/compile_vect.hh generator/compile_sched.hh
+libcode.o: generator/rust/rust_code_container.hh generator/rust/rust_instructions.hh
+libcode.o: generator/wasm/wasm_code_container.hh generator/wasm/wasm_instructions.hh generator/wasm/was_instructions.hh
+libcode.o: generator/wasm/wast_code_container.hh generator/wasm/wast_instructions.hh
 global.o: global.hh parser/sourcereader.hh boxes/boxes.hh tlib/tlib.hh tlib/symbol.hh garbageable.hh
 global.o: errors/exception.hh tlib/node.hh tlib/tree.hh tlib/num.hh tlib/list.hh tlib/shlysis.hh signals/signals.hh
 global.o: signals/binop.hh generator/interpreter/fir_opcode.hh tlib/property.hh signals/sigtype.hh tlib/smartpointer.hh
@@ -1127,16 +1139,22 @@ generator/llvm/llvm_code_container.o: tlib/occurrences.hh generator/floats.hh ge
 generator/llvm/llvm_code_container.o: parallelize/code_loop.hh generator/json_instructions.hh dsp_factory.hh
 generator/llvm/llvm_code_container.o: generator/export.hh generator/llvm/llvm_instructions.hh
 generator/llvm/llvm_code_container.o: generator/vec_code_container.hh generator/omp_code_container.hh
-generator/llvm/llvm_code_container.o: generator/wss_code_container.hh generator/llvm/llvm_dsp_aux.hh
-generator/llvm/llvm_code_container.o: generator/smartpointer.h generator/dsp_aux.hh utils/TMutex.h
+generator/llvm/llvm_code_container.o: generator/wss_code_container.hh generator/llvm/llvm_dynamic_dsp_aux.hh
+generator/llvm/llvm_code_container.o: generator/llvm/llvm_dsp_aux.hh generator/smartpointer.h generator/dsp_aux.hh
+generator/llvm/llvm_code_container.o: utils/TMutex.h
 generator/llvm/llvm_dsp_aux.o: tlib/compatibility.hh generator/llvm/llvm_dsp_aux.hh generator/export.hh
 generator/llvm/llvm_dsp_aux.o: generator/smartpointer.h errors/exception.hh generator/dsp_aux.hh dsp_factory.hh
-generator/llvm/llvm_dsp_aux.o: utils/TMutex.h errors/timing.hh generator/rn_base64.h global.hh parser/sourcereader.hh
-generator/llvm/llvm_dsp_aux.o: boxes/boxes.hh tlib/tlib.hh tlib/symbol.hh garbageable.hh tlib/node.hh tlib/tree.hh
-generator/llvm/llvm_dsp_aux.o: tlib/num.hh tlib/list.hh tlib/shlysis.hh signals/signals.hh signals/binop.hh
-generator/llvm/llvm_dsp_aux.o: generator/interpreter/fir_opcode.hh tlib/property.hh signals/sigtype.hh
-generator/llvm/llvm_dsp_aux.o: tlib/smartpointer.hh signals/interval.hh evaluate/loopDetector.hh tlib/occurrences.hh
-generator/llvm/llvm_dsp_aux.o: generator/instructions_type.hh generator/Text.hh generator/libfaust.h
+generator/llvm/llvm_dsp_aux.o: utils/TMutex.h generator/rn_base64.h generator/libfaust.h
+generator/llvm/llvm_dynamic_dsp_aux.o: tlib/compatibility.hh generator/llvm/llvm_dynamic_dsp_aux.hh
+generator/llvm/llvm_dynamic_dsp_aux.o: generator/llvm/llvm_dsp_aux.hh generator/export.hh generator/smartpointer.h
+generator/llvm/llvm_dynamic_dsp_aux.o: errors/exception.hh generator/dsp_aux.hh dsp_factory.hh utils/TMutex.h
+generator/llvm/llvm_dynamic_dsp_aux.o: errors/timing.hh generator/rn_base64.h global.hh parser/sourcereader.hh
+generator/llvm/llvm_dynamic_dsp_aux.o: boxes/boxes.hh tlib/tlib.hh tlib/symbol.hh garbageable.hh tlib/node.hh
+generator/llvm/llvm_dynamic_dsp_aux.o: tlib/tree.hh tlib/num.hh tlib/list.hh tlib/shlysis.hh signals/signals.hh
+generator/llvm/llvm_dynamic_dsp_aux.o: signals/binop.hh generator/interpreter/fir_opcode.hh tlib/property.hh
+generator/llvm/llvm_dynamic_dsp_aux.o: signals/sigtype.hh tlib/smartpointer.hh signals/interval.hh
+generator/llvm/llvm_dynamic_dsp_aux.o: evaluate/loopDetector.hh tlib/occurrences.hh generator/instructions_type.hh
+generator/llvm/llvm_dynamic_dsp_aux.o: generator/Text.hh generator/libfaust.h
 generator/wasm/wasm_code_container.o: generator/wasm/wasm_code_container.hh generator/code_container.hh
 generator/wasm/wasm_code_container.o: generator/instructions.hh signals/binop.hh tlib/node.hh tlib/symbol.hh
 generator/wasm/wasm_code_container.o: garbageable.hh errors/exception.hh generator/interpreter/fir_opcode.hh

@@ -28,7 +28,6 @@
 #include "global.hh"
 #include "type_manager.hh"
 #include "text_instructions.hh"
-#include "struct_manager.hh"
 #include "fir_to_fir.hh"
 
 using namespace std;
@@ -57,6 +56,7 @@ CodeContainer::CodeContainer()
     fPostStaticInitInstructions(InstBuilder::genBlockInst()),
     fStaticDestroyInstructions(InstBuilder::genBlockInst()),
     fComputeBlockInstructions(InstBuilder::genBlockInst()),
+    fPostComputeBlockInstructions(InstBuilder::genBlockInst()),
     fComputeFunctions(InstBuilder::genBlockInst()),
     fUserInterfaceInstructions(InstBuilder::genBlockInst()),
     fSubContainerType(kInt), fFullCount("count"),
@@ -72,7 +72,7 @@ void CodeContainer::transformDAG(DispatchVisitor* visitor)
 {
     lclgraph G;
     CodeLoop::sortGraph(fCurLoop, G);
-    for (int l = G.size() - 1; l >= 0; l--) {
+    for (int l = int(G.size() - 1); l >= 0; l--) {
         for (lclset::const_iterator p = G[l].begin(); p != G[l].end(); p++) {
             (*p)->transform(visitor);
         }
@@ -194,7 +194,7 @@ void CodeContainer::printGraphDotFormat(ostream& fout)
 
     int lnum = 0;       // used for loop numbers
     // for each level of the graph
-    for (int l = G.size() - 1; l >= 0; l--) {
+    for (int l = int(G.size() - 1); l >= 0; l--) {
         // for each task in the level
         for (lclset::const_iterator t = G[l].begin(); t!=G[l].end(); t++) {
             // print task label "Lxxx : 0xffffff"
@@ -218,7 +218,7 @@ void CodeContainer::computeForwardDAG(lclgraph dag, int& loop_count, vector<int>
 
     int loop_index = START_TASK_MAX; // First index to be used for remaining tasks
 
-    for (int l = dag.size() - 1; l >= 0; l--) {
+    for (int l = int(dag.size() - 1); l >= 0; l--) {
         for (lclset::const_iterator p = dag[l].begin(); p != dag[l].end(); p++) {
             
             // Setup forward dependancy
@@ -503,7 +503,7 @@ DeclareFunInst* CodeContainer::generateInit(const string& obj, bool ismethod, bo
             args.push_back(InstBuilder::genLoadFunArgsVar(obj));
         }
         args.push_back(InstBuilder::genLoadFunArgsVar("samplingFreq"));
-        block->pushBackInst(InstBuilder::genDropInst(InstBuilder::genFunCallInst("classInit", args)));
+        block->pushBackInst(InstBuilder::genVoidFunCallInst("classInit", args));
     }
     
     {
@@ -512,7 +512,7 @@ DeclareFunInst* CodeContainer::generateInit(const string& obj, bool ismethod, bo
             args.push_back(InstBuilder::genLoadFunArgsVar(obj));
         }
         args.push_back(InstBuilder::genLoadFunArgsVar("samplingFreq"));
-        block->pushBackInst(InstBuilder::genDropInst(InstBuilder::genFunCallInst("instanceInit", args)));
+        block->pushBackInst(InstBuilder::genVoidFunCallInst("instanceInit", args));
     }
     
     // Creates function
@@ -535,7 +535,7 @@ DeclareFunInst* CodeContainer::generateInstanceInit(const string& obj, bool isme
             args.push_back(InstBuilder::genLoadFunArgsVar(obj));
         }
         args.push_back(InstBuilder::genLoadFunArgsVar("samplingFreq"));
-        block->pushBackInst(InstBuilder::genDropInst(InstBuilder::genFunCallInst("instanceConstants", args)));
+        block->pushBackInst(InstBuilder::genVoidFunCallInst("instanceConstants", args));
     }
     
     {
@@ -543,7 +543,7 @@ DeclareFunInst* CodeContainer::generateInstanceInit(const string& obj, bool isme
         if (!ismethod) {
             args.push_back(InstBuilder::genLoadFunArgsVar(obj));
         }
-        block->pushBackInst(InstBuilder::genDropInst(InstBuilder::genFunCallInst("instanceResetUserInterface", args)));
+        block->pushBackInst(InstBuilder::genVoidFunCallInst("instanceResetUserInterface", args));
     }
     
     {
@@ -551,7 +551,7 @@ DeclareFunInst* CodeContainer::generateInstanceInit(const string& obj, bool isme
         if (!ismethod) {
             args.push_back(InstBuilder::genLoadFunArgsVar(obj));
         }
-        block->pushBackInst(InstBuilder::genDropInst(InstBuilder::genFunCallInst("instanceClear", args)));
+        block->pushBackInst(InstBuilder::genVoidFunCallInst("instanceClear", args));
     }
     
     // Creates function
@@ -635,7 +635,7 @@ void CodeContainer::generateDAGLoop(BlockInst* block, DeclareVarInst* count)
     } else {
         lclgraph G;
         CodeLoop::sortGraph(fCurLoop, G);
-        for (int l = G.size() - 1; l >= 0; l--) {
+        for (int l = int(G.size() - 1); l >= 0; l--) {
             for (lclset::const_iterator p = G[l].begin(); p != G[l].end(); p++) {
                 generateDAGLoopAux(*p, block, count, loop_num++);
             }
@@ -648,6 +648,7 @@ void CodeContainer::processFIR(void)
     // Possibly add "fSamplingFreq" field
     generateSR();
     
+    // Possibly groups tasks (used by VectorCodeContainer, OpenMPCodeContainer and WSSCodeContainer) 
     if (gGlobal->gGroupTaskSwitch) {
         CodeLoop::computeUseCount(fCurLoop);
         set<CodeLoop*> visited;
@@ -696,6 +697,8 @@ BlockInst* CodeContainer::flattenFIR(void)
     global_block->merge(fComputeBlockInstructions);
     global_block->pushBackInst(InstBuilder::genLabelInst("========== Compute DSP =========="));
     global_block->pushBackInst(fCurLoop->generateScalarLoop(fFullCount));
+    global_block->pushBackInst(InstBuilder::genLabelInst("========== Post compute DSP =========="));
+    global_block->merge(fPostComputeBlockInstructions);
     
     return global_block;
 }
@@ -745,7 +748,8 @@ void CodeContainer::generateJSON(JSONInstVisitor* visitor)
     stringstream options;
     gGlobal->printCompilationOptions(options);
     
-    visitor->init("", fNumInputs, fNumOutputs, "", "", FAUSTVERSION, options.str(), "", std::map<std::string, int>());
+    // "name", "filename" found in medata
+    visitor->init("", "", fNumInputs, fNumOutputs, "", "", FAUSTVERSION, options.str(), "", std::map<std::string, int>());
     generateUserInterface(visitor);
     generateMetaData(visitor);
 }

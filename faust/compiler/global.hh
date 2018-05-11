@@ -58,6 +58,7 @@ struct DispatchVisitor;
 class ASMJAVAScriptInstVisitor;
 class WASTInstVisitor;
 class WASMInstVisitor;
+class DeclareStructTypeInst;
 
 struct Typed;
 struct BasicTyped;
@@ -70,7 +71,7 @@ struct comp_str
 {
     bool operator()(Tree s1, Tree s2) const
     {
-        return (strcmp(tree2str(s1), tree2str(s2)) < 0);    
+        return (strcmp(tree2str(s1), tree2str(s2)) < 0);
     }
 };
 
@@ -78,77 +79,76 @@ typedef map<Tree, set<Tree>, comp_str> MetaDataSet;
 
 struct global {
 
-    Tree 			gResult;
-    Tree 			gResult2;
+    Tree gResult;
+    Tree gResult2;
 
-    SourceReader	gReader;
+    SourceReader gReader;
 
-    MetaDataSet     gMetaDataSet;
-    string          gDocLang;
-    tvec            gWaveForm; 
+    MetaDataSet gMetaDataSet;
+    string gDocLang;
+    tvec gWaveForm;
 
     //-- globals
-    string          gFaustSuperSuperDirectory;
-    string          gFaustSuperDirectory;
-    string          gFaustDirectory;
-    string          gMasterDocument;
-    string          gMasterDirectory;
-    string          gMasterName;
-    string          gDocName;
-    list<string>    gImportDirList;         //dir list enrobage.cpp/fopensearch() searches for imports, etc.
-    list<string>    gArchitectureDirList;   //dir list enrobage.cpp/fopensearch() searches for architecture files
-    list<string>    gLibraryList;
-    string          gOutputDir;
-    string          gImportFilename;
-    Tree            gExpandedDefList;
+    string gFaustSuperSuperDirectory;
+    string gFaustSuperDirectory;
+    string gFaustDirectory;
+    string gMasterDocument;
+    string gMasterDirectory;
+    string gMasterName;
+    string gDocName;
+    list<string> gImportDirList;         //dir list enrobage.cpp/fopensearch() searches for imports, etc.
+    list<string> gArchitectureDirList;   //dir list enrobage.cpp/fopensearch() searches for architecture files
+    list<string> gLibraryList;
+    string gOutputDir;
+    string gImportFilename;
+    Tree gExpandedDefList;
 
     //-- command line arguments
-    bool            gDetailsSwitch;
-    bool            gDrawSignals;
-    bool            gShadowBlur;        // note: svg2pdf doesn't like the blur filter
-    bool            gScaledSVG;         // to draw scaled SVG files
-    bool            gStripDocSwitch;	// Strip <mdoc> content from doc listings.
-    int            	gFoldThreshold;
-    int            	gMaxNameSize;
-    bool			gSimpleNames;
-    bool            gSimplifyDiagrams;
-    bool			gLessTempSwitch;
-    int				gMaxCopyDelay;
-    string			gOutputFile;
-  
-    bool            gVectorSwitch;
-    bool            gDeepFirstSwitch;
-    int             gVecSize;
-    int             gVectorLoopVariant;
-    int             gVecLoopSize;
+    bool gDetailsSwitch;
+    bool gDrawSignals;
+    bool gShadowBlur;        // note: svg2pdf doesn't like the blur filter
+    bool gScaledSVG;         // to draw scaled SVG files
+    bool gStripDocSwitch;	 // Strip <mdoc> content from doc listings.
+    int gFoldThreshold;
+    int gMaxNameSize;
+    bool gSimpleNames;
+    bool gSimplifyDiagrams;
+    bool gLessTempSwitch;
+    int gMaxCopyDelay;
+    string gOutputFile;
 
-    bool            gOpenMPSwitch;
-    bool            gOpenMPLoop;
-    bool            gSchedulerSwitch;
-    bool            gOpenCLSwitch;
-    bool            gCUDASwitch;
-    bool			gGroupTaskSwitch;
-    bool			gFunTaskSwitch;
+    bool gVectorSwitch;
+    bool gDeepFirstSwitch;
+    int gVecSize;
+    int gVectorLoopVariant;
+    int gVecLoopSize;
 
-    bool            gUIMacroSwitch;
-    bool            gDumpNorm;
-    int             gFTZMode;
+    bool gOpenMPSwitch;
+    bool gOpenMPLoop;
+    bool gSchedulerSwitch;
+    bool gOpenCLSwitch;
+    bool gCUDASwitch;
+    bool gGroupTaskSwitch;
+    bool gFunTaskSwitch;
 
-    int             gFloatSize;
+    bool gUIMacroSwitch;
+    bool gDumpNorm;
+    int gFTZMode;
 
-    bool			gPrintFileListSwitch;
-    bool			gInlineArchSwitch;
+    int gFloatSize;
 
-    bool			gDSPStruct;
-    bool            gLightMode;
+    bool gPrintFileListSwitch;
+    bool gInlineArchSwitch;
 
-    string			gClassName;
-    
-    
-    
+    bool gDSPStruct;
+    bool gLightMode;
+
+    string gClassName;
+    string gProcessName;
+
     // Backend configuration
     string gOutputLang;          // Chosen backend
-    
+
     bool gGenerateSelectWithIf;  // Generates select with an 'if'
     bool gAllowForeignFunction;  // Can use foreign functions
     bool gComputeIOTA;           // Cache some computation done with IOTA variable
@@ -161,95 +161,95 @@ struct global {
     bool gFastMath;              // Faster version of some mathematical functions (pow/exp/log)
     string gFastMathLib;         // The fastmath code mapping file
     map <string, string> gFastMathLibTable; // Mapping table for fastmtah functions
-    
+
     dsp_factory_base* gDSPFactory;
-  
-    const char*     gInputString;
-    
-    bool			gLstDependenciesSwitch;     ///< mdoc listing management.
-    bool			gLstMdocTagsSwitch;         ///< mdoc listing management.
-    bool			gLstDistributedSwitch;      ///< mdoc listing management.
-    
-    map<string, string>		gDocMetadatasStringMap;
-    set<string>				gDocMetadatasKeySet;
-    
-    map<string, string>		gDocAutodocStringMap;
-    set<string>				gDocAutodocKeySet;
-    
-    map<string, bool>       gDocNoticeFlagMap;
-    
-    map<string, string>		gDocMathStringMap;
-    
-    vector<Tree>            gDocVector;				///< Contains <mdoc> parsed trees: DOCTXT, DOCEQN, DOCDGM.
-    
-    map<string, string>     gDocNoticeStringMap;
-    set<string>             gDocNoticeKeySet;
-    
-    set<string>				gDocMathKeySet;
-    
-    bool                    gLatexDocSwitch;		// Only LaTeX outformat is handled for the moment.
-    
-    int                     gErrorCount;
-    
-    string                  gErrorMsg;
-  
-    Tabber                  TABBER;
-    
-    list<string>            gInputFiles;
-    
-    int                     gFileNum;
-    
-    int                     gCountInferences;
-    int                     gCountMaximal;
-    int                     gDummyInput;
-    
-    int                     gBoxSlotNumber;     ///< counter for unique slot number
-    
-    bool                    gMemoryManager;
-    
-    Tree                    BOXTYPEPROP;
-    Tree                    NUMERICPROPERTY;
-    Tree                    DEFLINEPROP;
-    Tree                    USELINEPROP;
-    Tree                    SIMPLIFIED;
-    Tree                    DOCTABLES;
-    Tree                    NULLENV;
-    Tree                    COLORPROPERTY;
-    Tree                    ORDERPROP;
-    Tree                    RECURSIVNESS;
-    Tree                    NULLTYPEENV;
-    Tree                    RECDEF;
-    Tree                    DEBRUIJN2SYM;
-    Tree                    DEFNAMEPROPERTY;
-    Tree                    NICKNAMEPROPERTY;
-    Tree                    BCOMPLEXITY;        // Node used for memoization purposes
-    Tree                    LETRECBODY;
-    
-    Node                    PROPAGATEPROPERTY;
-    
-    xtended*                gAbsPrim;
-    xtended*                gAcosPrim;
-    xtended*                gTanPrim;
-    xtended*                gSqrtPrim;
-    xtended*                gSinPrim;
-    xtended*                gRintPrim;
-    xtended*                gRemainderPrim;
-    xtended*                gPowPrim;
-    xtended*                gMinPrim;
-    xtended*                gMaxPrim;
-    xtended*                gLogPrim;
-    xtended*                gLog10Prim;
-    xtended*                gFmodPrim;
-    xtended*                gFloorPrim;
-    xtended*                gExpPrim;
-    xtended*                gExp10Prim;
-    xtended*                gCosPrim;
-    xtended*                gCeilPrim;
-    xtended*                gAtanPrim;
-    xtended*                gAtan2Prim;
-    xtended*                gAsinPrim;
-    xtended*                gFtzPrim;
-    
+
+    const char* gInputString;
+
+    bool gLstDependenciesSwitch;     ///< mdoc listing management.
+    bool gLstMdocTagsSwitch;         ///< mdoc listing management.
+    bool gLstDistributedSwitch;      ///< mdoc listing management.
+
+    map<string, string> gDocMetadatasStringMap;
+    set<string> gDocMetadatasKeySet;
+
+    map<string, string> gDocAutodocStringMap;
+    set<string> gDocAutodocKeySet;
+
+    map<string, bool> gDocNoticeFlagMap;
+
+    map<string, string> gDocMathStringMap;
+
+    vector<Tree> gDocVector;				///< Contains <mdoc> parsed trees: DOCTXT, DOCEQN, DOCDGM.
+
+    map<string, string> gDocNoticeStringMap;
+    set<string> gDocNoticeKeySet;
+
+    set<string> gDocMathKeySet;
+
+    bool gLatexDocSwitch;		// Only LaTeX outformat is handled for the moment.
+
+    int gErrorCount;
+
+    string gErrorMsg;
+
+    Tabber TABBER;
+
+    list<string> gInputFiles;
+
+    int gFileNum;
+
+    int gCountInferences;
+    int gCountMaximal;
+    int gDummyInput;
+
+    int gBoxSlotNumber;     ///< counter for unique slot number
+
+    bool gMemoryManager;
+
+    Tree BOXTYPEPROP;
+    Tree NUMERICPROPERTY;
+    Tree DEFLINEPROP;
+    Tree USELINEPROP;
+    Tree SIMPLIFIED;
+    Tree DOCTABLES;
+    Tree NULLENV;
+    Tree COLORPROPERTY;
+    Tree ORDERPROP;
+    Tree RECURSIVNESS;
+    Tree NULLTYPEENV;
+    Tree RECDEF;
+    Tree DEBRUIJN2SYM;
+    Tree DEFNAMEPROPERTY;
+    Tree NICKNAMEPROPERTY;
+    Tree BCOMPLEXITY;        // Node used for memoization purposes
+    Tree LETRECBODY;
+
+    Node PROPAGATEPROPERTY;
+
+    xtended* gAbsPrim;
+    xtended* gAcosPrim;
+    xtended* gTanPrim;
+    xtended* gSqrtPrim;
+    xtended* gSinPrim;
+    xtended* gRintPrim;
+    xtended* gRemainderPrim;
+    xtended* gPowPrim;
+    xtended* gMinPrim;
+    xtended* gMaxPrim;
+    xtended* gLogPrim;
+    xtended* gLog10Prim;
+    xtended* gFmodPrim;
+    xtended* gFloorPrim;
+    xtended* gExpPrim;
+    xtended* gExp10Prim;
+    xtended* gCosPrim;
+    xtended* gCeilPrim;
+    xtended* gAtanPrim;
+    xtended* gAtan2Prim;
+    xtended* gAsinPrim;
+    xtended* gFtzPrim;
+
     Sym BOXIDENT;
     Sym BOXCUT;
     Sym BOXWAVEFORM;
@@ -308,27 +308,27 @@ struct global {
     Sym DOCMTD;
     Sym DOCTXT;
     Sym BARRIER;
-    
+
     property<bool>* gPureRoutingProperty;
     property<Tree>* gSymbolicBoxProperty;
-    
+
     Node EVALPROPERTY;
     Node PMPROPERTYNODE;
-    
+
     property<Tree>* gSimplifiedBoxProperty;
-    
+
     Sym UIFOLDER;
     Sym UIWIDGET;
-    
+
     Sym PATHROOT;
     Sym PATHPARENT;
     Sym PATHCURRENT;
-    
+
     Sym FFUN;
-    
+
     // the property used to memoize the results
     property<Tree>* gSymListProp;
-    
+
     Sym SIGINPUT;
     Sym SIGOUTPUT;
     Sym SIGDELAY1;
@@ -365,17 +365,21 @@ struct global {
     Sym SIGSOUNDFILE;
     Sym SIGSOUNDFILELENGTH;
     Sym SIGSOUNDFILERATE;
-    Sym SIGSOUNDFILECHANNEL;
+    Sym SIGSOUNDFILECHANNELS;
+    Sym SIGSOUNDFILEBUFFER;
     Sym SIGTUPLE;
     Sym SIGTUPLEACCESS;
-    
+
     Sym SIMPLETYPE;
     Sym TABLETYPE;
     Sym TUPLETTYPE;
-    
+
     // Memoized type contruction
     property<AudioType*>* gMemoizedTypes;
     
+    // The map of types and associated Structured types
+    map<Typed::VarType, DeclareStructTypeInst*> gExternalStructTypes;
+   
     // Essential predefined types
     Type TINT;
     Type TREAL;
@@ -393,16 +397,16 @@ struct global {
     Type TGUI;
     Type TGUI01;
     Type INT_TGUI;
-    
+
     // Trying to accelerate type convergence
     Type TREC; // kVect ou kScal ?
-    
+
     Sym CONS;
     Sym NIL;
     Tree nil;
-    
+
     Sym PROCESS;
-    
+
     Sym DEBRUIJN;
     Sym DEBRUIJNREF;
     Sym SUBSTITUTE;
@@ -410,73 +414,73 @@ struct global {
     Sym SYMREC;
     Sym SYMRECREF;
     Sym SYMLIFTN;
-    
+
     loopDetector gLoopDetector;
-    
+
     string gDrawPath;
-    
+
     int gMachineFloatSize;
     int gMachineInt32Size;
     int gMachineInt64Size;
     int gMachineDoubleSize;
     int gMachineBoolSize;
     int gMachinePtrSize;
-    
+
     int gMachineMaxStackSize;
-    
-    const char* 	gDocDevSuffix;			///< ".tex" (or .??? - used to choose output device).
-    string 			gCurrentDir;			///< Room to save current directory name.
-    string          gLatexheaderfilename;
 
-    struct tm		gCompilationDate;
-    
-    map<string, int>    gIDCounters;
+    const char* gDocDevSuffix;	///< ".tex" (or .??? - used to choose output device).
+    string gCurrentDir;			///< Room to save current directory name.
+    string gLatexheaderfilename;
 
-    string        gDocTextsDefaultFile;
+    struct tm gCompilationDate;
+
+    map<string, int> gIDCounters;
+
+    string gDocTextsDefaultFile;
 
     // internal state during drawing
-    Occurrences* 	gOccurrences;
-    bool			gFoldingFlag;		// true with complex block-diagrams
-    stack<Tree>		gPendingExp;		// Expressions that need to be drawn
-    set<Tree>		gDrawnExp;			// Expressions drawn or scheduled so far
-    const char* 	gDevSuffix;			// .svg or .ps used to choose output device
-    string			gSchemaFileName;	// name of schema file beeing generated
-    map<Tree, string>    gBackLink;		// link to enclosing file for sub schema
-    
-    // FIR 
+    Occurrences* gOccurrences;
+    bool gFoldingFlag;              // true with complex block-diagrams
+    stack<Tree> gPendingExp;		// Expressions that need to be drawn
+    set<Tree> gDrawnExp;			// Expressions drawn or scheduled so far
+    const char* gDevSuffix;			// .svg or .ps used to choose output device
+    string gSchemaFileName;         // name of schema file beeing generated
+    map<Tree, string> gBackLink;	// link to enclosing file for sub schema
+
+    // FIR
     map<Typed::VarType, BasicTyped*> gTypeTable;    // To share a unique BasicTyped* object for a given type
     map<string, Typed*> gVarTypeTable;              // Types of variables or functions
     map<Typed::VarType, int> gTypeSizeMap;          // Size of types in bytes
-    
+
     // colorize
     map<Tree, int> gColorMap;
     int gNextFreeColor;
-     
+
     // to keep track of already injected files
     set<string> gAlreadyIncluded;
-    
+
     char* gCurrentLocal;
-    
+
     int gAllocationCount;   // Internal signal types counter
-    
+
     bool gEnableFlag;
-  
-#if ASMJS_BUILD
+
+#ifdef ASMJS_BUILD
     // One single global visitor for asm.js, so that sub-containers and global container use the same heap
     ASMJAVAScriptInstVisitor* gASMJSVisitor;
 #endif
-    
-#if WASM_BUILD
+
+#ifdef WASM_BUILD
     // One single global visitor for WebAssembly, so that sub-containers and global container use the same heap
     WASMInstVisitor* gWASMVisitor;
     WASTInstVisitor* gWASTVisitor;
 #endif
-    
-#if INTERP_BUILD
+
+#ifdef INTERP_BUILD
     // One single global visitor Interpreter backend, so that sub-containers and global container use the same heap
     DispatchVisitor* gInterpreterVisitor;
 #endif
-    
+
     bool gHelpSwitch;
     bool gVersionSwitch;
     bool gGraphSwitch;
@@ -488,37 +492,37 @@ struct global {
     int gBalancedSwitch;
     string gArchFile;
     bool gExportDSP;
-    
+
     // Source file injection
     bool gInjectFlag;
     string gInjectFile;
 
     int gTimeout;   // Time out to abort compiler (in seconds)
-    
+
     // Globals to transfer results in thread based evaluation
     Tree gProcessTree;
     Tree gLsignalsTree;
     int gNumInputs;
     int gNumOutputs;
     string gErrorMessage;
-   
+
     // GC
     static list<Garbageable*> gObjectTable;
     static bool gHeapCleanup;
 
     global();
     ~global();
-    
+
     void init();
-    
+
     static void allocate();
     static void destroy();
-    
+
     string getFreshID(const string& prefix);
-    
+
     string makeDrawPath();
     string makeDrawPathNoExt();
-    
+
     string getMathFunction(const string& name)
     {
         if (gFastMath && (gFastMathLibTable.find(name) != gFastMathLibTable.end())) {
@@ -527,17 +531,17 @@ struct global {
             return name;
         }
     }
-    
+
     bool hasVarType(const string& name)
     {
         return gVarTypeTable.find(name) != gVarTypeTable.end();
     }
-    
+
     Typed::VarType getVarType(const string& name)
     {
         return gVarTypeTable[name]->getType();
     }
-    
+
     void printCompilationOptions(ostream& dst);
 };
 

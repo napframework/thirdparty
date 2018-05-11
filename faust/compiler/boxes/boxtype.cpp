@@ -135,7 +135,7 @@ static bool infereBoxType (Tree t, int* inum, int* onum)
 	else if (isBoxHBargraph(t)) 	{ *inum = 1; *onum = 1; }
     else if (isBoxSoundfile(t, l, c)) {
         *inum = 1;
-        *onum = 2+tree2int(c);
+        *onum = 3+tree2int(c);
     }
 	else if (isBoxSeq(t, a, b)) {
 		int u,v,x,y;
@@ -144,7 +144,7 @@ static bool infereBoxType (Tree t, int* inum, int* onum)
 
 		if (v != x) {
             stringstream error;
-            error   << "Error in sequential composition (A:B)" << endl
+            error   << "ERROR in sequential composition (A:B)" << endl
                     << "The number of outputs (" << v << ") of A = " << boxpp(a) << endl
                     << "must be equal to the number of inputs (" << x << ") of B : " << boxpp(b) << endl;
             throw faustexception(error.str());
@@ -230,7 +230,7 @@ static bool infereBoxType (Tree t, int* inum, int* onum)
 		if (!getBoxType(b, &x, &y)) return false;
 		if ( (x > v) | (y > u) ) { 
 			stringstream error;
-            error	<< "Connection error in : " << boxpp(t) << endl;
+            error << "Connection error in : " << boxpp(t) << endl;
 			if (x > v) error << "The number of outputs " << v 
                             << " of the first expression should be greater or equal \n  to the number of inputs " << x 
 							<< " of the second expression" << endl;
@@ -242,9 +242,9 @@ static bool infereBoxType (Tree t, int* inum, int* onum)
 		*inum = max(0,u-y); *onum = v;
 		
     } else if (isBoxEnvironment(t)) {
-        stringstream error;
-        error << "Connection error : an environment is not a block-diagram : " << boxpp(t) << endl;
-        throw faustexception(error.str());
+		*inum = 0;
+		*onum = 0;
+
     } else {
         stringstream error;
         error << "boxType() internal error : unrecognized box expression " << boxpp(t) << endl;

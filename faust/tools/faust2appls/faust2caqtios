@@ -57,6 +57,7 @@ for p in $@; do
         echo "Use '-midi' to activate MIDI control"
         echo "Use '-osc' to activate OSC control"
         echo "Use '-debug' to print all the build steps"
+        exit
     fi
     
     if [ "$p" = -omp ]; then
@@ -80,7 +81,7 @@ for p in $@; do
 		 OSCLIBS="-lOSCFaust"
 	elif [ "$p" = "-httpd" ]; then
 		HTTPDEFS="DEFINES += HTTPCTRL"
-		HTTPLIBS="-lHTTPDFaust -lmicrohttpd -lqrencode"
+		HTTPLIBS="-lHTTPDFaust -lmicrohttpd"
 	elif [ "$p" = "-qrcode" ]; then # requires -httpd
 		QRDEFS="DEFINES += QRCODECTRL"
     elif [ ${p:0:1} = "-" ]; then

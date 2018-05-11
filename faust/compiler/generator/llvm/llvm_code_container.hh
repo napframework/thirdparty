@@ -27,21 +27,15 @@
 #include "vec_code_container.hh"
 #include "omp_code_container.hh"
 #include "wss_code_container.hh"
-#include "llvm_dsp_aux.hh"
 
-#if defined(LLVM_35) || defined(LLVM_36) || defined(LLVM_37) || defined(LLVM_38) || defined(LLVM_39) || defined(LLVM_40) || defined(LLVM_50)
-    #include <llvm/Support/FileSystem.h>
-    #define sysfs_binary_flag sys::fs::F_None
-#elif defined(LLVM_34)
-    #define sysfs_binary_flag sys::fs::F_Binary
-#else
-    #define sysfs_binary_flag raw_fd_ostream::F_Binary
-#endif
+#include <llvm/Support/FileSystem.h>
 
-#if defined(LLVM_36) || defined(LLVM_37) || defined(LLVM_38) || defined(LLVM_39) || defined(LLVM_40) || defined(LLVM_50)
-    #define STREAM_ERROR std::error_code
+#define sysfs_binary_flag sys::fs::F_None
+
+#if defined(LLVM_35)
+#define STREAM_ERROR string
 #else
-    #define STREAM_ERROR std::string
+#define STREAM_ERROR std::error_code
 #endif
 
 using namespace std;
@@ -99,56 +93,12 @@ class LLVMCodeContainer : public virtual CodeContainer {
         void generateBuildUserInterfaceBegin();
         void generateBuildUserInterfaceEnd();
     
-        void generateGetSize(LlvmValue size);
-
-        void addGenericButton(const string& label, const string& zone, const string& button_type);
-        void addGenericSlider(const string& label,
-                            const string& zone,
-                            float init,
-                            float min,
-                            float max,
-                            float step,
-                            const string& type);
-        void addGenericBargraph(const string& label,
-                                const string& zone,
-                                float min,
-                                float max,
-                                const string& type);
-
-        LlvmValue genInt1(int number)
-        {
-            return ConstantInt::get(llvm::Type::getInt1Ty(getContext()), number);
-        }
-
-        LlvmValue genInt32(int number)
-        {
-            return ConstantInt::get(llvm::Type::getInt32Ty(getContext()), number);
-        }
-
-        LlvmValue genInt64(int number)
-        {
-            return ConstantInt::get(llvm::Type::getInt64Ty(getContext()), number);
-        }
-
-        LlvmValue genFloat(const string& number)
-        {
-        #if defined(LLVM_40) || defined(LLVM_50)
-            return ConstantFP::get(getContext(), APFloat(APFloat::IEEEsingle(), number));
-        #else
-            return ConstantFP::get(getContext(), APFloat(APFloat::IEEEsingle, number));
-        #endif
-        }
-
-        LlvmValue genFloat(float number)
-        {
-            return ConstantFP::get(getContext(), APFloat(number));
-        }
-        
+        void generateGetSize(LLVMValue size);
+    
         LLVMContext& getContext();
     
         // To be used for mathematical function mapping (-fm and exp10 on OSX)
         void generateFunMap(const string& fun1_aux, const string& fun2_aux, int num_args, bool body = false);
-    
         void generateFunMaps();
 
     public:
@@ -204,9 +154,9 @@ class LLVMOpenMPCodeContainer : public OpenMPCodeContainer, public LLVMCodeConta
 
         void generateGOMP_parallel_start();
         void generateGOMP_parallel_end();
-        LlvmValue generateGOMP_single_start();
+        LLVMValue generateGOMP_single_start();
         void generateGOMP_barrier();
-        void generateGOMP_sections_start(LlvmValue number);
+        void generateGOMP_sections_start(LLVMValue num);
         void generateGOMP_sections_end();
         void generateGOMP_sections_next();
 

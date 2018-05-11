@@ -207,6 +207,11 @@ window.Math.tan = global.Math.tan;
 
 var libfaust = require('/usr/local/share/faust/webaudio/libfaust.js');
 
+libfaust.lengthBytesUTF8 = function(str) 
+{
+	var len=0;for(var i=0;i<str.length;++i){var u=str.charCodeAt(i);if(u>=55296&&u<=57343)u=65536+((u&1023)<<10)|str.charCodeAt(++i)&1023;if(u<=127){++len}else if(u<=2047){len+=2}else if(u<=65535){len+=3}else if(u<=2097151){len+=4}else if(u<=67108863){len+=5}else{len+=6}}return len;
+}
+
 //console.log(libfaust);
 //console.log(libfaust.Module);
 //console.log("libfaust OK");
@@ -224,8 +229,8 @@ faust.factory_table = [];
 
 faust.getErrorMessage = function() { return faust.error_msg; };
 
-faust.createDSPFactory = function (code, argv) {
-    
+faust.createDSPFactory = function (code, argv) 
+{    
     var sha_key = Sha1.hash(code, true);
     var factory = faust.factory_table[sha_key];
     if (factory) {
@@ -288,8 +293,8 @@ faust.createDSPFactory = function (code, argv) {
     }
 };
 
-faust.expandDSP = function (code, argv) {
-    
+faust.expandDSP = function (code, argv) 
+{   
     // Force "ajs" compilation
     argv.push("-lang");
     argv.push("ajs");
@@ -386,8 +391,8 @@ faust.readDSPFactoryFromMachineAux = function (factory_name, factory_code, sha_k
 faust.deleteDSPFactory = function (factory) { faust.factory_table[factory.sha_key] = null; };
 
 // 'mono' DSP
-faust.createDSPInstance = function (factory, buffer_size, sample_rate) {
-    
+faust.createDSPInstance = function (factory, buffer_size, sample_rate) 
+{    
     var dsp = libfaust._malloc(factory.getSize());
     var handler = null;
     var ins, outs;
@@ -674,7 +679,8 @@ faust.createDSPInstance = function (factory, buffer_size, sample_rate) {
     }
 }
 
-faust.deleteDSPInstance = function (dsp) {
+faust.deleteDSPInstance = function (dsp) 
+{
     dsp.stop();
     
     if (dsp.numIn > 0) {
@@ -696,7 +702,8 @@ faust.deleteDSPInstance = function (dsp) {
 
 // Helper functions
 
-var create = function(ins, outs, buffer_size) {
+var create = function(ins, outs, buffer_size) 
+{
     
     for (var i = 0; i < ins; i++) {
         inputs.push(new Float64Array(buffer_size));
@@ -706,7 +713,8 @@ var create = function(ins, outs, buffer_size) {
     }
 }
 
-var impulse = function(ins, buffer_size) {
+var impulse = function(ins, buffer_size) 
+{
     for (var i = 0; i < ins; i++) {
         inputs[i][0] = 1.0;
         for (var f = 1; f < buffer_size; f++) {
@@ -715,7 +723,8 @@ var impulse = function(ins, buffer_size) {
     }
 }
 
-var zero = function(ins, buffer_size) {
+var zero = function(ins, buffer_size) 
+{
     for (var i = 0; i < ins; i++) {
         for (var f = 0; f < buffer_size; f++) {
             inputs[i][f] = 0.0;
