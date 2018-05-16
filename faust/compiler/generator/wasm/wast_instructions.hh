@@ -519,7 +519,7 @@ class WASTInstVisitor : public TextInstVisitor, public WASInst {
                 MathFunDesc desc = fMathLibTable[inst->fName];
                 if (desc.fMode == MathFunDesc::Gen::kWAS) {
                     // Special case for min/max
-                    if (startWith(desc.fName, "min") || startWith(desc.fName, "max")) {
+                    if (checkMinMax(desc.fName)) {
                         generateMinMax(inst->fArgs, desc.fName);
                     } else {
                         *fOut << "(" << realStr << "." << desc.fName << " ";
@@ -587,7 +587,7 @@ class WASTInstVisitor : public TextInstVisitor, public WASInst {
             if (inst->fCode->size() == 0) return;
             
             // Local variables declaration including the loop counter have been moved outside of the loop
-            string name = inst->getLoopName();
+            string name = inst->getName();
             
             // Init loop counter
             inst->fInit->accept(this);

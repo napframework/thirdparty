@@ -60,7 +60,7 @@ for p in $@; do
 		 OSCLIBS="-lOSCFaust"
 	elif [ "$p" = "-httpd" ]; then
 		HTTPDEFS="DEFINES += HTTPCTRL"
-		HTTPLIBS="-lHTTPDFaust -lmicrohttpd -lqrencode"
+		HTTPLIBS="-lHTTPDFaust -lmicrohttpd"
 	elif [ "$p" = "-qrcode" ]; then # requires -httpd
 		QRDEFS="DEFINES += QRCODECTRL"
     elif [ ${p:0:1} = "-" ]; then
@@ -71,8 +71,6 @@ for p in $@; do
 	    OPTIONS="$OPTIONS $p"        
 	fi
 done
-
-
 
 #-------------------------------------------------------------------
 # Check darwin specifics

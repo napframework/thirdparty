@@ -146,11 +146,14 @@ int computeBoxComplexity (Tree box)
 	else if (isBoxHGroup(box, label, t1))	return BC(t1);
 	else if (isBoxTGroup(box, label, t1))	return BC(t1);
 
+	// environment
+	else if (isBoxEnvironment(box))			return 0;
+
 	//a completer
 	else {
 		//fout << tree2str(box);
         stringstream error;
-        error << "ERROR in boxComplexity : not an evaluated box [[  " << *box << " ]]\n";
+        error << "ERROR in boxComplexity : not an evaluated box [[ " << *box << " ]]\n";
         throw faustexception(error.str());
 	}
 

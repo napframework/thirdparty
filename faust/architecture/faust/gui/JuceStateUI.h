@@ -40,6 +40,9 @@ class JuceStateUI : public GenericUI {
   
     public:
     
+        JuceStateUI() {}
+        virtual ~JuceStateUI() {}
+    
         void getStateInformation (MemoryBlock& destData)
         {
             MemoryOutputStream stream (destData, true);

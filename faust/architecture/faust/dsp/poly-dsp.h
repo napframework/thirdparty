@@ -329,7 +329,7 @@ struct dsp_voice_group {
             if (!fGroupControl) {
                 for (size_t i = 0; i < fVoiceTable.size(); i++) {
                     char buffer[32];
-                    snprintf(buffer, 31, ((fVoiceTable.size() < 8) ? "Voice%lu" : "V%lu"), i+1);
+                    snprintf(buffer, 32, ((fVoiceTable.size() < 8) ? "Voice%ld" : "V%ld"), i+1);
                     ui_interface->openHorizontalBox(buffer);
                     fVoiceTable[i]->buildUserInterface(ui_interface);
                     ui_interface->closeBox();
@@ -345,10 +345,23 @@ struct dsp_voice_group {
 };
 
 /**
+ * Base class for Polyphonic DSP.
+ */
+class dsp_poly : public decorator_dsp, public midi {
+
+    public:
+    
+        dsp_poly(dsp* dsp):decorator_dsp(dsp)
+        {}
+    
+        virtual ~dsp_poly() {}
+};
+
+/**
  * Polyphonic DSP : group a set of DSP to be played together or triggered by MIDI.
  */
 
-class mydsp_poly : public decorator_dsp, public dsp_voice_group, public midi {
+class mydsp_poly : public dsp_voice_group, public dsp_poly {
 
     private:
 
@@ -488,7 +501,8 @@ class mydsp_poly : public decorator_dsp, public dsp_voice_group, public midi {
         mydsp_poly(dsp* dsp,
                    int nvoices,
                    bool control = false,
-                   bool group = true):decorator_dsp(dsp), dsp_voice_group(panic, this, control, group)
+                   bool group = true)
+        : dsp_voice_group(panic, this, control, group), dsp_poly(dsp)
         {
             fDate = 0;
 

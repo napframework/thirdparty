@@ -4,6 +4,9 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
+            
+        <!-- Origin Trial Token, feature = AudioWorklet, origin = https://faust.grame.fr, expires = 2018-01-27 -->
+        <meta http-equiv="origin-trial" data-feature="AudioWorklet" data-expires="2018-03-03" content="ApDZ87+zpjI09+oIyEDTPDZtGN4bs1lh9n83f+4ssENINML3DxJbklOsd8Hu+M82TY4eIP/B2l7Iued7Y5I4hQAAAABUeyJvcmlnaW4iOiJodHRwczovL2ZhdXN0LmdyYW1lLmZyOjQ0MyIsImZlYXR1cmUiOiJBdWRpb1dvcmtsZXQiLCJleHBpcnkiOjE1MjAxMjA2MDB9">
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700|Roboto:300,400" rel="stylesheet">
 
         <style type="text/css">
@@ -448,6 +451,18 @@
             var poly_nvoices = 16;
             var rendering_mode = "ScriptProcessor";
             var output_handler = null;
+            
+            /*
+            // compute libraries URL relative to current page
+            var wurl =  window.location.href;
+            var qm = wurl.indexOf('?');
+            if (qm > 0) {
+                wurl = wurl.substr(0, qm);  // remove options from the URL
+            }
+            var libraries_url = wurl.substr(0, wurl.lastIndexOf('/')) + "/libraries/";
+            console.log("libraries_url :", libraries_url);
+            */
+
             var libraries_url = "http://127.0.0.1:8000/libraries/";
             //var libraries_url = "https://faust.grame.fr/libraries/";
 
@@ -617,13 +632,10 @@
             function setLocalStorage(state)
             {
                 console.log(state);
-                if (typeof(Storage) !== "undefined") {
-                    localStorage.setItem("FaustLocalStorage", ((state) ? "on" : "off"));
-                }
+                setStorageItemValue('FaustLibTester', 'FaustLocalStorage', ((state) ? "on" : "off"));
             }
 
             // Save/Load functions using local storage
-
             function restoreMenu(id, value)
             {
                 for (var i = 0; i < document.getElementById(id).length; i++) {
@@ -634,51 +646,82 @@
                     }
                 }
             }
-
+            
+            //set item from local storage 'item_key' key
+            function getStorageItemValue(item_key, key)
+            {
+                if (localStorage.getItem(item_key)) {
+                    var item_value = JSON.parse(localStorage.getItem(item_key));
+                    var item_index = item_value.findIndex((obj => obj[0] === key));
+                    return (item_index >= 0) ? item_value[item_index][1]: null;
+                } else {
+                    return null;
+                }
+            }
+            
+            //get [key, value] in local storage item_key key
+            function setStorageItemValue(item_key, key, value)
+            {
+                var item_value;
+                if (localStorage.getItem(item_key)) {
+                    item_value = JSON.parse(localStorage.getItem(item_key));
+                } else {
+                    item_value = [];
+                }
+                
+                // Possibly update an existing 'key'
+                var item_index = item_value.findIndex((obj => obj[0] === key));
+                if (item_index >= 0) {
+                    item_value[item_index][1] = value;
+                    // Otherwise push a new [key, value]
+                } else {
+                    item_value.push([key, value]);
+                }
+                
+                localStorage.setItem(item_key, JSON.stringify(item_value));
+            }
+            
             function saveDSPState()
             {
-                if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustLocalStorage") === "on") {
-                    var params = DSP.getParams();
-                    for (var i = 0; i < params.length; i++) {
-                        localStorage.setItem(params[i], DSP.getParamValue(params[i]));
-                    }
+                var params = DSP.getParams();
+                for (var i = 0; i < params.length; i++) {
+                    setStorageItemValue('DSP', params[i], DSP.getParamValue(params[i]));
                 }
             }
-
-            function savePageState()
-            {
-                if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustLocalStorage") === "on") {
-                    localStorage.setItem("buffer_size", buffer_size);
-                    localStorage.setItem("poly_flag", poly_flag);
-                    localStorage.setItem("ftz_flag", ftz_flag);
-                    localStorage.setItem("poly_nvoices", poly_nvoices);
-                    localStorage.setItem("rendering_mode", rendering_mode);
-                }
-            }
-
+            
             function loadDSPState()
             {
-                if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustLocalStorage") === "on") {
-                    var params = DSP.getParams();
-                    for (var i = 0; i < params.length; i++) {
-                        if (localStorage.getItem(params[i])) {
-                            // Restore DSP state
-                            DSP.setParamValue(params[i], Number(localStorage.getItem(params[i])));
-                            // Restore GUI state
-                            output_handler(params[i], Number(localStorage.getItem(params[i])));
-                        }
+                var params = DSP.getParams();
+                for (var i = 0; i < params.length; i++) {
+                    var value = getStorageItemValue('DSP', params[i]);
+                    if (value) {
+                        // Restore DSP state
+                        DSP.setParamValue(params[i], Number(value));
+                        // Restore GUI state
+                        output_handler(params[i], Number(value));
                     }
                 }
             }
-
+  
+            function savePageState()
+            {
+                if (getStorageItemValue('FaustLibTester', 'FaustLocalStorage') === "on") {
+                    setStorageItemValue('FaustLibTester', 'buffer_size', buffer_size);
+                    setStorageItemValue('FaustLibTester', 'poly_flag', poly_flag);
+                    setStorageItemValue('FaustLibTester', 'ftz_flag', ftz_flag);
+                    setStorageItemValue('FaustLibTester', 'poly_nvoices', poly_nvoices);
+                    setStorageItemValue('FaustLibTester', 'rendering_mode', rendering_mode);
+                }
+            }
+       
             function loadPageState()
             {
-                if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustLocalStorage") === "on") {
-                    buffer_size = parseInt(localStorage.getItem("buffer_size") ? localStorage.getItem("buffer_size") : 1024);
-                    poly_flag = (localStorage.getItem("poly_flag") ? localStorage.getItem("poly_flag") : "OFF");
-                    poly_nvoices = parseInt(localStorage.getItem("poly_nvoices") ? localStorage.getItem("poly_nvoices") : 16);
-                    ftz_flag = (localStorage.getItem("ftz_flag") ? localStorage.getItem("ftz_flag") : "2");
-                    rendering_mode = (localStorage.getItem("rendering_mode") ? localStorage.getItem("rendering_mode") : "ScriptProcessor");
+                if (getStorageItemValue('FaustLibTester', 'FaustLocalStorage') === "on") {
+                    buffer_size = (getStorageItemValue('FaustLibTester', 'buffer_size') ? getStorageItemValue('FaustLibTester', 'buffer_size') : 256);
+                    poly_flag = (getStorageItemValue('FaustLibTester', 'poly_flag') ? getStorageItemValue('FaustLibTester', 'poly_flag') : "OFF");
+                    poly_nvoices = (getStorageItemValue('FaustLibTester', 'poly_nvoices') ? getStorageItemValue('FaustLibTester', 'poly_nvoices') : 16);
+                    ftz_flag = (getStorageItemValue('FaustLibTester', 'ftz_flag') ? getStorageItemValue('FaustLibTester', 'ftz_flag') : 2);
+                    rendering_mode = (getStorageItemValue('FaustLibTester', 'rendering_mode') ? getStorageItemValue('FaustLibTester', 'rendering_mode') : "ScriptProcessor");
                     
                     // Restore menus
                     restoreMenu("selectedBuffer", buffer_size);
@@ -724,7 +767,7 @@
 
                     xmlhttp.onreadystatechange = function() {
                         if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
-                            dsp_code = "process = vgroup(\"" + filename + "\", environment{" + xmlhttp.responseText + "}.process);";
+                            dsp_code = xmlhttp.responseText;
                             callback();
                         }
                     }
@@ -743,7 +786,6 @@
 
                     // CASE 2 : THE DROPPED OBJECT IS SOME FAUST CODE
                     if (dsp_code) {
-                        dsp_code = "process = vgroup(\"" + "TEXT" + "\", environment{" + dsp_code + "}.process);";
                         callback();
                     }
                     // CASE 3 : THE DROPPED OBJECT IS A FILE CONTAINING SOME FAUST CODE
@@ -770,7 +812,7 @@
                             }
 
                             reader.onloadend = function(e) {
-                                dsp_code = "process = vgroup(\"" + filename + "\",environment{" + reader.result + "}.process);";
+                                dsp_code = reader.result;
                                 callback();
                             };
                         }
@@ -788,6 +830,25 @@
                     && (json.indexOf("/gain") !== -1)
                     && (json.indexOf("/gate") !== -1))) {
                     alert("Faust DSP code is not Polyphonic, it will probably not work correctly in this mode...")
+                }
+            }
+            
+            function deleteDSP()
+            {
+                if (DSP) {
+                    if (audio_input) {
+                        audio_input.disconnect(DSP);
+                    }
+                    DSP.disconnect(audio_context.destination);
+                    if (isPoly) {
+                        faust.deletePolyDSPInstance(DSP);
+                    } else {
+                        faust.deleteDSPInstance(DSP);
+                    }
+                    _f4u$t.hard_delete(faust_svg);
+                    
+                    DSP = null;
+                    faust_svg = null;
                 }
             }
             
@@ -812,7 +873,7 @@
                 DSP.setOutputParamHandler(output_handler);
                 console.log(DSP.getNumInputs());
                 console.log(DSP.getNumOutputs());
-                DSP.metadata({ declare: function(key, value) { console.log("key = " + key + " value = " + value); }});
+                //DSP.metadata({ declare: function(key, value) { console.log("key = " + key + " value = " + value); }});
                 DSP.connect(audio_context.destination);
                 
                 loadDSPState();
@@ -840,7 +901,7 @@
                 DSP.setOutputParamHandler(output_handler);
                 console.log(DSP.getNumInputs());
                 console.log(DSP.getNumOutputs());
-                DSP.metadata({ declare: function(key, value) { console.log("key = " + key + " value = " + value); }});
+                //DSP.metadata({ declare: function(key, value) { console.log("key = " + key + " value = " + value); }});
                 DSP.connect(audio_context.destination);
                 
                 loadDSPState();
@@ -874,20 +935,7 @@
                     return;
                 }
 
-                // If needed, deactivate running DSP
-                if (DSP) {
-                    if (audio_input) {
-                        audio_input.disconnect(DSP);
-                    }
-                    DSP.disconnect(audio_context.destination);
-                    if (isPoly) {
-                        faust.deletePolyDSPInstance(DSP);
-                    } else {
-                        faust.deleteDSPInstance(DSP);
-                    }
-                    DSP = null;
-                    _f4u$t.hard_delete(faust_svg);
-                }
+                deleteDSP();
 
                 // Prepare argv list
                 var argv = [];
@@ -943,7 +991,7 @@
                 _f4u$t.main_loop = function() {}
                 
                 // Restore 'save' checkbox state
-                document.getElementById("localstorage").checked = (localStorage.getItem("FaustLocalStorage") === "on");
+                document.getElementById("localstorage").checked = (getStorageItemValue('FaustLibTester', 'FaustLocalStorage') === "on");
 
                 // Load page state
                 loadPageState();
@@ -969,7 +1017,7 @@
             // Init page
             initPage();
 
-            // Save DSP state to local storage
+            // Timer to save page and DSP state to local storage
             setInterval(function() { savePageState(); if (DSP) { saveDSPState(); }}, 1000);
             
             // 'faust_module' global is defined in webaudio-wasm-wrapper.js file, 'onRuntimeInitialized' will be called when code is ready

@@ -10,24 +10,6 @@
 POLY="MONO"
 NVOICES=-1
 
-#-------------------------------------------------------------------
-# Set Faust include path
-
-if [ -f $FAUST_LIB_PATH/music.lib ]
-then
-  FAUSTLIB=$FAUST_LIB_PATH
-elif [ -f /usr/local/share/faust/music.lib ]
-then
-  FAUSTLIB=/usr/local/share/faust
-  JSFILE_PATH="ui.js"
-elif [ -f /usr/share/faust/music.lib ]
-then
-  FAUSTLIB=/usr/share/faust
-  JSFILE_PATH="ui.js"
-else
-  error "$0: Cannot find Faust library dir (usually /usr/local/share/faust)"
-fi
-
 #PHASE 2 : dispatch command arguments
 while [ $1 ]
 do
@@ -36,6 +18,7 @@ do
     if [ $p = "-help" ] || [ $p = "-h" ]; then
         echo "faust2gen [-nvoices <num>] <file.dsp>"
         echo "Use '-nvoices <num>' to produce a polyphonic self-contained DSP with <num> voices, ready to be used with MIDI"
+    	exit
     fi
     
     if [[ -f "$p" ]]; then
@@ -76,6 +59,9 @@ for p in $FILES; do
     sed -e "s/DSP_NAME/"${f%.dsp}"/g" ${f%.dsp}-temp1.maxpat >> ${f%.dsp}-temp2.maxpat
     sed -e "s/UI_FILE/"$JSFILE_PATH"/g" ${f%.dsp}-temp2.maxpat > ${f%.dsp}.maxpat
 
+    # collect binary file name for FaustGIDE
+    BINARIES="$BINARIES${f%.dsp}.maxpat;"
+
     # copy JavaScript UI file
     cp $FAUSTLIB/max-msp/ui.js .
 
@@ -84,4 +70,6 @@ for p in $FILES; do
     
 done
 
+BINARIES="$BINARIES ui.js"
 
+echo $BINARIES

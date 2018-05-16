@@ -57,119 +57,119 @@
 #include "garbageable.hh"
 #include "exception.hh"
 #include "Text.hh"
+#include "libfaust.h"
 
 #ifdef WIN32
 #pragma warning (disable: 4996)
 #endif
 
-
-static string makeBackendsString() {
+static string makeBackendsString()
+{
 	stringstream backends;
 	const char* sep = " ";
 	backends << "DSP to";
-#if C_BUILD
+#ifdef C_BUILD
 	backends << sep << "C";
 	sep = ", ";
 #endif
 
-#if CPP_BUILD
+#ifdef CPP_BUILD
 	backends << sep << "C++";
 	sep = ", ";
 #endif
 
-#if FIR_BUILD
+#ifdef FIR_BUILD
 	backends << sep << "FIR";
 	sep = ", ";
 #endif
 
-#if INTERP_BUILD
+#ifdef INTERP_BUILD
 	backends << sep << "Interpreter";
 	sep = ", ";
 #endif
 
-#if JAVA_BUILD
+#ifdef JAVA_BUILD
 	backends << sep << "Java";
 	sep = ", ";
 #endif
 
-#if JS_BUILD
+#ifdef JS_BUILD
 	backends << sep << "JavaScript";
 	sep = ", ";
 #endif
 
-#if LLVM_BUILD
+#ifdef LLVM_BUILD
 	backends << sep << "LLVM IR";
 	sep = ", ";
 #endif
 
-#if OCPP_BUILD
+#ifdef OCPP_BUILD
 	backends << sep << "old C++";
 	sep = ", ";
 #endif
 
-#if RUST_BUILD
+#ifdef RUST_BUILD
 	backends << sep << "Rust";
 	sep = ", ";
 #endif
 
-#if ASMJS_BUILD
+#ifdef ASMJS_BUILD
 	backends << sep << "asm.js";
 	sep = ", ";
 #endif
 
-#if WASM_BUILD
+#ifdef WASM_BUILD
 	backends << sep << "WebAssembly (wast/wasm)";
 #endif
 	backends << " compiler";
 	return backends.str();
 }
 
-
-#if ASMJS_BUILD
+#ifdef ASMJS_BUILD
 #include "asmjs_code_container.hh"
 #endif
 
-#if C_BUILD
+#ifdef C_BUILD
 #include "c_code_container.hh"
 #endif
 
-#if CPP_BUILD
+#ifdef CPP_BUILD
 #include "cpp_code_container.hh"
 #include "cpp_gpu_code_container.hh"
 #endif
 
-#if FIR_BUILD
+#ifdef FIR_BUILD
 #include "fir_code_container.hh"
 #endif
 
-#if INTERP_BUILD
+#ifdef INTERP_BUILD
 #include "interpreter_code_container.cpp"
 #endif
 
-#if JAVA_BUILD
+#ifdef JAVA_BUILD
 #include "java_code_container.hh"
 #endif
 
-#if JS_BUILD
+#ifdef JS_BUILD
 #include "js_code_container.hh"
 #endif
 
-#if LLVM_BUILD
+#ifdef LLVM_BUILD
 #include "llvm_code_container.hh"
 #include "clang_code_container.hh"
 #endif
 
-#if OCPP_BUILD
+#ifdef OCPP_BUILD
 #include "compile_scal.hh"
 #include "compile_vect.hh"
 #include "compile_sched.hh"
 #endif
 
-#if RUST_BUILD
+#ifdef RUST_BUILD
 #include "rust_code_container.hh"
 #endif
 
-#if WASM_BUILD
+#ifdef WASM_BUILD
 #include "wasm_code_container.hh"
 #include "wast_code_container.hh"
 #endif
@@ -185,7 +185,7 @@ extern double floatmin[4];
 static ifstream* injcode = NULL;
 static ifstream* enrobage = NULL;
 
-#if OCPP_BUILD
+#ifdef OCPP_BUILD
 // Old CPP compiler
 Compiler* old_comp = NULL;
 #endif
@@ -197,8 +197,6 @@ CodeContainer* container = NULL;
 typedef void* (*compile_fun)(void* arg);
 
 string reorganizeCompilationOptions(int argc, const char* argv[]);
-
-std::string generateSHA1(const std::string& dsp_content);
 
 #ifdef _WIN32
 static void callFun(compile_fun fun)
@@ -497,6 +495,10 @@ static bool processCmdline(int argc, const char* argv[])
 			gGlobal->gClassName = argv[i+1];
 			i += 2;
 
+		} else if (isCmd(argv[i], "-pn", "--process-name") && (i+1 < argc)) {
+			gGlobal->gProcessName = argv[i+1];
+			i += 2;
+
         } else if (isCmd(argv[i], "-i", "--inline-architecture-files")) {
             gGlobal->gInlineArchSwitch = true;
             i += 1;
@@ -619,6 +621,10 @@ static bool processCmdline(int argc, const char* argv[])
         throw faustexception("ERROR : 'in-place' option can only be used in scalar mode\n");
     }
 
+    if (gGlobal->gOutputLang == "ocpp" && gGlobal->gVectorSwitch) {
+        throw faustexception("ERROR : 'ocpp' option can only be used in scalar mode\n");
+    }
+
     if (gGlobal->gVectorLoopVariant < 0 || gGlobal->gVectorLoopVariant > 1) {
         stringstream error;
         error << "ERROR : invalid loop variant [-lv = " << gGlobal->gVectorLoopVariant << "] should be 0 or 1" << endl;
@@ -664,9 +670,8 @@ static bool processCmdline(int argc, const char* argv[])
 
 static void printVersion()
 {
-//	cout << "FAUST : DSP to C, C++, Rust, LLVM IR, JAVA, JavaScript, asm.js, WebAssembly (wast/wasm), Interpreter compiler, Version " << FAUSTVERSION << "\n";
 	cout << "FAUST : " << makeBackendsString() << ", Version " << FAUSTVERSION << "\n";
-	cout << "Copyright (C) 2002-2017, GRAME - Centre National de Creation Musicale. All rights reserved. \n";
+	cout << "Copyright (C) 2002-2018, GRAME - Centre National de Creation Musicale. All rights reserved. \n";
 }
 
 static void printHelp()
@@ -705,6 +710,7 @@ static void printHelp()
     cout << "-a <file> \twrapper architecture file\n";
     cout << "-i \t\t--inline-architecture-files \n";
     cout << "-cn <name> \t--class-name <name> specify the name of the dsp class to be used instead of mydsp \n";
+    cout << "-pn <name> \t--process-name <name> specify the name of the dsp entry-point instead of process \n";
     cout << "-t <sec> \t--timeout <sec>, abort compilation after <sec> seconds (default 120)\n";
     cout << "-time \t\t--compilation-time, flag to display compilation phases timing information\n";
     cout << "-o <file> \tC, C++, JAVA, JavaScript, ASM JavaScript, WebAssembly, LLVM IR or FVM (interpreter) output file\n";
@@ -750,7 +756,8 @@ static void printDeclareHeader(ostream& dst)
         if (i->first != tree("author")) {
             dst << "declare ";
             stringstream key; key << *(i->first);
-            dst << replaceChar(replaceChar(key.str(), '.', '_'), '/', '_');
+            std::vector<char> to_replace{'.', ':', '/'};
+            dst << replaceCharList(key.str(), to_replace, '_');
             dst << " " << **(i->second.begin()) << ";" << endl;
         } else {
             for (set<Tree>::iterator j = i->second.begin(); j != i->second.end(); ++j) {
@@ -768,7 +775,7 @@ static void printDeclareHeader(ostream& dst)
  					 			MAIN
 *****************************************************************/
 
-#if OCPP_BUILD
+#ifdef OCPP_BUILD
 
 static void printHeader(ostream& dst)
 {
@@ -1040,29 +1047,26 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
         dst = new stringstream(stringstream::out|stringstream::binary);
     } else if (gGlobal->gOutputFile != "") {
         outpath = (gGlobal->gOutputDir != "") ? (gGlobal->gOutputDir + "/" + gGlobal->gOutputFile) : gGlobal->gOutputFile;
-        /* desactivated for now (creates issue with faust2android on Linux)
-        char* directory = dirname((char*)outpath.c_str());
-        char temp[PATH_MAX+1];
-        char* path = realpath(directory, temp);
-        if (path == 0) {
+        ofstream* fdst = new ofstream(outpath.c_str());
+        if (!fdst->is_open()) {
             stringstream error;
-            error << "ERROR : invalid directory path " << directory << endl;
+            error << "ERROR : file '" << outpath << "' cannot be opened\n";
             throw faustexception(error.str());
+        } else {
+            dst = fdst;
         }
-        */
-        dst = new ofstream(outpath.c_str());
     } else {
         dst = &cout;
     }
 
     startTiming("generateCode");
 
-#if LLVM_BUILD
+#ifdef LLVM_BUILD
     if (gGlobal->gOutputLang == "cllvm") {
 
         gGlobal->gFAUSTFLOATToInternal = true;  // FIR is generated with internal real instead of FAUSTFLOAT (see InstBuilder::genBasicTyped)
-  
-    #if CLANG_BUILD
+
+    #ifdef CLANG_BUILD
         container = ClangCodeContainer::createContainer(gGlobal->gClassName, numInputs, numOutputs);
 
         if (generate) {
@@ -1082,9 +1086,9 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
 
         container = LLVMCodeContainer::createContainer(gGlobal->gClassName, numInputs, numOutputs);
 
-        gGlobal->gAllowForeignFunction = true;  // libc functions will be found by LLVM linker, but not user defined ones...
+        gGlobal->gAllowForeignFunction = true;  // libc functions will be found by the LLVM linker, but not user defined ones...
         gGlobal->gFAUSTFLOATToInternal = true;  // FIR is generated with internal real instead of FAUSTFLOAT (see InstBuilder::genBasicTyped)
-  
+
         if (gGlobal->gVectorSwitch) {
             new_comp = new DAGInstructionsCompiler(container);
         } else {
@@ -1106,7 +1110,7 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
 #endif
 
     } else if (gGlobal->gOutputLang == "interp") {
-    #if INTERP_BUILD
+    #ifdef INTERP_BUILD
         if (gGlobal->gFloatSize == 1) {
             container = InterpreterCodeContainer<float>::createContainer(gGlobal->gClassName, numInputs, numOutputs);
         } else if (gGlobal->gFloatSize == 2) {
@@ -1133,7 +1137,7 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
         throw faustexception("ERROR : -lang interp not supported since Interpreter backend is not built\n");
     #endif
     } else if (gGlobal->gOutputLang == "fir") {
-    #if FIR_BUILD
+    #ifdef FIR_BUILD
         gGlobal->gGenerateSelectWithIf = false;
 
         container = FirCodeContainer::createContainer(gGlobal->gClassName, numInputs, numOutputs, dst, true);
@@ -1154,7 +1158,7 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
 
         if (gGlobal->gOutputLang == "c") {
 
-        #if C_BUILD
+        #ifdef C_BUILD
             container = CCodeContainer::createContainer(gGlobal->gClassName, numInputs, numOutputs, dst);
         #else
             throw faustexception("ERROR : -lang c not supported since C backend is not built\n");
@@ -1162,7 +1166,7 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
 
         } else if (gGlobal->gOutputLang == "cpp") {
 
-        #if CPP_BUILD
+        #ifdef CPP_BUILD
             container = CPPCodeContainer::createContainer(gGlobal->gClassName, "dsp", numInputs, numOutputs, dst);
         #else
             throw faustexception("ERROR : -lang cpp not supported since CPP backend is not built\n");
@@ -1170,7 +1174,7 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
 
         } else if (gGlobal->gOutputLang == "ocpp") {
 
-        #if OCPP_BUILD
+        #ifdef OCPP_BUILD
             if (gGlobal->gSchedulerSwitch) old_comp = new SchedulerCompiler(gGlobal->gClassName, "dsp", numInputs, numOutputs);
             else if (gGlobal->gVectorSwitch) old_comp = new VectorCompiler(gGlobal->gClassName, "dsp", numInputs, numOutputs);
             else old_comp = new ScalarCompiler(gGlobal->gClassName, "dsp", numInputs, numOutputs);
@@ -1184,7 +1188,7 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
 
         } else if (gGlobal->gOutputLang == "rust") {
 
-        #if RUST_BUILD
+        #ifdef RUST_BUILD
             gGlobal->gFAUSTFLOATToInternal = true;  // FIR is generated with internal real instead of FAUSTFLOAT (see InstBuilder::genBasicTyped)
             container = RustCodeContainer::createContainer(gGlobal->gClassName, numInputs, numOutputs, dst);
         #else
@@ -1193,7 +1197,7 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
 
         } else if (gGlobal->gOutputLang == "java") {
 
-        #if JAVA_BUILD
+        #ifdef JAVA_BUILD
             gGlobal->gAllowForeignFunction = false; // No foreign functions
             container = JAVACodeContainer::createContainer(gGlobal->gClassName, "dsp", numInputs, numOutputs, dst);
         #else
@@ -1202,7 +1206,7 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
 
         } else if (gGlobal->gOutputLang == "js") {
 
-        #if JS_BUILD
+        #ifdef JS_BUILD
             gGlobal->gAllowForeignFunction = false; // No foreign functions
             container = JAVAScriptCodeContainer::createContainer(gGlobal->gClassName, numInputs, numOutputs, dst);
         #else
@@ -1211,7 +1215,7 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
 
         } else if (gGlobal->gOutputLang == "ajs") {
 
-        #if ASMJS_BUILD
+        #ifdef ASMJS_BUILD
             gGlobal->gAllowForeignFunction = false; // No foreign functions
             gGlobal->gFAUSTFLOATToInternal = true;  // FIR is generated with internal real instead of FAUSTFLOAT (see InstBuilder::genBasicTyped)
             gGlobal->gWaveformInDSP = true;         // waveform are allocated in the DSP and not as global data
@@ -1221,11 +1225,12 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
         #endif
 
         } else if (startWith(gGlobal->gOutputLang, "wast")) {
-        #if WASM_BUILD
+        #ifdef WASM_BUILD
             gGlobal->gAllowForeignFunction = false; // No foreign functions
             gGlobal->gFAUSTFLOATToInternal = true;  // FIR is generated with internal real instead of FAUSTFLOAT (see InstBuilder::genBasicTyped)
             gGlobal->gLoopVarInBytes = true;        // the 'i' variable used in the scalar loop moves by bytes instead of frames
             gGlobal->gWaveformInDSP = true;         // waveform are allocated in the DSP and not as global data
+            gGlobal->gMachinePtrSize = 4;           // WASM is currently 32 bits
             //gGlobal->gHasTeeLocal = true;         // combined store/load
 
             // This speedup (freewerb for instance) ==> to be done at signal level
@@ -1255,11 +1260,12 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
             throw faustexception("ERROR : -lang wast not supported since WAST backend is not built\n");
         #endif
         } else if (startWith(gGlobal->gOutputLang, "wasm")) {
-        #if WASM_BUILD
+        #ifdef WASM_BUILD
             gGlobal->gAllowForeignFunction = false; // No foreign functions
             gGlobal->gFAUSTFLOATToInternal = true;  // FIR is generated with internal real instead of FAUSTFLOAT (see InstBuilder::genBasicTyped)
             gGlobal->gLoopVarInBytes = true;        // the 'i' variable used in the scalar loop moves by bytes instead of frames
             gGlobal->gWaveformInDSP = true;         // waveform are allocated in the DSP and not as global data
+            gGlobal->gMachinePtrSize = 4;           // WASM is currently 32 bits
             //gGlobal->gHasTeeLocal = true;         // combined store/load
 
             // This speedup (freewerb for instance) ==> to be done at signal level
@@ -1318,8 +1324,8 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
         if (gGlobal->gArchFile != "") {
 
             // Keep current directory
-            char current_directory[FAUST_PATH_MAX];
-            getcwd(current_directory, FAUST_PATH_MAX);
+            char buffer[FAUST_PATH_MAX];
+            char* current_directory = getcwd(buffer, FAUST_PATH_MAX);
 
             if ((enrobage = openArchStream(gGlobal->gArchFile.c_str()))) {
 
@@ -1350,7 +1356,11 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
                 dst->flush();
 
                 // Restore current_directory
-                chdir(current_directory);
+                if (current_directory) {
+                    if (chdir(current_directory)) { // return code is 0 on successful completion
+                        cerr << "can't restore current directory (" << current_directory << ")" << endl;
+                    }
+                }
                 delete enrobage;
 
             } else {
@@ -1388,7 +1398,7 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
         if (dst != &cout) delete dst;
         if (helpers != &cout) delete helpers;
 
-#if OCPP_BUILD
+#ifdef OCPP_BUILD
     } else if (old_comp) {
 
         // Check for architecture file
@@ -1471,7 +1481,7 @@ static void generateOutputFiles()
             D->outputs(container->outputs());
 
             D->print(0, xout);
-    #if OCPP_BUILD
+    #ifdef OCPP_BUILD
         } else if (old_comp) {
 
             Description* D = old_comp->getDescription(); assert(D);
@@ -1512,7 +1522,7 @@ static void generateOutputFiles()
         if (new_comp) {
             ofstream dotfile(subst("$0.dot", gGlobal->makeDrawPath()).c_str());
             container->printGraphDotFormat(dotfile);
-    #if OCPP_BUILD
+    #ifdef OCPP_BUILD
         } else if (old_comp) {
             ofstream dotfile(subst("$0.dot", gGlobal->makeDrawPath()).c_str());
             old_comp->getClass()->printGraphDotFormat(dotfile);
@@ -1550,7 +1560,7 @@ static string expandDSPInternal(int argc, const char* argv[], const char* name, 
     if (!gGlobal->gProcessTree) {
         throw faustexception(gGlobal->gErrorMessage);
     }
-   
+
     // Encode compilation options as a 'declare' : has to be located first in the string
     stringstream out;
     out << COMPILATION_OPTIONS << reorganizeCompilationOptions(argc, argv) << ';' << endl;
@@ -1566,7 +1576,7 @@ static string expandDSPInternal(int argc, const char* argv[], const char* name, 
     return out.str();
 }
 
-static void compileFaustInternal(int argc, const char* argv[], const char* name, const char* dsp_content, bool generate)
+static void compileFaustFactoryAux(int argc, const char* argv[], const char* name, const char* dsp_content, bool generate)
 {
     gGlobal->gPrintFileListSwitch = false;
 
@@ -1628,20 +1638,22 @@ static void compileFaustInternal(int argc, const char* argv[], const char* name,
     int numOutputs = gGlobal->gNumOutputs;
 
     if (gGlobal->gExportDSP) {
-        ofstream out(subst("$0_exp.dsp", gGlobal->makeDrawPathNoExt()).c_str());
+        string outpath = (gGlobal->gOutputDir != "") ? (gGlobal->gOutputDir + "/" + gGlobal->gOutputFile) : gGlobal->gOutputFile;
+        ofstream* out = new ofstream(outpath.c_str());
 
         // Encode compilation options as a 'declare' : has to be located first in the string
-        out << COMPILATION_OPTIONS << reorganizeCompilationOptions(argc, argv) << ';' << endl;
+        *out << COMPILATION_OPTIONS << reorganizeCompilationOptions(argc, argv) << ';' << endl;
 
         // Encode all libraries paths as 'declare'
         vector<string> pathnames = gGlobal->gReader.listSrcFiles();
         for (vector<string>::iterator it = pathnames.begin(); it != pathnames.end(); it++) {
-            out << "declare " << "library_path " << '"' << *it << "\";" << endl;
+            *out << "declare " << "library_path " << '"' << *it << "\";" << endl;
         }
 
-        printDeclareHeader(out);
+        printDeclareHeader(*out);
 
-        out << "process = " << boxpp(process) << ';' << endl;
+        *out << "process = " << boxpp(process) << ';' << endl;
+        delete out;
         return;
     }
 
@@ -1680,7 +1692,7 @@ dsp_factory_base* compileFaustFactory(int argc, const char* argv[], const char* 
 
     try {
         global::allocate();
-        compileFaustInternal(argc, argv, name, dsp_content, generate);
+        compileFaustFactoryAux(argc, argv, name, dsp_content, generate);
         error_msg = gGlobal->gErrorMsg;
         factory = gGlobal->gDSPFactory;
     } catch (faustexception& e) {

@@ -44,7 +44,6 @@
 #include "faust/misc.h"
 #include "faust/gui/faustgtk.h"
 #include "faust/audio/jack-dsp.h"
-#include "faust/gui/SoundUI.h"
 
 #ifdef OSCCTRL
 #include "faust/gui/OSCUI.h"
@@ -52,6 +51,10 @@
 
 #ifdef HTTPCTRL
 #include "faust/gui/httpdUI.h"
+#endif
+
+#if SOUNDFILE
+#include "faust/gui/SoundUI.h"
 #endif
 
 // Always include this file, otherwise -poly only mode does not compile....
@@ -112,8 +115,8 @@ int main(int argc, char *argv[])
     MidiMeta::analyse(tmp_dsp, midi_sync, nvoices);
     delete tmp_dsp;
 
-    snprintf(name, 255, "%s", basename(argv[0]));
-    snprintf(rcfilename, 255, "%s/.%src", home, name);
+    snprintf(name, 256, "%s", basename(argv[0]));
+    snprintf(rcfilename, 256, "%s/.%src", home, name);
     
 #ifdef POLY2
     nvoices = lopt(argv, "--nvoices", nvoices);
@@ -168,12 +171,12 @@ int main(int argc, char *argv[])
   
     GTKUI interface(name, &argc, &argv);
     FUI finterface;
+#if SOUNDFILE
     SoundUI soundinterface;
-    
+    DSP->buildUserInterface(&soundinterface);
+#endif
     DSP->buildUserInterface(&interface);
     DSP->buildUserInterface(&finterface);
-    DSP->buildUserInterface(&soundinterface);
-
 #ifdef HTTPCTRL
 	httpdUI httpdinterface(name, DSP->getNumInputs(), DSP->getNumOutputs(), argc, argv);
 	DSP->buildUserInterface(&httpdinterface);

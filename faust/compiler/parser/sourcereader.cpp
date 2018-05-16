@@ -236,6 +236,7 @@ void SourceReader::checkName()
         if (gGlobal->gMetaDataSet.find(name) == gGlobal->gMetaDataSet.end()) {
             gGlobal->gMetaDataSet[name].insert(tree(quote(stripEnd(basename((char*)yyfilename), ".dsp"))));
         }
+        gGlobal->gMetaDataSet[tree("filename")].insert(tree(quote(stripEnd(basename((char*)yyfilename), ".dsp"))));
     }
 }
 
@@ -458,6 +459,12 @@ void declareMetadata(Tree key, Tree value)
         fkey += tree2str(key);
         gGlobal->gMetaDataSet[tree(fkey.c_str())].insert(value);
     }
+}
+
+// Definition related metadata
+void declareDefinitionMetadata(Tree id, Tree key, Tree value)
+{
+    // not implemented yet
 }
 
 void declareDoc(Tree t)

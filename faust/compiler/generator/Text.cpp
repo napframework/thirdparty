@@ -151,9 +151,9 @@ static string substitution (const string& model, const vector<string>& args)
     return result;
 }
 
-string T (char* c) 	{ return string(c); }
-string T (int n) 	{ char c[64]; snprintf(c, 63, "%d",n); 	return string(c); }
-string T (long n) 	{ char c[64]; snprintf(c, 63, "%ld",n); return string(c); }
+string T(char* c) 	{ return string(c); }
+string T(int n) 	{ char c[64]; snprintf(c, 63, "%d", n); 	return string(c); }
+string T(long n) 	{ char c[64]; snprintf(c, 63, "%ld", n); return string(c); }
 
 /**
  * If needed add a trailing '.0' to the
@@ -278,10 +278,22 @@ string indent(const string& str, int tabs)
     return outstream.str();
 }
 
-string replaceChar(string str, char ch1, char ch2)
+string replaceChar(string str, char src, char dst)
 {
-    for (unsigned int i = 0; i < str.length(); ++i) {
-        if (str[i] == ch1) {
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (str[i] == src) {
+            str[i] = dst;
+        }
+    }
+    return str;
+}
+
+string replaceCharList(string str, const vector<char>& ch1, char ch2)
+{
+    vector<char>::const_iterator beg = ch1.begin();
+    vector<char>::const_iterator end = ch1.end();
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (std::find(beg, end, str[i]) != end) {
             str[i] = ch2;
         }
     }

@@ -44,6 +44,7 @@ install:
 	install faust2jackserver $(dest)
 	install faust2jackrust $(dest)
 	install faust2jaqt $(dest)
+	install faust2jaqtchain $(dest)
 	install faust2juce $(dest)
 	install faust2ladspa $(dest)
 	install faust2linuxunity $(dest)
@@ -62,6 +63,7 @@ install:
 	install faust2pdf $(dest)
 	install faust2plot $(dest)
 	install faust2png $(dest)
+	install faust2pure $(dest)
 	install faust2puredata $(dest)
 	install faust2osxiosunity $(dest)
 	install faust2raqt $(dest)
@@ -80,6 +82,7 @@ install:
 	install faust2vsti $(dest)
 	install faust2wasm $(dest)
 	install faust2w32max6 $(dest)
+	install faust2w64max6 $(dest)
 	install faust2w32msp $(dest)
 	install faust2w32puredata $(dest)
 	install faust2w32vst $(dest)
@@ -121,8 +124,9 @@ uninstall:
 	rm -f $(dest)/faust2jackconsole
 	rm -f $(dest)/faust2jackinternal
 	rm -f $(dest)/faust2jackserver
-	rm -f $(dest)/faust2jackrust 
+	rm -f $(dest)/faust2jackrust
 	rm -f $(dest)/faust2jaqt
+	rm -f $(dest)/faust2jaqtchain
 	rm -f $(dest)/faust2juce
 	rm -f $(dest)/faust2ladspa
 	rm -f $(dest)/faust2linuxunity
@@ -140,6 +144,7 @@ uninstall:
 	rm -f $(dest)/faust2pdf
 	rm -f $(dest)/faust2plot
 	rm -f $(dest)/faust2png
+	rm -f $(dest)/faust2pure
 	rm -f $(dest)/faust2puredata
 	rm -f $(dest)/faust2osxiosunity
 	rm -f $(dest)/faust2raqt
@@ -158,6 +163,7 @@ uninstall:
 	rm -f $(dest)/faust2vsti
 	rm -f $(dest)/faust2wasm
 	rm -f $(dest)/faust2w32max6
+	rm -f $(dest)/faust2w64max6
 	rm -f $(dest)/faust2w32msp
 	rm -f $(dest)/faust2w32puredata
 	rm -f $(dest)/faust2w32vst

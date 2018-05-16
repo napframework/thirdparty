@@ -22,6 +22,7 @@
 #include "compatibility.hh"
 #include "llvm_code_container.hh"
 #include "llvm_instructions.hh"
+#include "llvm_dynamic_dsp_aux.hh"
 #include "exception.hh"
 #include "global.hh"
 
@@ -35,12 +36,12 @@ using namespace std;
  TODO: in -mem mode, classInit and classDestroy will have to be called once at factory init and destroy time
 */
 
-#if defined(LLVM_38) || defined(LLVM_39) || defined(LLVM_40) || defined(LLVM_50)
-    #define ModulePTR std::unique_ptr<Module>
-    #define MovePTR(ptr) std::move(ptr)
+#if defined(LLVM_35)
+#define ModulePTR Module*
+#define MovePTR(ptr) ptr
 #else
-    #define ModulePTR Module*
-    #define MovePTR(ptr) ptr
+#define ModulePTR std::unique_ptr<Module>
+#define MovePTR(ptr) std::move(ptr)
 #endif
 
 // Helper functions
@@ -62,20 +63,25 @@ LLVMCodeContainer::LLVMCodeContainer(const string& name, int numInputs, int numO
     fContext = new LLVMContext();
     stringstream options; gGlobal->printCompilationOptions(options);
     fModule = new Module(options.str() + ", v" + string(FAUSTVERSION), getContext());
-#if (defined(LLVM_34) || defined(LLVM_35) || defined(LLVM_36))
+#if defined(LLVM_35)
     fModule->setDataLayout("e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128");
 #endif
     fBuilder = new IRBuilder<>(getContext());
     
-#if (defined(LLVM_34) || defined(LLVM_35) || defined(LLVM_36) || defined(LLVM_37) || defined(LLVM_38) || defined(LLVM_39) || defined(LLVM_40) || defined(LLVM_50))
+    // Check pointer size
+    faustassert((gGlobal->gMachinePtrSize == fModule->getDataLayout().getPointerSize()));
+    
     // Set "-fast-math"
     FastMathFlags FMF;
-    FMF.setUnsafeAlgebra();
-#if (defined(LLVM_38) || defined(LLVM_39) || defined(LLVM_40) || defined(LLVM_50))
-    fBuilder->setFastMathFlags(FMF);
+#if defined(LLVM_60)
+    FMF.setFast(); // has replaced the below function
 #else
-    fBuilder->SetFastMathFlags(FMF);
+    FMF.setUnsafeAlgebra();
 #endif
+#if defined(LLVM_35)
+    fBuilder->SetFastMathFlags(FMF);
+#else
+    fBuilder->setFastMathFlags(FMF);
 #endif
     
     fAllocaBuilder = new IRBuilder<>(getContext());
@@ -94,15 +100,17 @@ LLVMCodeContainer::LLVMCodeContainer(const string& name, int numInputs, int numO
     fContext = context;
     fBuilder = new IRBuilder<>(getContext());
     
-#if (defined(LLVM_34) || defined(LLVM_35) || defined(LLVM_36) || defined(LLVM_37) || defined(LLVM_38) || defined(LLVM_39) || defined(LLVM_40) || defined(LLVM_50))
     // Set "-fast-math"
     FastMathFlags FMF;
-    FMF.setUnsafeAlgebra();
-#if (defined(LLVM_38) || defined(LLVM_39) || defined(LLVM_40) || defined(LLVM_50))
-    fBuilder->setFastMathFlags(FMF);
+#if defined(LLVM_60)
+    FMF.setFast(); // has replaced the below function
 #else
-    fBuilder->SetFastMathFlags(FMF);
+    FMF.setUnsafeAlgebra();
 #endif
+#if defined(LLVM_35)
+    fBuilder->SetFastMathFlags(FMF);
+#else
+    fBuilder->setFastMathFlags(FMF);
 #endif
     
     fAllocaBuilder = new IRBuilder<>(getContext());
@@ -214,25 +222,9 @@ void LLVMCodeContainer::generateComputeBegin(const string& counter)
     Function* llvm_compute = Function::Create(llvm_compute_type, GlobalValue::ExternalLinkage, "compute" + fKlassName, fModule);
     llvm_compute->setCallingConv(CallingConv::C);
 
-#if defined(LLVM_33) || defined(LLVM_34) || defined(LLVM_35) || defined(LLVM_36) || defined(LLVM_37) || defined(LLVM_38) || defined(LLVM_39) || defined(LLVM_40) || defined(LLVM_50)
-#if !defined(LLVM_50)
+#if !defined(LLVM_50) && !defined(LLVM_60)
     llvm_compute->setDoesNotAlias(3U);
     llvm_compute->setDoesNotAlias(4U);
-#endif
-#elif defined(LLVM_32) 
-    AttrBuilder attr_builder;
-    attr_builder.addAttribute(Attributes::NoAlias);
-    Attributes attribute = Attributes::get(getContext(), attr_builder);
-    llvm_compute->addAttribute(3U, attribute);
-    llvm_compute->addAttribute(4U, attribute);
-#else
-    SmallVector<AttributeWithIndex, 4> attributes;
-    AttributeWithIndex PAWI;
-    PAWI.Index = 3U; PAWI.Attrs = Attribute::NoAlias;
-    attributes.push_back(PAWI);
-    PAWI.Index = 4U; PAWI.Attrs = Attribute::NoAlias;
-    attributes.push_back(PAWI);
-    llvm_compute->setAttributes(AttrListPtr::get(attributes.begin(), attributes.end()));
 #endif
 
     Function::arg_iterator llvm_compute_args_it = llvm_compute->arg_begin();
@@ -286,10 +278,10 @@ void LLVMCodeContainer::generateGetSampleRate(int field_index)
 
     BasicBlock* block = BasicBlock::Create(getContext(), "entry_block", sr_fun);
     fBuilder->SetInsertPoint(block);
-#if defined(LLVM_37) || defined(LLVM_38) || defined(LLVM_39) || defined(LLVM_40) || defined(LLVM_50)
-    Value* zone_ptr = fBuilder->CreateStructGEP(0, dsp, field_index);
-#else
+#if defined(LLVM_35)
     Value* zone_ptr = fBuilder->CreateStructGEP(dsp, field_index);
+#else
+    Value* zone_ptr = fBuilder->CreateStructGEP(0, dsp, field_index);
 #endif
     Value* load_ptr = fBuilder->CreateLoad(zone_ptr);
 
@@ -613,14 +605,14 @@ void LLVMCodeContainer::generateMetadata(llvm::PointerType* meta_type_ptr)
     fBuilder->SetInsertPoint(entry_block);
     
     Value* idx0[2];
-    idx0[0] = genInt64(0);
-    idx0[1] = genInt32(0);
+    idx0[0] = LLVMTypeHelper::genInt64(fModule, 0);
+    idx0[1] = LLVMTypeHelper::genInt32(fModule, 0);
     Value* meta_ptr = fBuilder->CreateGEP(meta, MAKE_IXD(idx0, idx0+2));
     LoadInst* load_meta_ptr = fBuilder->CreateLoad(meta_ptr);
 
     Value* idx1[2];
-    idx1[0] = genInt64(0);
-    idx1[1] = genInt32(1);
+    idx1[0] = LLVMTypeHelper::genInt64(fModule, 0);
+    idx1[1] = LLVMTypeHelper::genInt32(fModule, 1);
     Value* mth_ptr = fBuilder->CreateGEP(meta, MAKE_IXD(idx1, idx1+2));
     LoadInst* mth = fBuilder->CreateLoad(mth_ptr);
 
@@ -648,12 +640,12 @@ void LLVMCodeContainer::generateMetadata(llvm::PointerType* meta_type_ptr)
 
         Value* idx2[3];
         idx2[0] = load_meta_ptr;
-    #if defined(LLVM_37) || defined(LLVM_38) || defined(LLVM_39) || defined(LLVM_40) || defined(LLVM_50)
-        idx2[1] = fBuilder->CreateConstGEP2_32(type_def1, llvm_label1, 0, 0);
-        idx2[2] = fBuilder->CreateConstGEP2_32(type_def2, llvm_label2, 0, 0);
-    #else
+    #if defined(LLVM_35)
         idx2[1] = fBuilder->CreateConstGEP2_32(llvm_label1, 0, 0);
         idx2[2] = fBuilder->CreateConstGEP2_32(llvm_label2, 0, 0);
+    #else
+        idx2[1] = fBuilder->CreateConstGEP2_32(type_def1, llvm_label1, 0, 0);
+        idx2[2] = fBuilder->CreateConstGEP2_32(type_def2, llvm_label2, 0, 0);
     #endif
         CallInst* call_inst = fBuilder->CreateCall(mth, MAKE_IXD(idx2, idx2+3));
         call_inst->setCallingConv(CallingConv::C);
@@ -691,7 +683,7 @@ void LLVMCodeContainer::generateBuildUserInterfaceEnd()
     fBuilder->ClearInsertionPoint();
 }
 
-void LLVMCodeContainer::generateGetSize(LlvmValue size)
+void LLVMCodeContainer::generateGetSize(LLVMValue size)
 {
     VECTOR_OF_TYPES llvm_getSize_args;
     FunctionType* llvm_getSize_type = FunctionType::get(fBuilder->getInt32Ty(), MAKE_VECTOR_OF_TYPES(llvm_getSize_args), false);
@@ -726,9 +718,9 @@ void LLVMCodeContainer::generateFunMaps()
         generateFunMap("sqrt", "fast_sqrt", 1);
         generateFunMap("tan", "fast_tan", 1);
     } else {
-#ifdef __APPLE__
+    #ifdef __APPLE__
         generateFunMap("exp10", "__exp10", 1, true);
-#endif
+    #endif
     }
 }
 
@@ -762,6 +754,8 @@ void LLVMCodeContainer::produceInternal()
     // Fill
     string counter = "count";
     generateFillBegin(counter);
+    
+    //dumpLLVM(fModule);
 
     generateComputeBlock(fCodeProducer);
 
@@ -904,7 +898,7 @@ dsp_factory_base* LLVMCodeContainer::produceFactory()
         throw faustexception(llvm_error.str());
     }
     
-    return new llvm_dsp_factory_aux("", gGlobal->gReader.listSrcFiles(), fModule, fContext, "", -1);
+    return new llvm_dynamic_dsp_factory_aux("", gGlobal->gReader.listSrcFiles(), fModule, fContext, "", -1);
 }
 
 // Scalar
@@ -997,7 +991,7 @@ void LLVMOpenMPCodeContainer::generateOMPCompute()
 
 void LLVMOpenMPCodeContainer::generateDSPOMPCompute()
 {
-    vector<LlvmValue> fun_args;
+    vector<LLVMValue> fun_args;
     Function* dsp_omp_compute = fModule->getFunction("dsp_omp_compute");
     CallInst* call_inst = CREATE_CALL(dsp_omp_compute, fun_args);
     call_inst->setCallingConv(CallingConv::C);
@@ -1005,7 +999,7 @@ void LLVMOpenMPCodeContainer::generateDSPOMPCompute()
 
 void LLVMOpenMPCodeContainer::generateGOMP_parallel_start()
 {
-    vector<LlvmValue> fun_args;
+    vector<LLVMValue> fun_args;
     Function* GOMP_parallel_start = fModule->getFunction("GOMP_parallel_start");
     CallInst* call_inst = CREATE_CALL(GOMP_parallel_start, fun_args);
     call_inst->setCallingConv(CallingConv::C);
@@ -1018,7 +1012,7 @@ void LLVMOpenMPCodeContainer::generateGOMP_parallel_end()
     call_inst->setCallingConv(CallingConv::C);
 }
 
-LlvmValue LLVMOpenMPCodeContainer::generateGOMP_single_start()
+LLVMValue LLVMOpenMPCodeContainer::generateGOMP_single_start()
 {
     Function* GOMP_single_start = fModule->getFunction("GOMP_single_start");
     CallInst* call_inst = fBuilder->CreateCall(GOMP_single_start);
@@ -1033,10 +1027,10 @@ void LLVMOpenMPCodeContainer::generateGOMP_barrier()
     call_inst->setCallingConv(CallingConv::C);
 }
 
-void LLVMOpenMPCodeContainer::generateGOMP_sections_start(LlvmValue number)
+void LLVMOpenMPCodeContainer::generateGOMP_sections_start(LLVMValue num)
 {
-    vector<LlvmValue> fun_args;
-    fun_args[0] = number;
+    vector<LLVMValue> fun_args;
+    fun_args[0] = num;
     Function* GOMP_sections_start = fModule->getFunction("GOMP_sections_start");
     CallInst* call_inst = CREATE_CALL(GOMP_sections_start, fun_args);
     call_inst->setCallingConv(CallingConv::C);
@@ -1223,12 +1217,8 @@ void LLVMWorkStealingCodeContainer::generateComputeThreadExternal()
 
     Function* llvm_computethreadInternal = fModule->getFunction("computeThread");
     faustassert(llvm_computethreadInternal);
-#if defined(LLVM_37) || defined(LLVM_38) || defined(LLVM_39) || defined(LLVM_40) || defined(LLVM_50)
     Value* fun_args[] = { fBuilder->CreateBitCast(arg1, fStructDSP), arg2 };
     CallInst* call_inst = fBuilder->CreateCall(llvm_computethreadInternal, fun_args);
-#else
-    CallInst* call_inst = fBuilder->CreateCall2(llvm_computethreadInternal, fBuilder->CreateBitCast(arg1, fStructDSP), arg2);
-#endif
     call_inst->setCallingConv(CallingConv::C);
     fBuilder->CreateRetVoid();
 
