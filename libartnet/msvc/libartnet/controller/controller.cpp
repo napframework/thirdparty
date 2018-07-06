@@ -45,6 +45,8 @@ optind = 1,             /* index into parent argv vector */
 optopt,                 /* character checked for validity */
 optreset;               /* reset getopt */
 char    *optarg;		/* argument associated with option */
+int nodes_found = 0;
+
 int getopt(int nargc, char * const nargv[], const char *ostr)
 {
 	static char *place = EMSG;              /* option letter processing */
@@ -109,6 +111,7 @@ typedef struct {
 	int channel;
 	int value;
 	float fade_time;
+	int broadcast;
 } opts_t;
 
 /*
@@ -120,35 +123,22 @@ void init_ops(opts_t *ops) {
 	ops->ip_addr = NULL;
 	ops->port_addr = 0;
 	ops->channel = 1;
-	ops->value = 0;
+	ops->value = 255;
 	ops->fade_time = 0.0;
+	ops->broadcast = 0;
 }
 
 /*
 * Parse command lines options and save in opts_s struct
 */
-void parse_args(opts_t *ops, int argc, char *argv[]) {
-
-	/*
-	static struct option long_options[] = {
-		{ "address",   required_argument,  0, 'a' },
-		{ "port",     required_argument,  0, 'p' },
-		{ "channel",   required_argument,  0, 'c' },
-		{ "dmx",     required_argument,  0, 'd' },
-		{ "fade",     required_argument,  0, 'f' },
-		{ "help",     no_argument,     0, 'h' },
-		{ "verbose",   no_argument,     0, 'v' },
-
-		{ 0, 0, 0, 0 }
-	};
-	*/
-
+void parse_args(opts_t *ops, int argc, char *argv[]) 
+{
 	int c;
 	int option_index = 0;
 
 	while (1) {
 
-		c = getopt(argc, argv, "a:p:c:d:f:vh");
+		c = getopt(argc, argv, "a:p:c:d:f:b:vh");
 
 		if (c == -1)
 			break;
@@ -177,10 +167,11 @@ void parse_args(opts_t *ops, int argc, char *argv[]) {
 		case 'v':
 			ops->verbose = 1;
 			break;
-
+		case 'b':
+			ops->broadcast = atoi(optarg);
+			break;
 		case '?':
 			break;
-
 		default:
 			;
 		}
@@ -188,10 +179,47 @@ void parse_args(opts_t *ops, int argc, char *argv[]) {
 }
 
 
+void print_node_config(artnet_node_entry ne) {
+	printf("--------- %d.%d.%d.%d -------------\n", ne->ip[0], ne->ip[1], ne->ip[2], ne->ip[3]);
+	printf("Short Name:   %s\n", ne->shortname);
+	printf("Long Name:    %s\n", ne->longname);
+	printf("Node Report:  %s\n", ne->nodereport);
+	printf("Subnet:       0x%02x\n", ne->sub);
+	printf("Numb Ports:   %d\n", ne->numbports);
+	printf("Input Addrs:  0x%02x, 0x%02x, 0x%02x, 0x%02x\n", ne->swin[0], ne->swin[1], ne->swin[2], ne->swin[3]);
+	printf("Output Addrs: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n", ne->swout[0], ne->swout[1], ne->swout[2], ne->swout[3]);
+	printf("----------------------------------\n");
+}
+
+
+int reply_handler(artnet_node n, void *pp, void *d) 
+{
+	artnet_node_list nl = artnet_get_nl(n);	
+	if (nodes_found == artnet_nl_get_length(nl))
+	{
+		// this is not a new node, just a previously discovered one sending
+		// another reply
+		return 0;
+	}
+	else if (nodes_found == 0)
+	{
+		// first node found
+		nodes_found++;
+		print_node_config(artnet_nl_first(nl));
+	}
+	else
+	{
+		// new node
+		nodes_found++;
+		print_node_config(artnet_nl_next(nl));
+	}
+
+	return 0;
+}
+
 /*
-*
-*
-*/
+ * Print some help and exit main thread
+ */
 void display_help_and_exit(opts_t *ops, char *argv[]) {
 	printf(
 		"Usage: %s --address <ip_address> --port <port_no> --channel <channel> --dmx <dmx_value> --fade <fade_time> \n"
@@ -205,6 +233,7 @@ void display_help_and_exit(opts_t *ops, char *argv[]) {
 		"  -f, --fade <fade_time>          Total time of fade.\n"
 		"  -p, --port <port_no>            Universe (port) address.\n"
 		"  -v, --verbose                   Be verbose.\n"
+		"  -b, --broadcast				   Unicast limit, 0 = always broadcast"
 		"\n",
 		argv[0]);
 	exit(0);
@@ -235,12 +264,9 @@ int do_fade(artnet_node node, opts_t *ops) {
 	float p;
 
 	memset(dmx, 0x00, chan);
-
 	chan--;
-
 	artnet_send_dmx(node, 0, chan, dmx);
 	msleep(40);
-
 	const unsigned long tstart = timeGetTime();
 	const unsigned long tend = tstart + (int)(fadetime*1000.0);
 	unsigned long t = tstart;
@@ -286,6 +312,10 @@ int main(int argc, char *argv[])
 {
 	opts_t ops;
 	artnet_node node;
+	fd_set rset;
+	time_t start;
+	struct timeval tv;
+	int sd, maxsd, timeout = 2;
 
 	// init and parse the args
 	init_ops(&ops);
@@ -307,21 +337,67 @@ int main(int argc, char *argv[])
 	// create new artnet node, and set config values
 	node = artnet_new(ops.ip_addr, ops.verbose);;
 
+	// Set node information
 	artnet_set_short_name(node, SHORT_NAME);
 	artnet_set_long_name(node, LONG_NAME);
 	artnet_set_node_type(node, ARTNET_SRV);
 
+	// Port information
 	artnet_set_port_type(node, 0, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX);
 	artnet_set_port_addr(node, 0, ARTNET_INPUT_PORT, ops.port_addr);
+	artnet_set_bcast_limit(node, ops.broadcast);
 
+	// Start running node
 	if (artnet_start(node) != ARTNET_EOK) {
 		printf("Failed to start: %s\n", artnet_strerror());
 		goto error_destroy;
 	}
 
-	printf("channel is %i\n", ops.channel);
+	// Set handler for when a node replies
+	// This simply prints the node information on the network
+	artnet_set_handler(node, ARTNET_REPLY_HANDLER, reply_handler, NULL);
+	artnet_set_handler(node, ARTNET_REPLY_HANDLER, NULL, NULL);
+
+	// get the socket descriptor
+	sd = artnet_get_sd(node);
+
+	// Poll for other artnet nodes on the network.
+	if (artnet_send_poll(node, NULL, ARTNET_TTM_DEFAULT) != ARTNET_EOK)
+	{
+		printf("send poll failed\n");
+		return quit(1);
+	}
+
+	// Read network node information
+	// Tries to find all nodes when select returns network activity
+	// After read the node's list of other nodes on the network is populated
+	start = time(NULL);
+	while (time(NULL) - start < timeout)
+	{
+		FD_ZERO(&rset);
+		FD_SET(sd, &rset);
+
+		tv.tv_usec = 0;
+		tv.tv_sec = 1;
+		maxsd = sd;
+
+		switch (select(maxsd + 1, &rset, NULL, NULL, &tv)) {
+		case 0:
+			// timeout
+			break;
+		case -1:
+			printf("select error\n");
+			break;
+		default:
+			artnet_read(node, 0);
+			break;
+		}
+	}
+
+	// Perform fade over time
 	do_fade(node, &ops);
 
+	// All Done
 	return 0;
 
 error_destroy:
