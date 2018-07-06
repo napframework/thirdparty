@@ -356,7 +356,6 @@ int main(int argc, char *argv[])
 	// Set handler for when a node replies
 	// This simply prints the node information on the network
 	artnet_set_handler(node, ARTNET_REPLY_HANDLER, reply_handler, NULL);
-	artnet_set_handler(node, ARTNET_REPLY_HANDLER, NULL, NULL);
 
 	// get the socket descriptor
 	sd = artnet_get_sd(node);
@@ -371,7 +370,9 @@ int main(int argc, char *argv[])
 	// Read network node information
 	// Tries to find all nodes when select returns network activity
 	// After read the node's list of other nodes on the network is populated
+	
 	start = time(NULL);
+	bool do_read = false;
 	while (time(NULL) - start < timeout)
 	{
 		FD_ZERO(&rset);
@@ -389,10 +390,14 @@ int main(int argc, char *argv[])
 			printf("select error\n");
 			break;
 		default:
-			artnet_read(node, 0);
-			break;
+			do_read = true;
+			break; 
 		}
 	}
+
+	// Read if something has been received
+	if(do_read)
+		artnet_read(node, 0);
 
 	// Perform fade over time
 	do_fade(node, &ops);
@@ -402,7 +407,6 @@ int main(int argc, char *argv[])
 
 error_destroy:
 	artnet_destroy(node);
-
 	free(ops.ip_addr);
 	exit(1);
 }
