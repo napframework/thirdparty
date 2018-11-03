@@ -17,12 +17,13 @@ assimp/test/*
 assimp/*.cmake-build-debug
 *.def
 *.db
+!*.pdb
 *.exp
 *.suo
 *.user
 *.ilk
 *.opendb
-*.tlog
+*.tlo
 *.obj
 *.log
 *.iobj
@@ -32,5 +33,6 @@ assimp/*.cmake-build-debug
 *.idb
 *.cache
 *.ipch
+*.tlog
 pyvenv.cfg
 __pycache__
