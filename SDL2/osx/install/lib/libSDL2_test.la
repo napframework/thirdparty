@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/Users/cheywood/workspaces/naivi/thirdpartybuild/SDL2-2.0.8/install/osx/lib'
+libdir='/Users/coenklosters/documents/dev/lib'

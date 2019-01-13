@@ -1,7 +1,7 @@
- Built from SDL2-2.0.5.tar.gz
+Built from SDL2-2.0.9.tar.gz
  
- Configure flags:
- --without-x --enable-static=no
+Configure flags:
+--without-x --enable-static=no
 
- Afterwards:
- install_name_tool -id @rpath/libSDL2-2.0.0.dylib libSDL2-2.0.0.dylib
+Afterwards:
+install_name_tool -id @rpath/libSDL2-2.0.0.dylib libSDL2-2.0.0.dylib
