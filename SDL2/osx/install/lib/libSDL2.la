@@ -11,7 +11,7 @@ dlname='libSDL2-2.0.0.dylib'
 library_names='libSDL2-2.0.0.dylib libSDL2.dylib'
 
 # The name of the static archive.
-old_library=''
+old_library='libSDL2.a'
 
 # Linker flags that can not go in dependency_libs.
 inherited_linker_flags=' '
@@ -23,8 +23,8 @@ dependency_libs=' -lm -liconv -lobjc'
 weak_library_names=''
 
 # Version information for libSDL2.
-current=8
-age=8
+current=9
+age=9
 revision=0
 
 # Is this an already installed library?
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/Users/cheywood/workspaces/naivi/thirdpartybuild/SDL2-2.0.8/install/osx/lib'
+libdir='/Users/coenklosters/documents/dev/lib'
