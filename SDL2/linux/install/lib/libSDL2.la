@@ -8,7 +8,7 @@
 dlname='libSDL2-2.0.so.0'
 
 # Names of this library.
-library_names='libSDL2-2.0.so.0.8.0 libSDL2-2.0.so.0 libSDL2.so'
+library_names='libSDL2-2.0.so.0.9.0 libSDL2-2.0.so.0 libSDL2.so'
 
 # The name of the static archive.
 old_library=''
@@ -23,8 +23,8 @@ dependency_libs=' -lm -ldl -lpthread -lrt'
 weak_library_names=''
 
 # Version information for libSDL2.
-current=8
-age=8
+current=9
+age=9
 revision=0
 
 # Is this an already installed library?
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/creywood/workspaces/naivi/thirdpartybuild/SDL2-2.0.8/linux/install/lib'
+libdir='/home/cklosters/dev/SDL2-2.0.9/build/home/cklosters/dev/thirdparty/SDL2/linux/install/lib'
