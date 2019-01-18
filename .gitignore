@@ -11,6 +11,7 @@ rttr/msvc64/*
 rttr/linux/*
 !rttr/linux/install
 rttr/.DS_Store
+rttr/build_android_*
 .DS_Store
 assimp/xcode/*
 assimp/test/*
