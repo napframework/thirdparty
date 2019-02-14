@@ -1,0 +1,3 @@
+Not prebuilt but currently brought in as static lib via Findcmake.cmake (which is probably a bit of a misuse of CMake).
+
+Should investigate CMake's ExternalProject instead.
