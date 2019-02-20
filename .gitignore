@@ -37,3 +37,4 @@ assimp/*.cmake-build-debug
 *.tlog
 pyvenv.cfg
 __pycache__
+**/build_android_*/*
