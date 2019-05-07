@@ -2,3 +2,6 @@ Built from source in NAP thirdparty repo on Ubuntu 16.04 with GCC 5.4.0
 
 After building set soname like so:
 patchelf --set-soname libetherdream.so bin/libetherdream.so
+
+The Makefile is original and should be used for compiling on Linux. The CMakeLists.txt was created for
+building on Android and should be used via build_android.py

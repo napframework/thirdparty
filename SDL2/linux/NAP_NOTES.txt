@@ -1,4 +1,4 @@
- Built from SDL2-2.0.8.tar.gz on Ubuntu 16.04 with GCC 5.4.0
+ Built from SDL2-2.0.9.tar.gz on Ubuntu 17.10 with GCC 5.4.0
  
  Configure flags:
 ./configure --prefix=`pwd`/linux/install --enable-static=no --enable-sndio=no

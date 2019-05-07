@@ -1,0 +1,8 @@
+Built from a mpg123-1.25.10 tarball using build_android.py, included here.
+
+Notes:
+- I believe non 64bit ARM CPUs will all use no-NEON and no-FPU configuration, due to arm_nofpu CPU 
+  designation. The impacts of this probably need to be explored for production use. Having on device 
+  selection of NEON/FPU builds would be best.
+- libout123 is likely broken due to my forcing mmap use (with the config.h overwrite in build.py). This may
+  be useful for a fix: https://github.com/pelya/android-shmem
