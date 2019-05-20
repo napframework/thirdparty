@@ -123,8 +123,8 @@
     # Chrome normally builds with the Mac OS X 10.5 SDK and sets the
     # deployment target to 10.5.  Other projects, such as O3D, may override
     # these defaults.
-    'mac_sdk%': '10.5',
-    'mac_deployment_target%': '10.5',
+    'mac_sdk%': '10.14',
+    'mac_deployment_target%': '10.9',
 
     # Set to 1 to enable code coverage.  In addition to build changes
     # (e.g. extra CFLAGS), also creates a new target in the src/chrome
@@ -337,6 +337,8 @@
         'xcode_settings': {
           'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',
           'WARNING_CFLAGS!': ['-Wall'],
+          'CLANG_CXX_LIBRARY': 'libc++',
+		      'OTHER_CPLUSPLUSFLAGS': '-std=c++11'
         },
       }],
     ],  # target_conditions for 'target_defaults'

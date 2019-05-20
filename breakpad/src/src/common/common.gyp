@@ -31,7 +31,14 @@
     'target_conditions': [
       ['OS=="mac"', {
         'defines': ['HAVE_MACH_O_NLIST_H'],
-      }],
+	      'xcode_settings': {
+            'CLANG_CXX_LIBRARY': 'libc++',
+		        'OTHER_CPLUSPLUSFLAGS': '-std=c++11',
+            'MACOSX_DEPLOYMENT_TARGET': '10.9',
+            'SDKROOT': 'macosx10.14',
+            'SYMROOT': '<(DEPTH)/xcodebuild'
+          }
+     }],
       ['OS=="linux"', {
         'defines': ['HAVE_A_OUT_H'],
       }],
