@@ -28,6 +28,16 @@
 
 {
   'target_defaults': {
+    'target_conditions': [
+      ['OS=="mac"', {
+	      'xcode_settings': {
+            'CLANG_CXX_LIBRARY': 'libc++',
+		        'OTHER_CPLUSPLUSFLAGS': '-std=c++11',
+            'MACOSX_DEPLOYMENT_TARGET': '10.9',
+            'SDKROOT': 'macosx10.14',
+            'SYMROOT': '<(DEPTH)/xcodebuild'
+          }
+     }]],
     'include_dirs': [
       '../..',
     ],
@@ -43,7 +53,7 @@
       ],
       'link_settings': {
         'libraries': [
-          '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+        #'$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
         ],
       },
       'dependencies': [
@@ -59,7 +69,7 @@
       ],
       'link_settings': {
         'libraries': [
-          '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+        #'$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
         ],
       },
       'dependencies': [
@@ -87,7 +97,7 @@
       ],
       'link_settings': {
         'libraries': [
-          '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+        #'$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
         ],
       },
       'dependencies': [
@@ -105,7 +115,7 @@
       ],
       'link_settings': {
         'libraries': [
-          '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+        #'$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
         ],
       },
       'dependencies': [

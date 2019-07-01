@@ -31,7 +31,14 @@
     'target_conditions': [
       ['OS=="mac"', {
         'defines': ['HAVE_MACH_O_NLIST_H'],
-      }],
+	      'xcode_settings': {
+            'CLANG_CXX_LIBRARY': 'libc++',
+		        'OTHER_CPLUSPLUSFLAGS': '-std=c++11',
+            'MACOSX_DEPLOYMENT_TARGET': '10.9',
+            'SDKROOT': 'macosx10.14',
+            'SYMROOT': '<(DEPTH)/xcodebuild'
+          }
+     }],
       ['OS=="linux"', {
         'defines': ['HAVE_A_OUT_H'],
       }],
@@ -86,6 +93,8 @@
         'dwarf_cu_to_module.h',
         'dwarf_line_to_module.cc',
         'dwarf_line_to_module.h',
+        'dwarf_range_list_handler.h',
+        'dwarf_range_list_handler.cc',
         'language.cc',
         'language.h',
         'linux/crc32.cc',
@@ -156,6 +165,8 @@
         'memory_range.h',
         'module.cc',
         'module.h',
+        'path_helper.h',
+        'path_helper.cc',
         'scoped_ptr.h',
         'simple_string_dictionary.cc',
         'simple_string_dictionary.h',
