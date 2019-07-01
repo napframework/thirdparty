@@ -34,7 +34,7 @@
 *~
 *.dwo
 *.o
-lib*.a
+#lib*.a
 /breakpad.pc
 /breakpad-client.pc
 /src/client/linux/linux_client_unittest_shlib
