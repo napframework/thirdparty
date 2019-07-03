@@ -623,28 +623,29 @@ int main(int argc, char *argv[])
 {
    ec_adaptert * adapter = NULL;
    printf("SOEM (Simple Open EtherCAT Master)\nSlaveinfo\n");
-
-   if (argc > 1)
+   
+   // Set slave gather vars
+   for (int i = 1; i < argc; i++)
    {
-      if ((argc > 2) && (strncmp(argv[2], "-sdo", sizeof("-sdo")) == 0)) printSDO = TRUE;
-      if ((argc > 2) && (strncmp(argv[2], "-map", sizeof("-map")) == 0)) printMAP = TRUE;
-      /* start slaveinfo */
-      strcpy(ifbuf, argv[1]);
-      slaveinfo(ifbuf);
-   }
-   else
-   {
-      printf("Usage: slaveinfo ifname [options]\nifname = eth0 for example\nOptions :\n -sdo : print SDO info\n -map : print mapping\n");
-
-      printf ("Available adapters\n");
-      adapter = ec_find_adapters ();
-      while (adapter != NULL)
-      {
-         printf ("Description : %s, Device to use for wpcap: %s\n", adapter->desc,adapter->name);
-         adapter = adapter->next;
-      }
+	   if ((strncmp(argv[i], "-sdo", sizeof("-sdo")) == 0)) printSDO = TRUE;
+	   if ((strncmp(argv[i], "-map", sizeof("-map")) == 0)) printMAP = TRUE;
    }
 
-   printf("End program\n");
+   // Make sure we have an adapter
+   adapter = ec_find_adapters();
+   if (adapter == NULL)
+   {
+	   printf("No adapter available");
+	   return -1;
+   }
+   
+   // Print adapter info
+   printf("Description : %s, Device to use for wpcap: %s\n", adapter->desc, adapter->name);
+   
+   // Get all network slave information
+   slaveinfo(adapter->name);
+
+   printf("Press any key to quit program\n");
+   fgetc(stdin);
    return (0);
 }
