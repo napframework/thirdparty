@@ -37,10 +37,9 @@ void simpletest(char *ifname)
    if (ec_init(ifname))
    {
       printf("ec_init on %s succeeded.\n",ifname);
-      /* find and auto-config slaves */
-
-
-       if ( ec_config_init(FALSE) > 0 )
+      
+	  /* find and auto-config slaves */
+      if ( ec_config_init(FALSE) > 0 )
       {
          printf("%d slaves found and configured.\n",ec_slavecount);
 
@@ -79,11 +78,13 @@ void simpletest(char *ifname)
             ec_statecheck(0, EC_STATE_OPERATIONAL, 50000);
          }
          while (chk-- && (ec_slave[0].state != EC_STATE_OPERATIONAL));
-         if (ec_slave[0].state == EC_STATE_OPERATIONAL )
+         
+		 if (ec_slave[0].state == EC_STATE_OPERATIONAL )
          {
             printf("Operational state reached for all slaves.\n");
             inOP = TRUE;
-                /* cyclic loop */
+            
+			/* cyclic loop */
             for(i = 1; i <= 10000; i++)
             {
                ec_send_processdata();
@@ -224,19 +225,47 @@ int main(int argc, char *argv[])
 {
    printf("SOEM (Simple Open EtherCAT Master)\nSimple test\n");
 
-   if (argc > 1)
+   ec_adaptert* it_adapter = NULL;
+   ec_adaptert* se_adapter = NULL;
+
+   // Scan for adapters
+   it_adapter = ec_find_adapters();
+   se_adapter = it_adapter;
+   int id = -1;
+
+   // Print to screen
+   while (it_adapter != NULL)
    {
-      /* create thread to handle slave error handling in OP */
-//      pthread_create( &thread1, NULL, (void *) &ecatcheck, (void*) &ctime);
-      osal_thread_create(&thread1, 128000, &ecatcheck, (void*) &ctime);
-      /* start cyclic part */
-      simpletest(argv[1]);
-   }
-   else
-   {
-      printf("Usage: simple_test ifname1\nifname = eth0 for example\n");
+	   // Print adapter info
+	   id++;
+	   printf("%d: Description : %s, Device to use for wpcap: %s\n", id, it_adapter->desc, it_adapter->name);
+	   it_adapter = it_adapter->next;
    }
 
-   printf("End program\n");
+   // Select the one to use
+   int s = -1;
+   while (s < 0 || s > id)
+   {
+	   printf("\nSelect ethernet adapter: ");
+	   scanf("%d", &s);
+	   getchar();
+   }
+
+   // Iterate to the selected adapter
+   for (int i = 0; i < s; i++)
+	   se_adapter = se_adapter->next;
+
+   // Print adapter info
+   printf("\nSelected Adapter : %s\n\n", se_adapter->desc);
+
+   /* create thread to handle slave error handling in OP */
+   //      pthread_create( &thread1, NULL, (void *) &ecatcheck, (void*) &ctime);
+   osal_thread_create(&thread1, 128000, &ecatcheck, (void*)&ctime);
+   
+   /* start cyclic part */
+   simpletest(se_adapter->name);
+
+   printf("Press any key to quit program");
+   getchar();
    return (0);
 }
