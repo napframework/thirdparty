@@ -25,6 +25,56 @@ volatile int wkc;
 boolean inOP;
 uint8 currentgroup = 0;
 
+typedef struct PACKED
+{
+	uint16_t value_6040;
+	int32_t value_607A;
+} servo_outputs;
+
+int servo_setup(uint16 slave)
+{
+	// Create bitmask
+	uint16_t control_word = 0;
+	control_word |= 1UL << 0;
+	control_word |= 1UL << 1;
+	control_word |= 1UL << 2;
+	control_word |= 1UL << 3;
+	control_word |= 1UL << 4;
+	control_word |= 1UL << 5;
+	control_word |= 1UL << 6;
+	control_word |= 1UL << 7;
+	control_word |= 1UL << 8;
+	control_word |= 1UL << 9;
+	control_word |= 1UL << 10;
+	control_word |= 1UL << 11;
+	control_word |= 1UL << 12;
+	control_word |= 1UL << 13;
+	control_word |= 1UL << 14;
+	control_word |= 1UL << 15;
+
+	int32_t motor_pos = 0;
+	uint32_t motor_mode = 2;
+	uint32_t max_velocity = 700;
+	uint32_t max_acceleration = 360;
+	uint32_t max_torque = 341;
+
+	int retval = 0;
+
+	//retval += ec_SDOwrite(slave, 0x6040, 0x00, FALSE, sizeof(control_word), &control_word, EC_TIMEOUTSAFE);
+
+	// Set some motor parameters
+ 	retval += ec_SDOwrite(slave, 0x2012, 0x02, FALSE, sizeof(motor_mode), &motor_mode, EC_TIMEOUTSAFE);
+	retval += ec_SDOwrite(slave, 0x2012, 0x05, FALSE, sizeof(max_velocity), &max_velocity, EC_TIMEOUTSAFE);
+	retval += ec_SDOwrite(slave, 0x2012, 0x06, FALSE, sizeof(max_acceleration), &max_acceleration, EC_TIMEOUTSAFE);
+	retval += ec_SDOwrite(slave, 0x2012, 0x07, FALSE, sizeof(max_torque),  &max_torque,  EC_TIMEOUTSAFE);
+	retval += ec_SDOwrite(slave, 0x2012, 0x03, FALSE, sizeof(motor_pos), &motor_pos, EC_TIMEOUTSAFE);
+
+	printf("AEP slave %d set, retval = %d\n", slave, retval);
+
+	return retval;
+}
+
+
 void simpletest(char *ifname)
 {
     int i, j, oloop, iloop, chk;
@@ -42,9 +92,10 @@ void simpletest(char *ifname)
       if ( ec_config_init(FALSE) > 0 )
       {
          printf("%d slaves found and configured.\n",ec_slavecount);
+		 ec_slave[1].PO2SOconfig = &servo_setup;
 
+		 // Setup IO map
          ec_config_map(&IOmap);
-
          ec_configdc();
 
          printf("Slaves mapped, state to SAFE_OP.\n");
@@ -94,15 +145,20 @@ void simpletest(char *ifname)
                     {
                         printf("Processdata cycle %4d, WKC %d , O:", i, wkc);
 
+						// Print current master outputs
                         for(j = 0 ; j < oloop; j++)
                         {
                             printf(" %2.2x", *(ec_slave[0].outputs + j));
                         }
 
+						// Print current master inputs
                         printf(" I:");
                         for(j = 0 ; j < iloop; j++)
                         {
                             printf(" %2.2x", *(ec_slave[0].inputs + j));
+
+							servo_outputs* outputs = (servo_outputs*)ec_slave[0].inputs;
+							
                         }
                         printf(" T:%"PRId64"\r",ec_DCtime);
                         needlf = TRUE;
