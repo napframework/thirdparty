@@ -233,7 +233,7 @@ int si_PDOassign(uint16 slave, uint16 PDOassign, int mapoffset, int bitoffset)
             /* read PDO assign */
             wkc = ec_SDOread(slave, PDOassign, (uint8)idxloop, FALSE, &rdl, &rdat, EC_TIMEOUTRXM);
             /* result is index of PDO */
-            idx = etohl(rdat);
+            idx = etohs(rdat);
             if (idx > 0)
             {
                 rdl = sizeof(subcnt); subcnt = 0;
@@ -414,12 +414,16 @@ int si_siiPDO(uint16 slave, uint8 t, int mapoffset, int bitoffset)
                     PDO->BitSize[PDO->nPDO] += bitlen;
                     a += 2;
 
-                    str_name[0] = 0;
-                    if(obj_name)
-                      ec_siistring(str_name, slave, obj_name);
+                    /* skip entry if filler (0x0000:0x00) */
+                    if(obj_idx || obj_subidx)
+                    {
+                       str_name[0] = 0;
+                       if(obj_name)
+                          ec_siistring(str_name, slave, obj_name);
 
-                    printf("  [0x%4.4X.%1d] 0x%4.4X:0x%2.2X 0x%2.2X", abs_offset, abs_bit, obj_idx, obj_subidx, bitlen);
-                    printf(" %-12s %s\n", dtype2string(obj_datatype), str_name);
+                       printf("  [0x%4.4X.%1d] 0x%4.4X:0x%2.2X 0x%2.2X", abs_offset, abs_bit, obj_idx, obj_subidx, bitlen);
+                       printf(" %-12s %s\n", dtype2string(obj_datatype), str_name);
+                    }
                     bitoffset += bitlen;
                     totalsize += bitlen;
                 }
@@ -554,14 +558,14 @@ void slaveinfo(char *ifname)
             for(nSM = 0 ; nSM < EC_MAXSM ; nSM++)
             {
                if(ec_slave[cnt].SM[nSM].StartAddr > 0)
-                  printf(" SM%1d A:%4.4x L:%4d F:%8.8x Type:%d\n",nSM, ec_slave[cnt].SM[nSM].StartAddr, ec_slave[cnt].SM[nSM].SMlength,
-                         (int)ec_slave[cnt].SM[nSM].SMflags, ec_slave[cnt].SMtype[nSM]);
+                  printf(" SM%1d A:%4.4x L:%4d F:%8.8x Type:%d\n",nSM, etohs(ec_slave[cnt].SM[nSM].StartAddr), etohs(ec_slave[cnt].SM[nSM].SMlength),
+                         etohl(ec_slave[cnt].SM[nSM].SMflags), ec_slave[cnt].SMtype[nSM]);
             }
             for(j = 0 ; j < ec_slave[cnt].FMMUunused ; j++)
             {
                printf(" FMMU%1d Ls:%8.8x Ll:%4d Lsb:%d Leb:%d Ps:%4.4x Psb:%d Ty:%2.2x Act:%2.2x\n", j,
-                       (int)ec_slave[cnt].FMMU[j].LogStart, ec_slave[cnt].FMMU[j].LogLength, ec_slave[cnt].FMMU[j].LogStartbit,
-                       ec_slave[cnt].FMMU[j].LogEndbit, ec_slave[cnt].FMMU[j].PhysStart, ec_slave[cnt].FMMU[j].PhysStartBit,
+                       etohl(ec_slave[cnt].FMMU[j].LogStart), etohs(ec_slave[cnt].FMMU[j].LogLength), ec_slave[cnt].FMMU[j].LogStartbit,
+                       ec_slave[cnt].FMMU[j].LogEndbit, etohs(ec_slave[cnt].FMMU[j].PhysStart), ec_slave[cnt].FMMU[j].PhysStartBit,
                        ec_slave[cnt].FMMU[j].FMMUtype, ec_slave[cnt].FMMU[j].FMMUactive);
             }
             printf(" FMMUfunc 0:%d 1:%d 2:%d 3:%d\n",
@@ -617,30 +621,52 @@ char ifbuf[1024];
 
 int main(int argc, char *argv[])
 {
-   ec_adaptert * adapter = NULL;
-   printf("SOEM (Simple Open EtherCAT Master)\nSlaveinfo\n");
+   ec_adaptert* it_adapter = NULL;
+   ec_adaptert* se_adapter = NULL;
 
-   if (argc > 1)
+   printf("SOEM (Simple Open EtherCAT Master)\nSlaveinfo\n\n");
+   
+   // Set slave gather vars
+   for (int i = 1; i < argc; i++)
    {
-      if ((argc > 2) && (strncmp(argv[2], "-sdo", sizeof("-sdo")) == 0)) printSDO = TRUE;
-      if ((argc > 2) && (strncmp(argv[2], "-map", sizeof("-map")) == 0)) printMAP = TRUE;
-      /* start slaveinfo */
-      strcpy(ifbuf, argv[1]);
-      slaveinfo(ifbuf);
-   }
-   else
-   {
-      printf("Usage: slaveinfo ifname [options]\nifname = eth0 for example\nOptions :\n -sdo : print SDO info\n -map : print mapping\n");
-   	/* Print the list */
-      printf ("Available adapters\n");
-      adapter = ec_find_adapters ();
-      while (adapter != NULL)
-      {
-         printf ("Description : %s, Device to use for wpcap: %s\n", adapter->desc,adapter->name);
-         adapter = adapter->next;
-      }
+	   if ((strncmp(argv[i], "-sdo", sizeof("-sdo")) == 0)) printSDO = TRUE;
+	   if ((strncmp(argv[i], "-map", sizeof("-map")) == 0)) printMAP = TRUE;
    }
 
-   printf("End program\n");
+   // Scan for adapters
+   it_adapter = ec_find_adapters();
+   se_adapter = it_adapter;
+   int id = -1;
+
+   // Print to screen
+   while (it_adapter != NULL)
+   {
+	   // Print adapter info
+	   id++;
+	   printf("%d: Description : %s, Device to use for wpcap: %s\n", id, it_adapter->desc, it_adapter->name);
+	   it_adapter = it_adapter->next;
+   }
+
+   // Select the one to use
+   int s = -1;
+   while (s < 0 || s > id)
+   {
+	   printf("\nSelect ethernet adapter: ");
+	   scanf("%d", &s);
+	   getchar();
+   }
+
+   // Iterate to the selected adapter
+   for(int i = 0; i < s; i++)
+	   se_adapter = se_adapter->next;
+   
+   // Print adapter info
+   printf("\nSelected Adapter : %s\n\n", se_adapter->desc);
+   
+   // Get all network slave information
+   slaveinfo(se_adapter->name);
+
+   printf("Press any key to quit program");
+   getchar();
    return (0);
 }

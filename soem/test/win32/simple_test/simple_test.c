@@ -27,10 +27,39 @@ volatile int rtcnt;
 boolean inOP;
 uint8 currentgroup = 0;
 
+typedef struct PACKED
+{
+	uint32_t value_0x02;
+	uint32_t value_0x03;
+	uint32_t value_0x05;
+	uint32_t value_0x06;
+	uint32_t value_0x07;
+	uint32_t value_0xAA;
+} MAC_400_OUTPUTS;
+
+typedef struct PACKED
+{
+	uint32_t value_0x02;
+	uint32_t value_0x0A;
+	uint32_t value_0x0C;
+	uint32_t value_0xAA;
+	uint32_t value_0x23;
+	uint32_t value_0xA9;
+	uint32_t value_0x14;
+	uint32_t value_0x1D;
+} MAC_400_INPUTS;
+
 /* most basic RT thread for process data, just does IO transfer */
 void CALLBACK RTthread(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1,  DWORD_PTR dw2)
 {
     IOmap[0]++;
+
+	MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)ec_slave[1].outputs;
+	mac_outputs->value_0x02 = 2;
+	mac_outputs->value_0x03 = 1000000;
+	mac_outputs->value_0x05 = 2700;
+	mac_outputs->value_0x06 = 360;
+	mac_outputs->value_0x07 = 341;
 
     ec_send_processdata();
     wkc = ec_receive_processdata(EC_TIMEOUTRET);
@@ -201,7 +230,7 @@ void simpletest(char *ifname)
 
 
             /* cyclic loop, reads data from RT thread */
-            for(i = 1; i <= 500; i++)
+            for(i = 1; i <= 1000; i++)
             {
                     if(wkc >= expectedWKC)
                     {
@@ -220,7 +249,7 @@ void simpletest(char *ifname)
                         printf(" T:%lld\r",ec_DCtime);
                         needlf = TRUE;
                     }
-                    osal_usleep(50000);
+                    osal_usleep(5000);
 
             }
             inOP = FALSE;
@@ -243,9 +272,18 @@ void simpletest(char *ifname)
          timeKillEvent(mmResult);
 
          printf("\nRequest init state for all slaves\n");
-         ec_slave[0].state = EC_STATE_INIT;
-         /* request INIT state for all slaves */
+         
+		 /* request INIT state for all slaves */
+		 chk = 200;
+		 ec_slave[0].state = EC_STATE_INIT;
          ec_writestate(0);
+
+		 do
+		 {
+			ec_statecheck(0, EC_STATE_INIT, 50000);
+		 } while (chk-- && (ec_slave[0].state != EC_STATE_INIT));
+
+
         }
         else
         {
@@ -336,38 +374,55 @@ OSAL_THREAD_FUNC ecatcheck(void *lpParam)
         }
         osal_usleep(10000);
     }
-
-    return 0;
 }
 
 char ifbuf[1024];
 
 int main(int argc, char *argv[])
 {
-   ec_adaptert * adapter = NULL;
-   printf("SOEM (Simple Open EtherCAT Master)\nSimple test\n");
+	printf("SOEM (Simple Open EtherCAT Master)\nSimple test\n");
 
-   if (argc > 1)
-   {
-      /* create thread to handle slave error handling in OP */
-      osal_thread_create(&thread1, 128000, &ecatcheck, (void*) &ctime);
-      strcpy(ifbuf, argv[1]);
-      /* start cyclic part */
-      simpletest(ifbuf);
-   }
-   else
-   {
-      printf("Usage: simple_test ifname1\n");
-   	/* Print the list */
-      printf ("Available adapters\n");
-      adapter = ec_find_adapters ();
-      while (adapter != NULL)
-      {
-         printf ("Description : %s, Device to use for wpcap: %s\n", adapter->desc,adapter->name);
-         adapter = adapter->next;
-      }
-   }
+	ec_adaptert* it_adapter = NULL;
+	ec_adaptert* se_adapter = NULL;
 
-   printf("End program\n");
-   return (0);
+	// Scan for adapters
+	it_adapter = ec_find_adapters();
+	se_adapter = it_adapter;
+	int id = -1;
+
+	// Print to screen
+	while (it_adapter != NULL)
+	{
+		// Print adapter info
+		id++;
+		printf("%d: Description : %s, Device to use for wpcap: %s\n", id, it_adapter->desc, it_adapter->name);
+		it_adapter = it_adapter->next;
+	}
+
+	// Select the one to use
+	int s = -1;
+	while (s < 0 || s > id)
+	{
+		printf("\nSelect ethernet adapter: ");
+		scanf("%d", &s);
+		getchar();
+	}
+
+	// Iterate to the selected adapter
+	for (int i = 0; i < s; i++)
+		se_adapter = se_adapter->next;
+
+	// Print adapter info
+	printf("\nSelected Adapter : %s\n\n", se_adapter->desc);
+
+	/* create thread to handle slave error handling in OP */
+	//      pthread_create( &thread1, NULL, (void *) &ecatcheck, (void*) &ctime);
+	osal_thread_create(&thread1, 128000, &ecatcheck, (void*)&ctime);
+
+	/* start cyclic part */
+	simpletest(se_adapter->name);
+
+	printf("Press any key to quit program");
+	getchar();
+	return (0);
 }
