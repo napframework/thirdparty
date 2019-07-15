@@ -27,51 +27,29 @@ uint8 currentgroup = 0;
 
 typedef struct PACKED
 {
-	uint16_t value_6040;
-	int32_t value_607A;
-} servo_outputs;
+	uint32_t value_0x02;
+	uint32_t value_0x03;
+	uint32_t value_0x05;
+	uint32_t value_0x06;
+	uint32_t value_0x07;
+	uint32_t value_0xAA;
+} MAC_400_OUTPUTS;
+
+typedef struct PACKED
+{
+	uint32_t value_0x02;
+	uint32_t value_0x0A;
+	uint32_t value_0x0C;
+	uint32_t value_0xAA;
+	uint32_t value_0x23;
+	uint32_t value_0xA9;
+	uint32_t value_0x14;
+	uint32_t value_0x1D;
+} MAC_400_INPUTS;
 
 int servo_setup(uint16 slave)
 {
-	// Create bitmask
-	uint16_t control_word = 0;
-	control_word |= 1UL << 0;
-	control_word |= 1UL << 1;
-	control_word |= 1UL << 2;
-	control_word |= 1UL << 3;
-	control_word |= 1UL << 4;
-	control_word |= 1UL << 5;
-	control_word |= 1UL << 6;
-	control_word |= 1UL << 7;
-	control_word |= 1UL << 8;
-	control_word |= 1UL << 9;
-	control_word |= 1UL << 10;
-	control_word |= 1UL << 11;
-	control_word |= 1UL << 12;
-	control_word |= 1UL << 13;
-	control_word |= 1UL << 14;
-	control_word |= 1UL << 15;
-
-	int32_t motor_pos = 0;
-	uint32_t motor_mode = 2;
-	uint32_t max_velocity = 700;
-	uint32_t max_acceleration = 360;
-	uint32_t max_torque = 341;
-
-	int retval = 0;
-
-	//retval += ec_SDOwrite(slave, 0x6040, 0x00, FALSE, sizeof(control_word), &control_word, EC_TIMEOUTSAFE);
-
-	// Set some motor parameters
- 	retval += ec_SDOwrite(slave, 0x2012, 0x02, FALSE, sizeof(motor_mode), &motor_mode, EC_TIMEOUTSAFE);
-	retval += ec_SDOwrite(slave, 0x2012, 0x05, FALSE, sizeof(max_velocity), &max_velocity, EC_TIMEOUTSAFE);
-	retval += ec_SDOwrite(slave, 0x2012, 0x06, FALSE, sizeof(max_acceleration), &max_acceleration, EC_TIMEOUTSAFE);
-	retval += ec_SDOwrite(slave, 0x2012, 0x07, FALSE, sizeof(max_torque),  &max_torque,  EC_TIMEOUTSAFE);
-	retval += ec_SDOwrite(slave, 0x2012, 0x03, FALSE, sizeof(motor_pos), &motor_pos, EC_TIMEOUTSAFE);
-
-	printf("AEP slave %d set, retval = %d\n", slave, retval);
-
-	return retval;
+	return 0;
 }
 
 
@@ -135,11 +113,18 @@ void simpletest(char *ifname)
             printf("Operational state reached for all slaves.\n");
             inOP = TRUE;
             
+			MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)ec_slave[1].outputs;
+			mac_outputs->value_0x02 = 2;
+			mac_outputs->value_0x03 = 1000000;
+			mac_outputs->value_0x05 = 2700;
+			mac_outputs->value_0x06 = 360;
+			mac_outputs->value_0x07 = 341;
+
 			/* cyclic loop */
-            for(i = 1; i <= 10000; i++)
+            for(i = 1; i <= 5000; i++)
             {
-               ec_send_processdata();
-               wkc = ec_receive_processdata(EC_TIMEOUTRET);
+				ec_send_processdata();
+				wkc = ec_receive_processdata(EC_TIMEOUTRET);
 
                     if(wkc >= expectedWKC)
                     {
@@ -156,14 +141,11 @@ void simpletest(char *ifname)
                         for(j = 0 ; j < iloop; j++)
                         {
                             printf(" %2.2x", *(ec_slave[0].inputs + j));
-
-							servo_outputs* outputs = (servo_outputs*)ec_slave[0].inputs;
-							
                         }
                         printf(" T:%"PRId64"\r",ec_DCtime);
                         needlf = TRUE;
                     }
-                    osal_usleep(5000);
+                    osal_usleep(1000);
 
                 }
                 inOP = FALSE;
