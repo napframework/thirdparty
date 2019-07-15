@@ -26,8 +26,6 @@ volatile int wkc;
 volatile int rtcnt;
 boolean inOP;
 uint8 currentgroup = 0;
-const uint32 finalPosition = 1000000;
-uint32 deltaPosition = 0;
 
 typedef struct PACKED
 {
@@ -82,6 +80,7 @@ int MAC400_SETUP(uint16 slave)
 	// Force motor on zero.
 	uint32_t control_word = 0;
 	control_word |= 1UL << 6;
+	control_word |= 0x0 << 8;
 	ec_SDOwrite(slave, 0x2012, 0x24, FALSE, sizeof(control_word), &control_word, EC_TIMEOUTSAFE);
 
     return 1;
