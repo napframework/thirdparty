@@ -29,25 +29,24 @@ uint8 currentgroup = 0;
 
 typedef struct PACKED
 {
-	uint32_t value_0x02;
-	uint32_t value_0x03;
-	uint32_t value_0x05;
-	uint32_t value_0x06;
-	uint32_t value_0x07;
-	uint32_t value_0xAA;
-	uint32_t value_0x04;
+	uint32_t	mOperatingMode;
+	int32_t		mRequestedPosition;
+	uint32_t	mVelocity;
+	uint32_t	mAcceleration;
+	uint32_t	mTorque;
+	uint32_t	mAnalogueInput;
 } MAC_400_OUTPUTS;
 
 typedef struct PACKED
 {
-	uint32_t value_0x02;
-	uint32_t value_0x0A;
-	uint32_t value_0x0C;
-	uint32_t value_0xAA;
-	uint32_t value_0x23;
-	uint32_t value_0xA9;
-	uint32_t value_0x14;
-	uint32_t value_0x1D;
+	uint32_t	mOperatingMode;
+	int32_t		mActualPosition;
+	uint32_t	mActualVelocity;
+	uint32_t	mAnalogueInput;
+	uint32_t	mErrorStatus;
+	uint32_t	mActualTorque;
+	uint32_t	mFollowError;
+	uint32_t	mActualTemperature;
 } MAC_400_INPUTS;
 
 /* most basic RT thread for process data, just does IO transfer */
@@ -57,14 +56,15 @@ void CALLBACK RTthread(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1
 
 	// Read info
 	MAC_400_INPUTS* inputs = (MAC_400_INPUTS*)ec_slave[1].inputs;
+	inputs->mErrorStatus;
 
 	// Write info
 	MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)ec_slave[1].outputs;
-	mac_outputs->value_0x02 = 2;
-	mac_outputs->value_0x03 = 1000000;
-	mac_outputs->value_0x05 = 2700;
-	mac_outputs->value_0x06 = 360;
-	mac_outputs->value_0x07 = 341;
+	mac_outputs->mOperatingMode = 2;
+	mac_outputs->mRequestedPosition = -100000;
+	mac_outputs->mVelocity = 2700;
+	mac_outputs->mAcceleration = 360;
+	mac_outputs->mTorque = 341;
 
     ec_send_processdata();
     wkc = ec_receive_processdata(EC_TIMEOUTRET);

@@ -25,28 +25,6 @@ volatile int wkc;
 boolean inOP;
 uint8 currentgroup = 0;
 
-typedef struct PACKED
-{
-	uint32_t value_0x02;
-	uint32_t value_0x03;
-	uint32_t value_0x05;
-	uint32_t value_0x06;
-	uint32_t value_0x07;
-	uint32_t value_0xAA;
-} MAC_400_OUTPUTS;
-
-typedef struct PACKED
-{
-	uint32_t value_0x02;
-	uint32_t value_0x0A;
-	uint32_t value_0x0C;
-	uint32_t value_0xAA;
-	uint32_t value_0x23;
-	uint32_t value_0xA9;
-	uint32_t value_0x14;
-	uint32_t value_0x1D;
-} MAC_400_INPUTS;
-
 int servo_setup(uint16 slave)
 {
 	return 0;
@@ -113,13 +91,6 @@ void simpletest(char *ifname)
             printf("Operational state reached for all slaves.\n");
             inOP = TRUE;
             
-			MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)ec_slave[1].outputs;
-			mac_outputs->value_0x02 = 2;
-			mac_outputs->value_0x03 = 1000000;
-			mac_outputs->value_0x05 = 2700;
-			mac_outputs->value_0x06 = 360;
-			mac_outputs->value_0x07 = 341;
-
 			/* cyclic loop */
             for(i = 1; i <= 5000; i++)
             {
