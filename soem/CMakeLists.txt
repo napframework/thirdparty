@@ -70,6 +70,7 @@ add_library(soem STATIC
   ${OSAL_SOURCES}
   ${OSHW_SOURCES}
   ${OSHW_EXTRA_SOURCES})
+set_property(TARGET soem PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(soem ${OS_LIBS})
 
 message("LIB_DIR: ${SOEM_LIB_INSTALL_DIR}")
