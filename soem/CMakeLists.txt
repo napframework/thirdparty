@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.4)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
 project(SOEM C)
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
