@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Dev\Naivi\thirdparty\SPIRV-Reflect\util\stripper\stripper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Dev\Naivi\thirdparty\SPIRV-Reflect\util\stripper\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Dev\Naivi\thirdparty\SPIRV-Reflect\util\stripper\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{C06F4C1E-3B1E-38D4-A471-AFF9388A3585}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

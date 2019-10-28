@@ -1,0 +1,12 @@
+C:/Dev/Naivi/thirdparty/SPIRV-Reflect/msvc64/CMakeFiles/spirv-reflect.dir
+C:/Dev/Naivi/thirdparty/SPIRV-Reflect/msvc64/CMakeFiles/INSTALL.dir
+C:/Dev/Naivi/thirdparty/SPIRV-Reflect/msvc64/CMakeFiles/ALL_BUILD.dir
+C:/Dev/Naivi/thirdparty/SPIRV-Reflect/msvc64/CMakeFiles/ZERO_CHECK.dir
+C:/Dev/Naivi/thirdparty/SPIRV-Reflect/msvc64/examples/CMakeFiles/hlsl_resource_types.dir
+C:/Dev/Naivi/thirdparty/SPIRV-Reflect/msvc64/examples/CMakeFiles/descriptors.dir
+C:/Dev/Naivi/thirdparty/SPIRV-Reflect/msvc64/examples/CMakeFiles/io_variables.dir
+C:/Dev/Naivi/thirdparty/SPIRV-Reflect/msvc64/examples/CMakeFiles/INSTALL.dir
+C:/Dev/Naivi/thirdparty/SPIRV-Reflect/msvc64/examples/CMakeFiles/ALL_BUILD.dir
+C:/Dev/Naivi/thirdparty/SPIRV-Reflect/msvc64/util/stripper/CMakeFiles/INSTALL.dir
+C:/Dev/Naivi/thirdparty/SPIRV-Reflect/msvc64/util/stripper/CMakeFiles/stripper.dir
+C:/Dev/Naivi/thirdparty/SPIRV-Reflect/msvc64/util/stripper/CMakeFiles/ALL_BUILD.dir
