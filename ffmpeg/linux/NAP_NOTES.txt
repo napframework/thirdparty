@@ -1,7 +1,10 @@
-Built from ffmpeg-3.4.2.tar.bz2 on Ubuntu 16.04 with GCC 5.4.0
+Built from ffmpeg-3.4.2.tar.bz2 on Ubuntu 18.04 with GCC 7.4.0
 
 Configured with:
-./configure --prefix=`pwd`/install/linux --enable-shared --disable-static --disable-programs --disable-doc
+./configure --prefix=`pwd`/install/linux --enable-shared --disable-static --disable-programs --disable-doc --enable-avresample
+
+After build/install:
+patchelf --set-rpath \$ORIGIN/. install/linux/lib/*so
 
 TODO consolidate option across platforms.  Can't use --enable-gpl or --enable-nonfree anywhere: https://ffmpeg.org/legal.html
 
