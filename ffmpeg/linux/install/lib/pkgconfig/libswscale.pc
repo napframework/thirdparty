@@ -1,7 +1,8 @@
-prefix=/home/creywood/workspaces/naivi/thirdpartybuild/ffmpeg-3.4.2/install/linux
+prefix=/home/creywood/workspaces/naivi/thirdparty/ffmpeg/linux/install
 exec_prefix=${prefix}
-libdir=/home/creywood/workspaces/naivi/thirdpartybuild/ffmpeg-3.4.2/install/linux/lib
-includedir=/home/creywood/workspaces/naivi/thirdpartybuild/ffmpeg-3.4.2/install/linux/include
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
 
 Name: libswscale
 Description: FFmpeg image rescaling library
