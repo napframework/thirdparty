@@ -1,6 +1,6 @@
 # sdl pkg-config source file
 
-prefix=/home/coen/dev/SDL2-2.0.12/build/linux/install
+prefix=/home/cklosters/dev/SDL2-2.0.12/build/linux/install
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include

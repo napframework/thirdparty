@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/coen/dev/SDL2-2.0.12/build/linux/install/lib'
+libdir='/home/cklosters/dev/SDL2-2.0.12/build/linux/install/lib'

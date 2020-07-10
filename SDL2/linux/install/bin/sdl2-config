@@ -1,6 +1,6 @@
 #!/bin/sh
 
-prefix=/home/coen/dev/SDL2-2.0.12/build/linux/install
+prefix=/home/cklosters/dev/SDL2-2.0.12/build/linux/install
 exec_prefix=${prefix}
 exec_prefix_set=no
 libdir=${exec_prefix}/lib
