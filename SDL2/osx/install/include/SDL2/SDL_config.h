@@ -1,7 +1,7 @@
 /* include/SDL_config.h.  Generated from SDL_config.h.in by configure.  */
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,7 @@
 
 /* Make sure that this isn't included by Visual C++ */
 #ifdef _MSC_VER
-#error You should run hg revert SDL_config.h 
+#error You should run hg revert SDL_config.h
 #endif
 
 /* C language features */
@@ -98,9 +98,12 @@
 #define HAVE_MEMMOVE 1
 #define HAVE_MEMCMP 1
 #define HAVE_WCSLEN 1
-/* #undef HAVE_WCSLCPY */
-/* #undef HAVE_WCSLCAT */
+#define HAVE_WCSLCPY 1
+#define HAVE_WCSLCAT 1
+#define HAVE_WCSDUP 1
+#define HAVE_WCSSTR 1
 #define HAVE_WCSCMP 1
+#define HAVE_WCSNCMP 1
 #define HAVE_STRLEN 1
 #define HAVE_STRLCPY 1
 #define HAVE_STRLCAT 1
@@ -112,6 +115,8 @@
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
+#define HAVE_STRTOK_R 1
+/* #undef HAVE_STRTOK_S */
 /* #undef HAVE_ITOA */
 /* #undef HAVE__LTOA */
 /* #undef HAVE__UITOA */
@@ -190,6 +195,7 @@
 /* #undef HAVE_SEM_TIMEDWAIT */
 /* #undef HAVE_GETAUXVAL */
 #define HAVE_POLL 1
+#define HAVE__EXIT 1
 
 #else
 #define HAVE_STDARG_H 1
@@ -210,7 +216,6 @@
 /* #undef HAVE_DSOUND_H */
 /* #undef HAVE_DXGI_H */
 /* #undef HAVE_XINPUT_H */
-/* #undef HAVE_ENDPOINTVOLUME_H */
 /* #undef HAVE_MMDEVICEAPI_H */
 /* #undef HAVE_AUDIOCLIENT_H */
 /* #undef HAVE_XINPUT_GAMEPAD_EX */
@@ -284,7 +289,7 @@
 /* #undef SDL_JOYSTICK_WINMM */
 /* #undef SDL_JOYSTICK_USBHID */
 /* #undef SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H */
-#define SDL_JOYSTICK_HIDAPI 1
+/* #undef SDL_JOYSTICK_HIDAPI */
 /* #undef SDL_JOYSTICK_EMSCRIPTEN */
 /* #undef SDL_HAPTIC_DUMMY */
 /* #undef SDL_HAPTIC_ANDROID */
@@ -328,9 +333,6 @@
 /* #undef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL */
 /* #undef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR */
 /* #undef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON */
-/* #undef SDL_VIDEO_DRIVER_MIR */
-/* #undef SDL_VIDEO_DRIVER_MIR_DYNAMIC */
-/* #undef SDL_VIDEO_DRIVER_MIR_DYNAMIC_XKBCOMMON */
 /* #undef SDL_VIDEO_DRIVER_X11 */
 /* #undef SDL_VIDEO_DRIVER_RPI */
 /* #undef SDL_VIDEO_DRIVER_KMSDRM */
@@ -386,6 +388,9 @@
 /* Enable Vulkan support */
 #define SDL_VIDEO_VULKAN 1
 
+/* Enable Metal support */
+#define SDL_VIDEO_METAL 1
+
 /* Enable system power support */
 /* #undef SDL_POWER_LINUX */
 /* #undef SDL_POWER_WINDOWS */
@@ -408,12 +413,17 @@
 /* Enable assembly routines */
 #define SDL_ASSEMBLY_ROUTINES 1
 /* #undef SDL_ALTIVEC_BLITTERS */
+/* #undef SDL_ARM_SIMD_BLITTERS */
+/* #undef SDL_ARM_NEON_BLITTERS */
 
 /* Enable ime support */
 /* #undef SDL_USE_IME */
 
 /* Enable dynamic udev support */
 /* #undef SDL_UDEV_DYNAMIC */
+
+/* Enable dynamic libusb support */
+/* #undef SDL_LIBUSB_DYNAMIC */
 
 /* Enable dynamic libsamplerate support */
 /* #undef SDL_LIBSAMPLERATE_DYNAMIC */
