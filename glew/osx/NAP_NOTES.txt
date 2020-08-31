@@ -1,6 +1,0 @@
-Link library using:
-find_package(GLEW REQUIRED)
-target_link_libraries(YourTarget GLEW::GLEW)
-
-Afterwards:
-install_name_tool -id @rpath/libGLEW.dylib libGLEW.dylib
