@@ -2,7 +2,7 @@
   <img width=256 height=256 src="https://www.napframework.com/png/nap_logo_small.png">
 </p>
 
-This repository contains all cross-platform third party dependencies to build [NAP](https://github.com/napframework/nap) from source, except QT. The third party master is guaranteed to be in-sync with the current NAP master. 
+This repository contains all cross-platform third party dependencies to build [NAP](https://github.com/napframework/nap) from source on Windows, Linux and OSX, except QT. The third party master is guaranteed to be in-sync with the current NAP master.
 
 - For NAP compilation instructions vist: https://github.com/napframework/nap
 
@@ -25,4 +25,6 @@ Configure flags:
 Afterwards:
 install_name_tool -id @rpath/libSDL2-2.0.0.dylib libSDL2-2.0.0.dylib
 ```
+
+Keep the third-party source code in the repository if possible.
 
