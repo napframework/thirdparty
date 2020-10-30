@@ -1,0 +1,4 @@
+Built from CRYPTOPP_8_2_0.tar.gz with: 
+
+mkdir install
+make dynamic install PREFIX=./install
