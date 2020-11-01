@@ -40,3 +40,4 @@ __pycache__
 **/build_android_*/*
 vulkansdk/linux/lib/libVkLayer_khronos_validation.so
 vulkansdk/linux/lib/libVkLayer_api_dump.so
+cryptopp/linux/install/lib/libcryptopp.a
