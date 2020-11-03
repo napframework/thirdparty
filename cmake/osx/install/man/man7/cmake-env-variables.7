@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-ENV-VARIABLES" "7" "Sep 30, 2019" "3.15.4" "CMake"
+.TH "CMAKE-ENV-VARIABLES" "7" "Oct 06, 2020" "3.18.4" "CMake"
 .SH NAME
 cmake-env-variables \- CMake Environment Variables Reference
 .
@@ -37,6 +37,24 @@ meaning to CMake.
 For general information on environment variables, see the
 Environment Variables
 section in the cmake\-language manual.
+.SH ENVIRONMENT VARIABLES THAT CHANGE BEHAVIOR
+.SS CMAKE_PREFIX_PATH
+.sp
+This is a CMake Environment Variable\&. Its initial value is taken from
+the calling process environment.
+.sp
+The \fBCMAKE_PREFIX_PATH\fP environment variable may be set to a list of
+directories specifying installation \fIprefixes\fP to be searched by the
+\fBfind_package()\fP, \fBfind_program()\fP, \fBfind_library()\fP,
+\fBfind_file()\fP, and \fBfind_path()\fP commands.  Each command will
+add appropriate subdirectories (like \fBbin\fP, \fBlib\fP, or \fBinclude\fP)
+as specified in its own documentation.
+.sp
+This variable may hold a single prefix or a list of prefixes separated
+by \fB:\fP on UNIX or \fB;\fP on Windows (the same as the \fBPATH\fP environment
+variable convention on those platforms).
+.sp
+See also the \fBCMAKE_PREFIX_PATH\fP CMake variable.
 .SH ENVIRONMENT VARIABLES THAT CONTROL THE BUILD
 .SS CMAKE_BUILD_PARALLEL_LEVEL
 .sp
@@ -56,6 +74,15 @@ the calling process environment.
 .sp
 The default build configuration for Build Tool Mode and
 \fBctest\fP build handler when there is no explicit configuration given.
+.SS CMAKE_EXPORT_COMPILE_COMMANDS
+.sp
+This is a CMake Environment Variable\&. Its initial value is taken from
+the calling process environment.
+.sp
+The default value for \fBCMAKE_EXPORT_COMPILE_COMMANDS\fP when there
+is no explicit configuration given on the first run while creating a new
+build tree.  On later runs in an existing build tree the value persists in
+the cache as \fBCMAKE_EXPORT_COMPILE_COMMANDS\fP\&.
 .SS CMAKE_GENERATOR
 .sp
 This is a CMake Environment Variable\&. Its initial value is taken from
@@ -99,6 +126,16 @@ the calling process environment.
 Default value for \fBCMAKE_GENERATOR_TOOLSET\fP if no Cache entry
 is present and no value is specified by \fBcmake(1)\fP \fB\-T\fP option.
 This value is only applied if \fBCMAKE_GENERATOR\fP is set.
+.SS CMAKE_<LANG>_COMPILER_LAUNCHER
+.sp
+This is a CMake Environment Variable\&. Its initial value is taken from
+the calling process environment.
+.sp
+Default compiler launcher to use for the specified language. Will only be used
+by CMake to initialize the variable on the first configuration. Afterwards, it
+is available through the cache setting of the variable of the same name. For
+any configuration run (including the first), the environment variable will be
+ignored if the \fBCMAKE_<LANG>_COMPILER_LAUNCHER\fP variable is defined.
 .SS CMAKE_MSVCIDE_RUN_PATH
 .sp
 This is a CMake Environment Variable\&. Its initial value is taken from
@@ -229,6 +266,8 @@ flags, after which the value for \fBASM<DIALECT>FLAGS\fP is stored in the cache
 as \fBCMAKE_ASM<DIALECT>_FLAGS <CMAKE_<LANG>_FLAGS>\fP\&.  For any configuration
 run (including the first), the environment variable will be ignored, if the
 \fBCMAKE_ASM<DIALECT>_FLAGS <CMAKE_<LANG>_FLAGS>\fP variable is defined.
+.sp
+See also \fBCMAKE_ASM<DIALECT>_FLAGS_INIT\fP\&.
 .SS CC
 .sp
 This is a CMake Environment Variable\&. Its initial value is taken from
@@ -251,6 +290,8 @@ flags, after which the value for \fBCFLAGS\fP is stored in the cache
 as \fBCMAKE_C_FLAGS\fP\&. For any configuration run
 (including the first), the environment variable will be ignored if the
 \fBCMAKE_C_FLAGS\fP variable is defined.
+.sp
+See also \fBCMAKE_C_FLAGS_INIT\fP\&.
 .SS CSFLAGS
 .sp
 This is a CMake Environment Variable\&. Its initial value is taken from
@@ -262,6 +303,8 @@ compilation flags, after which the value for \fBCSFLAGS\fP is stored in the cach
 as \fBCMAKE_CSharp_FLAGS\fP\&. For any configuration
 run (including the first), the environment variable will be ignored if the
 \fBCMAKE_CSharp_FLAGS\fP variable is defined.
+.sp
+See also \fBCMAKE_CSharp_FLAGS_INIT\fP\&.
 .SS CUDACXX
 .sp
 This is a CMake Environment Variable\&. Its initial value is taken from
@@ -284,6 +327,8 @@ compilation flags, after which the value for \fBCUDAFLAGS\fP is stored in the
 cache as \fBCMAKE_CUDA_FLAGS\fP\&. For any configuration
 run (including the first), the environment variable will be ignored if
 the \fBCMAKE_CUDA_FLAGS\fP variable is defined.
+.sp
+See also \fBCMAKE_CUDA_FLAGS_INIT\fP\&.
 .SS CUDAHOSTCXX
 .sp
 This is a CMake Environment Variable\&. Its initial value is taken from
@@ -321,6 +366,8 @@ compilation flags, after which the value for \fBCXXFLAGS\fP is stored in the cac
 as \fBCMAKE_CXX_FLAGS\fP\&. For any configuration run (
 including the first), the environment variable will be ignored if
 the \fBCMAKE_CXX_FLAGS\fP variable is defined.
+.sp
+See also \fBCMAKE_CXX_FLAGS_INIT\fP\&.
 .SS FC
 .sp
 This is a CMake Environment Variable\&. Its initial value is taken from
@@ -344,6 +391,36 @@ compilation flags, after which the value for \fBFFLAGS\fP is stored in the cache
 as \fBCMAKE_Fortran_FLAGS\fP\&. For any configuration
 run (including the first), the environment variable will be ignored if
 the \fBCMAKE_Fortran_FLAGS\fP variable is defined.
+.sp
+See also \fBCMAKE_Fortran_FLAGS_INIT\fP\&.
+.SS OBJC
+.sp
+This is a CMake Environment Variable\&. Its initial value is taken from
+the calling process environment.
+.sp
+Preferred executable for compiling \fBOBJC\fP language files. Will only be used
+by CMake on the first configuration to determine \fBOBJC\fP compiler, after
+which the value for \fBOBJC\fP is stored in the cache as
+\fBCMAKE_OBJC_COMPILER\fP\&. For any configuration
+run (including the first), the environment variable will be ignored if the
+\fBCMAKE_OBJC_COMPILER\fP variable is defined.
+.sp
+If \fBOBJC\fP is not defined, the \fBCC\fP environment variable will
+be checked instead.
+.SS OBJCXX
+.sp
+This is a CMake Environment Variable\&. Its initial value is taken from
+the calling process environment.
+.sp
+Preferred executable for compiling \fBOBJCXX\fP language files. Will only be used
+by CMake on the first configuration to determine \fBOBJCXX\fP compiler, after
+which the value for \fBOBJCXX\fP is stored in the cache as
+\fBCMAKE_OBJCXX_COMPILER\fP\&. For any configuration
+run (including the first), the environment variable will be ignored if the
+\fBCMAKE_OBJCXX_COMPILER\fP variable is defined.
+.sp
+If \fBOBJCXX\fP is not defined, the \fBCXX\fP environment variable will
+be checked instead.
 .SS RC
 .sp
 This is a CMake Environment Variable\&. Its initial value is taken from
@@ -366,6 +443,8 @@ default compilation flags, after which the value for \fBRCFLAGS\fP is stored in
 the cache as \fBCMAKE_RC_FLAGS\fP\&. For any
 configuration run (including the first), the environment variable will be ignored
 if the \fBCMAKE_RC_FLAGS\fP variable is defined.
+.sp
+See also \fBCMAKE_RC_FLAGS_INIT\fP\&.
 .SS SWIFTC
 .sp
 This is a CMake Environment Variable\&. Its initial value is taken from
@@ -431,7 +510,55 @@ the calling process environment.
 Environment variable that will exist when a test executed by \fBctest(1)\fP
 is run in non\-interactive mode.  The value will be equal to
 \fBCMAKE_VERSION\fP\&.
+.SH ENVIRONMENT VARIABLES FOR THE CMAKE CURSES INTERFACE
+.SS CCMAKE_COLORS
+.sp
+Determines what colors are used by the CMake curses interface,
+when run on a terminal that supports colors.
+The syntax follows the same conventions as \fBLS_COLORS\fP;
+that is, a list of key/value pairs separated by \fB:\fP\&.
+.sp
+Keys are a single letter corresponding to a CMake cache variable type:
+.INDENT 0.0
+.IP \(bu 2
+\fBs\fP: A \fBSTRING\fP\&.
+.IP \(bu 2
+\fBp\fP: A \fBFILEPATH\fP\&.
+.IP \(bu 2
+\fBc\fP: A value which has an associated list of choices.
+.IP \(bu 2
+\fBy\fP: A \fBBOOL\fP which has a true\-like value (e.g. \fBON\fP, \fBYES\fP).
+.IP \(bu 2
+\fBn\fP: A \fBBOOL\fP which has a false\-like value (e.g. \fBOFF\fP, \fBNO\fP).
+.UNINDENT
+.sp
+Values are an integer number that specifies what color to use.
+\fB0\fP is black (you probably don’t want to use that).
+Others are determined by your terminal’s color support.
+Most (color) terminals will support at least 8 or 16 colors.
+Some will support up to 256 colors. The colors will likely match
+\fI\%this chart\fP,
+although the first 16 colors may match the original
+\fI\%CGA color palette\fP\&.
+(Many modern terminal emulators also allow their color palette,
+at least for the first 16 colors, to be configured by the user.)
+.sp
+Note that fairly minimal checking is done for bad colors
+(although a value higher than what curses believes your terminal supports
+will be silently ignored) or bad syntax.
+.sp
+For example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+CCMAKE_COLORS=\(aqs=39:p=220:c=207:n=196:y=46\(aq
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .SH COPYRIGHT
-2000-2019 Kitware, Inc. and Contributors
+2000-2020 Kitware, Inc. and Contributors
 .\" Generated by docutils manpage writer.
 .
