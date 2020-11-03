@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE" "1" "Sep 30, 2019" "3.15.4" "CMake"
+.TH "CMAKE" "1" "Oct 06, 2020" "3.18.4" "CMake"
 .SH NAME
 cmake \- CMake Command-Line Reference
 .
@@ -239,6 +239,9 @@ CMake listfiles.  The loaded entries take priority over the
 project’s default values.  The given file should be a CMake script
 containing \fBset()\fP commands that use the \fBCACHE\fP option, not a
 cache\-format file.
+.sp
+References to \fBCMAKE_SOURCE_DIR\fP and \fBCMAKE_BINARY_DIR\fP
+within the script evaluate to the top\-level source and build tree.
 .TP
 .B \fB\-D <var>:<type>=<value>, \-D <var>=<value>\fP
 Create or update a CMake \fBCACHE\fP entry.
@@ -375,11 +378,29 @@ Dump a wide range of information about the current system.  If run
 from the top of a binary tree for a CMake project it will dump
 additional information such as the cache, log files etc.
 .TP
-.B \fB\-\-loglevel=<ERROR|WARNING|NOTICE|STATUS|VERBOSE|DEBUG|TRACE>\fP
+.B \fB\-\-log\-level=<ERROR|WARNING|NOTICE|STATUS|VERBOSE|DEBUG|TRACE>\fP
 Set the log level.
 .sp
 The \fBmessage()\fP command will only output messages of the specified
 log level or higher.  The default log level is \fBSTATUS\fP\&.
+.sp
+To make a log level persist between CMake runs, set
+\fBCMAKE_MESSAGE_LOG_LEVEL\fP as a cache variable instead.
+If both the command line option and the variable are given, the command line
+option takes precedence.
+.sp
+For backward compatibility reasons, \fB\-\-loglevel\fP is also accepted as a
+synonym for this option.
+.TP
+.B \fB\-\-log\-context\fP
+Enable the \fBmessage()\fP command outputting context attached to each
+message.
+.sp
+This option turns on showing context for the current CMake run only.
+To make showing the context persistent for all subsequent CMake runs, set
+\fBCMAKE_MESSAGE_CONTEXT_SHOW\fP as a cache variable instead.
+When this command line option is given, \fBCMAKE_MESSAGE_CONTEXT_SHOW\fP
+is ignored.
 .TP
 .B \fB\-\-debug\-trycompile\fP
 Do not delete the \fBtry_compile()\fP build tree.
@@ -398,6 +419,14 @@ Put cmake in a debug mode.
 Print extra information during the cmake run like stack traces with
 \fBmessage(SEND_ERROR)\fP calls.
 .TP
+.B \fB\-\-debug\-find\fP
+Put cmake find commands in a debug mode.
+.sp
+Print extra find call information during the cmake run to standard
+error. Output is designed for human consumption and not for parsing.
+See also the \fBCMAKE_FIND_DEBUG_MODE\fP variable for debugging
+a more local part of the project.
+.TP
 .B \fB\-\-trace\fP
 Put cmake in trace mode.
 .sp
@@ -408,10 +437,103 @@ Put cmake in trace mode.
 .sp
 Like \fB\-\-trace\fP, but with variables expanded.
 .TP
+.B \fB\-\-trace\-format=<format>\fP
+Put cmake in trace mode and sets the trace output format.
+.sp
+\fB<format>\fP can be one of the following values.
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.TP
+.B \fBhuman\fP
+Prints each trace line in a human\-readable format. This is the
+default format.
+.TP
+.B \fBjson\-v1\fP
+Prints each line as a separate JSON document. Each document is
+separated by a newline ( \fB\en\fP ). It is guaranteed that no
+newline characters will be present inside a JSON document.
+.sp
+JSON trace format:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+{
+  "file": "/full/path/to/the/CMake/file.txt",
+  "line": 0,
+  "cmd": "add_executable",
+  "args": ["foo", "bar"],
+  "time": 1579512535.9687231,
+  "frame": 2
+}
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The members are:
+.INDENT 7.0
+.TP
+.B \fBfile\fP
+The full path to the CMake source file where the function
+was called.
+.TP
+.B \fBline\fP
+The line in \fBfile\fP of the function call.
+.TP
+.B \fBcmd\fP
+The name of the function that was called.
+.TP
+.B \fBargs\fP
+A string list of all function parameters.
+.TP
+.B \fBtime\fP
+Timestamp (seconds since epoch) of the function call.
+.TP
+.B \fBframe\fP
+Stack frame depth of the function that was called.
+.UNINDENT
+.sp
+Additionally, the first JSON document outputted contains the
+\fBversion\fP key for the current major and minor version of the
+.sp
+JSON trace format:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+{
+  "version": {
+    "major": 1,
+    "minor": 0
+  }
+}
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The members are:
+.INDENT 7.0
+.TP
+.B \fBversion\fP
+Indicates the version of the JSON format. The version has a
+major and minor components following semantic version conventions.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.TP
 .B \fB\-\-trace\-source=<file>\fP
 Put cmake in trace mode, but output only lines of a specified file.
 .sp
 Multiple options are allowed.
+.TP
+.B \fB\-\-trace\-redirect=<file>\fP
+Put cmake in trace mode and redirect trace output to a file instead of stderr.
 .TP
 .B \fB\-\-warn\-uninitialized\fP
 Warn about uninitialized values.
@@ -435,6 +557,20 @@ Find problems with variable usage in system files.
 Normally, unused and uninitialized variables are searched for only
 in \fBCMAKE_SOURCE_DIR\fP and \fBCMAKE_BINARY_DIR\fP\&.
 This flag tells CMake to warn about other files as well.
+.TP
+.B \fB\-\-profiling\-output=<path>\fP
+Used in conjuction with \fB\-\-profiling\-format\fP to output to a given path.
+.TP
+.B \fB\-\-profiling\-format=<file>\fP
+Enable the output of profiling data of CMake script in the given format.
+.sp
+This can aid performance analysis of CMake scripts executed. Third party
+applications should be used to process the output into human readable format.
+.sp
+Currently supported values are:
+\fBgoogle\-trace\fP Outputs in Google Trace Format, which can be parsed by the
+\fI\%about:tracing\fP tab of Google Chrome or using a plugin for a tool like Trace
+Compass.
 .UNINDENT
 .SH BUILD A PROJECT
 .sp
@@ -556,7 +692,7 @@ supported by some generators.
 .sp
 .nf
 .ft C
-cmake [{\-D <var>=<value>}...] \-P <cmake\-script\-file>
+cmake [{\-D <var>=<value>}...] \-P <cmake\-script\-file> [\-\- <unparsed\-options>...]
 .ft P
 .fi
 .UNINDENT
@@ -566,6 +702,10 @@ Process the given cmake file as a script written in the CMake
 language.  No configure or generate step is performed and the cache
 is not modified.  If variables are defined using \fB\-D\fP, this must be
 done before the \fB\-P\fP argument.
+.sp
+Any options after \fB\-\-\fP are not parsed by CMake, but they are still included
+in the set of \fBCMAKE_ARGV<n>\fP variables passed to the
+script (including the \fB\-\-\fP itself).
 .SH RUN A COMMAND-LINE TOOL
 .sp
 CMake provides builtin command\-line tools through the signature
@@ -655,6 +795,9 @@ version components.
 \fBtrue\fP if cmake supports server\-mode and \fBfalse\fP otherwise.
 .UNINDENT
 .TP
+.B \fBcat <files>...\fP
+Concatenate files and print on the standard output.
+.TP
 .B \fBchdir <dir> <cmd> [<arg>...]\fP
 Change the current working directory and run a command.
 .TP
@@ -671,7 +814,7 @@ directory and it must exist. Wildcards are not supported.
 but the files or directories it point to.
 .TP
 .B \fBcopy_directory <dir>... <destination>\fP
-Copy directories to \fB<destination>\fP directory.
+Copy content of \fB<dir>...\fP directories to \fB<destination>\fP directory.
 If \fB<destination>\fP directory does not exist it will be created.
 \fBcopy_directory\fP does follow symlinks.
 .TP
@@ -681,6 +824,16 @@ they have changed.
 If multiple files are specified, the \fB<destination>\fP must be
 directory and it must exist.
 \fBcopy_if_different\fP does follow symlinks.
+.TP
+.B \fBcreate_symlink <old> <new>\fP
+Create a symbolic link \fB<new>\fP naming \fB<old>\fP\&.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+Path to where \fB<new>\fP symbolic link will be created has to exist beforehand.
+.UNINDENT
+.UNINDENT
 .TP
 .B \fBecho [<string>...]\fP
 Displays arguments as text.
@@ -693,6 +846,9 @@ Run command in a modified environment.
 .TP
 .B \fBenvironment\fP
 Display the current environment variables.
+.TP
+.B \fBfalse\fP
+Do nothing, with an exit code of 1.
 .TP
 .B \fBmake_directory <dir>...\fP
 Create \fB<dir>\fP directories.  If necessary, create parent
@@ -784,20 +940,39 @@ Create SHA512 checksum of files in \fBsha512sum\fP compatible format:
 .UNINDENT
 .TP
 .B \fBremove [\-f] <file>...\fP
-Remove the file(s). If any of the listed files already do not
-exist, the command returns a non\-zero exit code, but no message
-is logged. The \fB\-f\fP option changes the behavior to return a
+Deprecated since version 3.17.
+
+.sp
+Remove the file(s). The planned behaviour was that if any of the
+listed files already do not exist, the command returns a non\-zero exit code,
+but no message is logged. The \fB\-f\fP option changes the behavior to return a
 zero exit code (i.e. success) in such situations instead.
 \fBremove\fP does not follow symlinks. That means it remove only symlinks
 and not files it point to.
+.sp
+The implementation was buggy and always returned 0. It cannot be fixed without
+breaking backwards compatibility. Use \fBrm\fP instead.
 .TP
 .B \fBremove_directory <dir>...\fP
-Remove \fB<dir>\fP directories and their contents.  If a directory does
-not exist it will be silently ignored.
+Deprecated since version 3.17.
+
+.sp
+Remove \fB<dir>\fP directories and their contents. If a directory does
+not exist it will be silently ignored.  If \fB<dir>\fP is a symlink to
+a directory, just the symlink will be removed.
+Use \fBrm\fP instead.
 .TP
 .B \fBrename <oldname> <newname>\fP
 Rename a file or directory (on one volume). If file with the \fB<newname>\fP name
 already exists, then it will be silently replaced.
+.TP
+.B \fBrm [\-rRf] <file> <dir>...\fP
+Remove the files \fB<file>\fP or directories \fBdir\fP\&.
+Use \fB\-r\fP or \fB\-R\fP to remove directories and their contents recursively.
+If any of the listed files/directories do not exist, the command returns a
+non\-zero exit code, but no message is logged. The \fB\-f\fP option changes
+the behavior to return a zero exit code (i.e. success) in such
+situations instead.
 .TP
 .B \fBserver\fP
 Launch \fBcmake\-server(7)\fP mode.
@@ -870,15 +1045,8 @@ If \fB<file>\fP exists, it is changing \fB<file>\fP access and modification time
 Touch a file if it exists but do not create it.  If a file does
 not exist it will be silently ignored.
 .TP
-.B \fBcreate_symlink <old> <new>\fP
-Create a symbolic link \fB<new>\fP naming \fB<old>\fP\&.
-.UNINDENT
-.sp
-\fBNOTE:\fP
-.INDENT 0.0
-.INDENT 3.5
-Path to where \fB<new>\fP symbolic link will be created has to exist beforehand.
-.UNINDENT
+.B \fBtrue\fP
+Do nothing, with an exit code of 0.
 .UNINDENT
 .SS Windows\-specific Command\-Line Tools
 .sp
@@ -1093,16 +1261,12 @@ The primary starting point for learning about CMake.
 Links to available documentation and community resources may be
 found on this web page.
 .TP
-.B Mailing List
-\fI\%https://cmake.org/mailing\-lists\fP
+.B Discourse Forum
+\fI\%https://discourse.cmake.org\fP
 .sp
-For help and discussion about using CMake, a mailing list is
-provided at \fI\%cmake@cmake.org\fP\&.  The list is member\-post\-only but one
-may sign up on the CMake web page.  Please first read the full
-documentation at \fI\%https://cmake.org\fP before posting questions to
-the list.
+The Discourse Forum hosts discussion and questions about CMake.
 .UNINDENT
 .SH COPYRIGHT
-2000-2019 Kitware, Inc. and Contributors
+2000-2020 Kitware, Inc. and Contributors
 .\" Generated by docutils manpage writer.
 .

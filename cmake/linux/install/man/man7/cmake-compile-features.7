@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-COMPILE-FEATURES" "7" "Sep 30, 2019" "3.15.4" "CMake"
+.TH "CMAKE-COMPILE-FEATURES" "7" "Oct 06, 2020" "3.18.4" "CMake"
 .SH NAME
 cmake-compile-features \- CMake Compile Features Reference
 .
@@ -41,18 +41,23 @@ While features are typically specified in programming language standards,
 CMake provides a primary user interface based on granular handling of
 the features, not the language standard that introduced the feature.
 .sp
-The \fBCMAKE_C_KNOWN_FEATURES\fP and
-\fBCMAKE_CXX_KNOWN_FEATURES\fP global properties contain all the
+The \fBCMAKE_C_KNOWN_FEATURES\fP, \fBCMAKE_CUDA_KNOWN_FEATURES\fP,
+and \fBCMAKE_CXX_KNOWN_FEATURES\fP global properties contain all the
 features known to CMake, regardless of compiler support for the feature.
-The \fBCMAKE_C_COMPILE_FEATURES\fP and
-\fBCMAKE_CXX_COMPILE_FEATURES\fP variables contain all features
+The \fBCMAKE_C_COMPILE_FEATURES\fP, \fBCMAKE_CUDA_COMPILE_FEATURES\fP
+, and \fBCMAKE_CXX_COMPILE_FEATURES\fP variables contain all features
 CMake knows are known to the compiler, regardless of language standard
 or compile flags needed to use them.
 .sp
 Features known to CMake are named mostly following the same convention
-as the Clang feature test macros.  The are some exceptions, such as
+as the Clang feature test macros.  There are some exceptions, such as
 CMake using \fBcxx_final\fP and \fBcxx_override\fP instead of the single
 \fBcxx_override_control\fP used by Clang.
+.sp
+Note that there are no separate compile features properties or variables for
+the \fBOBJC\fP or \fBOBJCXX\fP languages.  These are based off \fBC\fP or \fBC++\fP
+respectively, so the properties and variables for their corresponding base
+language should be used instead.
 .SH COMPILE FEATURE REQUIREMENTS
 .sp
 Compile feature requirements may be specified with the
@@ -120,14 +125,14 @@ transitive behavior of build properties and usage requirements.
 In projects that use a large number of commonly available features from
 a particular language standard (e.g. C++ 11) one may specify a
 meta\-feature (e.g. \fBcxx_std_11\fP) that requires use of a compiler mode
-aware of that standard.  This is simpler than specifying all the
-features individually, but does not guarantee the existence of any
-particular feature.  Diagnosis of use of unsupported features will be
-delayed until compile time.
+that is at minimum aware of that standard, but could be greater.
+This is simpler than specifying all the features individually, but does
+not guarantee the existence of any particular feature.
+Diagnosis of use of unsupported features will be delayed until compile time.
 .sp
 For example, if C++ 11 features are used extensively in a project’s
-header files, then clients must use a compiler mode aware of C++ 11
-or above.  This can be requested with the code:
+header files, then clients must use a compiler mode that is no less
+than C++ 11.  This can be requested with the code:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -140,7 +145,7 @@ target_compile_features(mylib PUBLIC cxx_std_11)
 .UNINDENT
 .sp
 In this example, CMake will ensure the compiler is invoked in a mode
-that is aware of C++ 11 (or above), adding flags such as
+of at\-least C++ 11 (or C++ 14, C++ 17, …), adding flags such as
 \fB\-std=gnu++11\fP if necessary.  This applies to sources within \fBmylib\fP
 as well as any dependents (that may include headers from \fBmylib\fP).
 .SS Availability of Compiler Extensions
@@ -414,17 +419,17 @@ the following \fBcompiler ids\fP as of the
 versions specified for each:
 .INDENT 0.0
 .IP \(bu 2
-\fBAppleClang\fP: Apple Clang for Xcode versions 4.4 though 9.2.
+\fBAppleClang\fP: Apple Clang for Xcode versions 4.4+.
 .IP \(bu 2
-\fBClang\fP: Clang compiler versions 2.9 through 6.0.
+\fBClang\fP: Clang compiler versions 2.9+.
 .IP \(bu 2
-\fBGNU\fP: GNU compiler versions 4.4 through 8.0.
+\fBGNU\fP: GNU compiler versions 4.4+.
 .IP \(bu 2
-\fBMSVC\fP: Microsoft Visual Studio versions 2010 through 2017.
+\fBMSVC\fP: Microsoft Visual Studio versions 2010+.
 .IP \(bu 2
-\fBSunPro\fP: Oracle SolarisStudio versions 12.4 through 12.6.
+\fBSunPro\fP: Oracle SolarisStudio versions 12.4+.
 .IP \(bu 2
-\fBIntel\fP: Intel compiler versions 12.1 through 17.0.
+\fBIntel\fP: Intel compiler versions 12.1+.
 .UNINDENT
 .sp
 CMake is currently aware of the \fBC standards\fP
@@ -435,7 +440,7 @@ versions specified for each:
 .IP \(bu 2
 all compilers and versions listed above for C++.
 .IP \(bu 2
-\fBGNU\fP: GNU compiler versions 3.4 through 8.0.
+\fBGNU\fP: GNU compiler versions 3.4+
 .UNINDENT
 .sp
 CMake is currently aware of the \fBC++ standards\fP and
@@ -444,11 +449,11 @@ following \fBcompiler ids\fP as of the
 versions specified for each:
 .INDENT 0.0
 .IP \(bu 2
-\fBCray\fP: Cray Compiler Environment version 8.1 through 8.5.8.
+\fBCray\fP: Cray Compiler Environment version 8.1+.
 .IP \(bu 2
-\fBPGI\fP: PGI version 12.10 through 17.5.
+\fBPGI\fP: PGI version 12.10+.
 .IP \(bu 2
-\fBXL\fP: IBM XL version 10.1 through 13.1.5.
+\fBXL\fP: IBM XL version 10.1+.
 .UNINDENT
 .sp
 CMake is currently aware of the \fBC standards\fP and
@@ -462,14 +467,15 @@ all compilers and versions listed above with only meta\-features for C++.
 \fBTI\fP: Texas Instruments compiler.
 .UNINDENT
 .sp
-CMake is currently aware of the \fBCUDA standards\fP
-from the following \fBcompiler ids\fP as of the
+CMake is currently aware of the \fBCUDA standards\fP and
+their associated meta\-features (e.g. \fBcuda_std_11\fP) available from the
+following \fBcompiler ids\fP as of the
 versions specified for each:
 .INDENT 0.0
 .IP \(bu 2
-\fBNVIDIA\fP: NVIDIA nvcc compiler 7.5 though 9.1.
+\fBNVIDIA\fP: NVIDIA nvcc compiler 7.5+.
 .UNINDENT
 .SH COPYRIGHT
-2000-2019 Kitware, Inc. and Contributors
+2000-2020 Kitware, Inc. and Contributors
 .\" Generated by docutils manpage writer.
 .

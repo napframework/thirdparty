@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-MODULES" "7" "Sep 30, 2019" "3.15.4" "CMake"
+.TH "CMAKE-MODULES" "7" "Oct 06, 2020" "3.18.4" "CMake"
 .SH NAME
 cmake-modules \- CMake Modules Reference
 .
@@ -817,16 +817,16 @@ In order to force the check to be re\-evaluated, the variable named by
 .UNINDENT
 .SS CheckCXXSymbolExists
 .sp
-Check if a symbol exists as a function, variable, or macro in C++
+Check if a symbol exists as a function, variable, or macro in \fBC++\fP\&.
 .INDENT 0.0
 .TP
-.B CHECK_CXX_SYMBOL_EXISTS
+.B check_cxx_symbol_exists
 .INDENT 7.0
 .INDENT 3.5
 .sp
 .nf
 .ft C
-CHECK_CXX_SYMBOL_EXISTS(<symbol> <files> <variable>)
+check_cxx_symbol_exists(<symbol> <files> <variable>)
 .ft P
 .fi
 .UNINDENT
@@ -835,15 +835,30 @@ CHECK_CXX_SYMBOL_EXISTS(<symbol> <files> <variable>)
 Check that the \fB<symbol>\fP is available after including given header
 \fB<files>\fP and store the result in a \fB<variable>\fP\&.  Specify the list of
 files in one argument as a semicolon\-separated list.
-\fBCHECK_CXX_SYMBOL_EXISTS()\fP can be used to check in C++ files, as
-opposed to \fBCHECK_SYMBOL_EXISTS()\fP, which works only for \fBC\fP\&.
+\fBcheck_cxx_symbol_exists()\fP can be used to check for symbols as seen by
+the C++ compiler, as opposed to \fBcheck_symbol_exists()\fP, which always
+uses the \fBC\fP compiler.
 .sp
 If the header files define the symbol as a macro it is considered
 available and assumed to work.  If the header files declare the symbol
 as a function or variable then the symbol must also be available for
-linking.  If the symbol is a type or enum value it will not be
-recognized (consider using \fBCheckTypeSize\fP
-or \fBCheckCXXSourceCompiles\fP).
+linking.  If the symbol is a type, enum value, or C++ template it will
+not be recognized: consider using the \fBCheckTypeSize\fP
+or \fBCheckCXXSourceCompiles\fP module instead.
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+This command is unreliable when \fB<symbol>\fP is (potentially) an overloaded
+function. Since there is no reliable way to predict whether a given function
+in the system environment may be defined as an overloaded function or may be
+an overloaded function on other systems or will become so in the future, it
+is generally advised to use the \fBCheckCXXSourceCompiles\fP module for
+checking any function symbol (unless somehow you surely know the checked
+function is not overloaded on other systems or will not be so in the
+future).
+.UNINDENT
 .UNINDENT
 .sp
 The following variables may be set before calling this macro to modify
@@ -869,6 +884,23 @@ command. See policy \fBCMP0075\fP\&.
 .TP
 .B \fBCMAKE_REQUIRED_QUIET\fP
 execute quietly without messages.
+.UNINDENT
+.sp
+For example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+include(CheckCXXSymbolExists)
+
+# Check for macro SEEK_SET
+check_cxx_symbol_exists(SEEK_SET "cstdio" HAVE_SEEK_SET)
+# Check for function std::fopen
+check_cxx_symbol_exists(std::fopen "cstdio" HAVE_STD_FOPEN)
+.ft P
+.fi
+.UNINDENT
 .UNINDENT
 .SS CheckFortranCompilerFlag
 .sp
@@ -1513,6 +1545,403 @@ CMAKE_REQUIRED_QUIET = execute quietly without messages
 .fi
 .UNINDENT
 .UNINDENT
+.SS CheckLinkerFlag
+.sp
+Check whether the compiler supports a given link flag.
+.INDENT 0.0
+.TP
+.B check_linker_flag
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+check_linker_flag(<lang> <flag> <var>)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+Check that the link \fB<flag>\fP is accepted by the \fB<lang>\fP compiler without
+a diagnostic.  Stores the result in an internal cache entry named \fB<var>\fP\&.
+.sp
+This command temporarily sets the \fBCMAKE_REQUIRED_LINK_OPTIONS\fP variable
+and calls the \fBcheck_<lang>_source_compiles\fP macro from the
+\fBCheck<lang>SourceCompiles\fP module (\fBCheckCSourceCompiles\fP,
+\fBCheckCSourceCompiles\fP, \fBCheckCXXSourceCompiles\fP,
+\fBCheckOBJCSourceCompiles\fP, \fBCheckOBJCXXSourceCompiles\fP or
+\fBCheckFortranSourceCompiles\fP).  See documentation of these
+modules for a listing of variables that can otherwise modify the build.
+.sp
+The underlying implementation rely on \fBLINK_OPTIONS\fP property to
+check the specified flag. The \fBLINKER:\fP prefix, as described in
+\fBtarget_link_options()\fP command, can be used as well.
+.sp
+A positive result from this check indicates only that the compiler did not
+issue a diagnostic message when given the link flag.  Whether the flag has any
+effect or even a specific one is beyond the scope of this module.
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+Since the \fBtry_compile()\fP command forwards flags from variables
+like \fBCMAKE_<LANG>_FLAGS\fP, unknown flags in such variables may
+cause a false negative for this check.
+.UNINDENT
+.UNINDENT
+.SS CheckOBJCCompilerFlag
+.sp
+Check whether the Objective\-C compiler supports a given flag.
+.INDENT 0.0
+.TP
+.B check_objc_compiler_flag
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+check_objc_compiler_flag(<flag> <var>)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Check that the \fB<flag>\fP is accepted by the compiler without
+a diagnostic.  Stores the result in an internal cache entry
+named \fB<var>\fP\&.
+.UNINDENT
+.sp
+This command temporarily sets the \fBCMAKE_REQUIRED_DEFINITIONS\fP variable
+and calls the \fBcheck_objc_source_compiles\fP macro from the
+\fBCheckOBJCSourceCompiles\fP module.  See documentation of that
+module for a listing of variables that can otherwise modify the build.
+.sp
+A positive result from this check indicates only that the compiler did not
+issue a diagnostic message when given the flag.  Whether the flag has any
+effect or even a specific one is beyond the scope of this module.
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+Since the \fBtry_compile()\fP command forwards flags from variables
+like \fBCMAKE_OBJC_FLAGS\fP, unknown flags
+in such variables may cause a false negative for this check.
+.UNINDENT
+.UNINDENT
+.SS CheckOBJCSourceCompiles
+.sp
+Check if given Objective\-C source compiles and links into an executable.
+.INDENT 0.0
+.TP
+.B check_objc_source_compiles
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+check_objc_source_compiles(<code> <resultVar>
+                           [FAIL_REGEX <regex1> [<regex2>...]])
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Check that the source supplied in \fB<code>\fP can be compiled as a Objectie\-C source
+file and linked as an executable (so it must contain at least a \fBmain()\fP
+function). The result will be stored in the internal cache variable specified
+by \fB<resultVar>\fP, with a boolean true value for success and boolean false
+for failure. If \fBFAIL_REGEX\fP is provided, then failure is determined by
+checking if anything in the output matches any of the specified regular
+expressions.
+.sp
+The underlying check is performed by the \fBtry_compile()\fP command. The
+compile and link commands can be influenced by setting any of the following
+variables prior to calling \fBcheck_objc_source_compiles()\fP:
+.INDENT 7.0
+.TP
+.B \fBCMAKE_REQUIRED_FLAGS\fP
+Additional flags to pass to the compiler. Note that the contents of
+\fBCMAKE_OBJC_FLAGS\fP and its associated
+configuration\-specific variable are automatically added to the compiler
+command before the contents of \fBCMAKE_REQUIRED_FLAGS\fP\&.
+.TP
+.B \fBCMAKE_REQUIRED_DEFINITIONS\fP
+A ;\-list of compiler definitions of the form
+\fB\-DFOO\fP or \fB\-DFOO=bar\fP\&. A definition for the name specified by
+\fB<resultVar>\fP will also be added automatically.
+.TP
+.B \fBCMAKE_REQUIRED_INCLUDES\fP
+A ;\-list of header search paths to pass to
+the compiler. These will be the only header search paths used by
+\fBtry_compile()\fP, i.e. the contents of the \fBINCLUDE_DIRECTORIES\fP
+directory property will be ignored.
+.TP
+.B \fBCMAKE_REQUIRED_LINK_OPTIONS\fP
+A ;\-list of options to add to the link
+command (see \fBtry_compile()\fP for further details).
+.TP
+.B \fBCMAKE_REQUIRED_LIBRARIES\fP
+A ;\-list of libraries to add to the link
+command. These can be the name of system libraries or they can be
+Imported Targets (see \fBtry_compile()\fP for
+further details).
+.TP
+.B \fBCMAKE_REQUIRED_QUIET\fP
+If this variable evaluates to a boolean true value, all status messages
+associated with the check will be suppressed.
+.UNINDENT
+.sp
+The check is only performed once, with the result cached in the variable
+named by \fB<resultVar>\fP\&. Every subsequent CMake run will re\-use this cached
+value rather than performing the check again, even if the \fB<code>\fP changes.
+In order to force the check to be re\-evaluated, the variable named by
+\fB<resultVar>\fP must be manually removed from the cache.
+.UNINDENT
+.SS CheckOBJCSourceRuns
+.sp
+Check if given Objective\-C source compiles and links into an executable and can
+subsequently be run.
+.INDENT 0.0
+.TP
+.B check_objc_source_runs
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+check_objc_source_runs(<code> <resultVar>)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Check that the source supplied in \fB<code>\fP can be compiled as a Objective\-C source
+file, linked as an executable and then run. The \fB<code>\fP must contain at
+least a \fBmain()\fP function. If the \fB<code>\fP could be built and run
+successfully, the internal cache variable specified by \fB<resultVar>\fP will
+be set to 1, otherwise it will be set to an value that evaluates to boolean
+false (e.g. an empty string or an error message).
+.sp
+The underlying check is performed by the \fBtry_run()\fP command. The
+compile and link commands can be influenced by setting any of the following
+variables prior to calling \fBcheck_objc_source_runs()\fP:
+.INDENT 7.0
+.TP
+.B \fBCMAKE_REQUIRED_FLAGS\fP
+Additional flags to pass to the compiler. Note that the contents of
+\fBCMAKE_OBJC_FLAGS\fP and its associated
+configuration\-specific variable are automatically added to the compiler
+command before the contents of \fBCMAKE_REQUIRED_FLAGS\fP\&.
+.TP
+.B \fBCMAKE_REQUIRED_DEFINITIONS\fP
+A ;\-list of compiler definitions of the form
+\fB\-DFOO\fP or \fB\-DFOO=bar\fP\&. A definition for the name specified by
+\fB<resultVar>\fP will also be added automatically.
+.TP
+.B \fBCMAKE_REQUIRED_INCLUDES\fP
+A ;\-list of header search paths to pass to
+the compiler. These will be the only header search paths used by
+\fBtry_run()\fP, i.e. the contents of the \fBINCLUDE_DIRECTORIES\fP
+directory property will be ignored.
+.TP
+.B \fBCMAKE_REQUIRED_LINK_OPTIONS\fP
+A ;\-list of options to add to the link
+command (see \fBtry_run()\fP for further details).
+.TP
+.B \fBCMAKE_REQUIRED_LIBRARIES\fP
+A ;\-list of libraries to add to the link
+command. These can be the name of system libraries or they can be
+Imported Targets (see \fBtry_run()\fP for
+further details).
+.TP
+.B \fBCMAKE_REQUIRED_QUIET\fP
+If this variable evaluates to a boolean true value, all status messages
+associated with the check will be suppressed.
+.UNINDENT
+.sp
+The check is only performed once, with the result cached in the variable
+named by \fB<resultVar>\fP\&. Every subsequent CMake run will re\-use this cached
+value rather than performing the check again, even if the \fB<code>\fP changes.
+In order to force the check to be re\-evaluated, the variable named by
+\fB<resultVar>\fP must be manually removed from the cache.
+.UNINDENT
+.SS CheckOBJCXXCompilerFlag
+.sp
+Check whether the Objective\-C++ compiler supports a given flag.
+.INDENT 0.0
+.TP
+.B check_objcxx_compiler_flag
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+check_objcxx_compiler_flag(<flag> <var>)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Check that the \fB<flag>\fP is accepted by the compiler without
+a diagnostic.  Stores the result in an internal cache entry
+named \fB<var>\fP\&.
+.UNINDENT
+.sp
+This command temporarily sets the \fBCMAKE_REQUIRED_DEFINITIONS\fP variable
+and calls the \fBcheck_objcxx_source_compiles\fP macro from the
+\fBCheckOBJCXXSourceCompiles\fP module.  See documentation of that
+module for a listing of variables that can otherwise modify the build.
+.sp
+A positive result from this check indicates only that the compiler did not
+issue a diagnostic message when given the flag.  Whether the flag has any
+effect or even a specific one is beyond the scope of this module.
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+Since the \fBtry_compile()\fP command forwards flags from variables
+like \fBCMAKE_OBJCXX_FLAGS\fP, unknown flags
+in such variables may cause a false negative for this check.
+.UNINDENT
+.UNINDENT
+.SS CheckOBJCXXSourceCompiles
+.sp
+Check if given Objective\-C++ source compiles and links into an executable.
+.INDENT 0.0
+.TP
+.B check_objcxx_source_compiles
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+check_objcxx_source_compiles(<code> <resultVar>
+                             [FAIL_REGEX <regex1> [<regex2>...]])
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Check that the source supplied in \fB<code>\fP can be compiled as a Objective\-C++ source
+file and linked as an executable (so it must contain at least a \fBmain()\fP
+function). The result will be stored in the internal cache variable specified
+by \fB<resultVar>\fP, with a boolean true value for success and boolean false
+for failure. If \fBFAIL_REGEX\fP is provided, then failure is determined by
+checking if anything in the output matches any of the specified regular
+expressions.
+.sp
+The underlying check is performed by the \fBtry_compile()\fP command. The
+compile and link commands can be influenced by setting any of the following
+variables prior to calling \fBcheck_objcxx_source_compiles()\fP:
+.INDENT 7.0
+.TP
+.B \fBCMAKE_REQUIRED_FLAGS\fP
+Additional flags to pass to the compiler. Note that the contents of
+\fBCMAKE_OBJCXX_FLAGS\fP and its associated
+configuration\-specific variable are automatically added to the compiler
+command before the contents of \fBCMAKE_REQUIRED_FLAGS\fP\&.
+.TP
+.B \fBCMAKE_REQUIRED_DEFINITIONS\fP
+A ;\-list of compiler definitions of the form
+\fB\-DFOO\fP or \fB\-DFOO=bar\fP\&. A definition for the name specified by
+\fB<resultVar>\fP will also be added automatically.
+.TP
+.B \fBCMAKE_REQUIRED_INCLUDES\fP
+A ;\-list of header search paths to pass to
+the compiler. These will be the only header search paths used by
+\fBtry_compile()\fP, i.e. the contents of the \fBINCLUDE_DIRECTORIES\fP
+directory property will be ignored.
+.TP
+.B \fBCMAKE_REQUIRED_LINK_OPTIONS\fP
+A ;\-list of options to add to the link
+command (see \fBtry_compile()\fP for further details).
+.TP
+.B \fBCMAKE_REQUIRED_LIBRARIES\fP
+A ;\-list of libraries to add to the link
+command. These can be the name of system libraries or they can be
+Imported Targets (see \fBtry_compile()\fP for
+further details).
+.TP
+.B \fBCMAKE_REQUIRED_QUIET\fP
+If this variable evaluates to a boolean true value, all status messages
+associated with the check will be suppressed.
+.UNINDENT
+.sp
+The check is only performed once, with the result cached in the variable
+named by \fB<resultVar>\fP\&. Every subsequent CMake run will re\-use this cached
+value rather than performing the check again, even if the \fB<code>\fP changes.
+In order to force the check to be re\-evaluated, the variable named by
+\fB<resultVar>\fP must be manually removed from the cache.
+.UNINDENT
+.SS CheckOBJCXXSourceRuns
+.sp
+Check if given Objective\-C++ source compiles and links into an executable and can
+subsequently be run.
+.INDENT 0.0
+.TP
+.B check_objcxx_source_runs
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+check_objcxx_source_runs(<code> <resultVar>)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Check that the source supplied in \fB<code>\fP can be compiled as a Objective\-C++ source
+file, linked as an executable and then run. The \fB<code>\fP must contain at
+least a \fBmain()\fP function. If the \fB<code>\fP could be built and run
+successfully, the internal cache variable specified by \fB<resultVar>\fP will
+be set to 1, otherwise it will be set to an value that evaluates to boolean
+false (e.g. an empty string or an error message).
+.sp
+The underlying check is performed by the \fBtry_run()\fP command. The
+compile and link commands can be influenced by setting any of the following
+variables prior to calling \fBcheck_objcxx_source_runs()\fP:
+.INDENT 7.0
+.TP
+.B \fBCMAKE_REQUIRED_FLAGS\fP
+Additional flags to pass to the compiler. Note that the contents of
+\fBCMAKE_OBJCXX_FLAGS\fP and its associated
+configuration\-specific variable are automatically added to the compiler
+command before the contents of \fBCMAKE_REQUIRED_FLAGS\fP\&.
+.TP
+.B \fBCMAKE_REQUIRED_DEFINITIONS\fP
+A ;\-list of compiler definitions of the form
+\fB\-DFOO\fP or \fB\-DFOO=bar\fP\&. A definition for the name specified by
+\fB<resultVar>\fP will also be added automatically.
+.TP
+.B \fBCMAKE_REQUIRED_INCLUDES\fP
+A ;\-list of header search paths to pass to
+the compiler. These will be the only header search paths used by
+\fBtry_run()\fP, i.e. the contents of the \fBINCLUDE_DIRECTORIES\fP
+directory property will be ignored.
+.TP
+.B \fBCMAKE_REQUIRED_LINK_OPTIONS\fP
+A ;\-list of options to add to the link
+command (see \fBtry_run()\fP for further details).
+.TP
+.B \fBCMAKE_REQUIRED_LIBRARIES\fP
+A ;\-list of libraries to add to the link
+command. These can be the name of system libraries or they can be
+Imported Targets (see \fBtry_run()\fP for
+further details).
+.TP
+.B \fBCMAKE_REQUIRED_QUIET\fP
+If this variable evaluates to a boolean true value, all status messages
+associated with the check will be suppressed.
+.UNINDENT
+.sp
+The check is only performed once, with the result cached in the variable
+named by \fB<resultVar>\fP\&. Every subsequent CMake run will re\-use this cached
+value rather than performing the check again, even if the \fB<code>\fP changes.
+In order to force the check to be re\-evaluated, the variable named by
+\fB<resultVar>\fP must be manually removed from the cache.
+.UNINDENT
 .SS CheckPIESupported
 .sp
 Check whether the linker supports Position Independent Code (PIE) or No
@@ -1778,6 +2207,23 @@ command. See policy \fBCMP0075\fP\&.
 .B \fBCMAKE_REQUIRED_QUIET\fP
 execute quietly without messages.
 .UNINDENT
+.sp
+For example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+include(CheckSymbolExists)
+
+# Check for macro SEEK_SET
+check_symbol_exists(SEEK_SET "stdio.h" HAVE_SEEK_SET)
+# Check for function fopen
+check_symbol_exists(fopen "stdio.h" HAVE_FOPEN)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .SS CheckTypeSize
 .sp
 Check sizeof a type
@@ -2003,7 +2449,8 @@ If USE_BAR is true and USE_ZOT is false, this provides an option
 called USE_FOO that defaults to ON.  Otherwise, it sets USE_FOO to
 OFF.  If the status of USE_BAR or USE_ZOT ever changes, any value for
 the USE_FOO option is saved so that when the option is re\-enabled it
-retains its old value.
+retains its old value.  Each element in the fourth parameter is
+evaluated as an if\-condition, so Condition Syntax can be used.
 .SS CMakeFindDependencyMacro
 .INDENT 0.0
 .TP
@@ -2092,174 +2539,211 @@ if TRUE, don’t print anything
 .UNINDENT
 .SS CMakeGraphVizOptions
 .sp
-The builtin graphviz support of CMake.
-.SS Variables specific to the graphviz support
+The builtin Graphviz support of CMake.
+.SS Generating Graphviz files
 .sp
-CMake
-can generate \fI\%graphviz\fP files, showing the dependencies between the
-targets in a project and also external libraries which are linked
-against.  When CMake is run with the \fB\-\-graphviz=foo.dot\fP option, it will
-produce:
+CMake can generate \fI\%Graphviz\fP files showing the
+dependencies between the targets in a project, as well as external libraries
+which are linked against.
+.sp
+When running CMake with the \fB\-\-graphviz=foo.dot\fP option, it produces:
 .INDENT 0.0
 .IP \(bu 2
-a \fBfoo.dot\fP file showing all dependencies in the project
+a \fBfoo.dot\fP file, showing all dependencies in the project
 .IP \(bu 2
-a \fBfoo.dot.<target>\fP file for each target, file showing on which other targets the respective target depends
+a \fBfoo.dot.<target>\fP file for each target, showing on which other targets
+it depends
 .IP \(bu 2
-a \fBfoo.dot.<target>.dependers\fP file, showing which other targets depend on the respective target
+a \fBfoo.dot.<target>.dependers\fP file for each target, showing which other
+targets depend on it
 .UNINDENT
 .sp
-The different dependency types \fBPUBLIC\fP, \fBPRIVATE\fP and \fBINTERFACE\fP
+Those .dot files can be converted to images using the \fIdot\fP command from the
+Graphviz package:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+dot \-Tpng \-o foo.png foo.dot
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The different dependency types \fBPUBLIC\fP, \fBINTERFACE\fP and \fBPRIVATE\fP
 are represented as solid, dashed and dotted edges.
+.SS Variables specific to the Graphviz support
 .sp
-This can result in huge graphs.  Using the file
-\fBCMakeGraphVizOptions.cmake\fP the look and content of the generated
-graphs can be influenced.  This file is searched first in
-\fBCMAKE_BINARY_DIR\fP and then in \fBCMAKE_SOURCE_DIR\fP\&.  If found, it is
-read and the variables set in it are used to adjust options for the
-generated graphviz files.
-.INDENT 0.0
-.TP
-.B GRAPHVIZ_GRAPH_TYPE
-The graph type.
-.INDENT 7.0
-.IP \(bu 2
-Mandatory : NO
-.IP \(bu 2
-Default   : “digraph”
-.UNINDENT
-.sp
-Valid graph types are:
-.INDENT 7.0
-.IP \(bu 2
-“graph” : Nodes are joined with lines
-.IP \(bu 2
-“digraph” : Nodes are joined with arrows showing direction
-.IP \(bu 2
-“strict graph” : Like “graph” but max one line between each node
-.IP \(bu 2
-“strict digraph” : Like “graph” but max one line between each node in each direction
-.UNINDENT
-.UNINDENT
+The resulting graphs can be huge.  The look and content of the generated graphs
+can be controlled using the file \fBCMakeGraphVizOptions.cmake\fP\&.  This file is
+first searched in \fBCMAKE_BINARY_DIR\fP, and then in
+\fBCMAKE_SOURCE_DIR\fP\&.  If found, the variables set in it are used to
+adjust options for the generated Graphviz files.
 .INDENT 0.0
 .TP
 .B GRAPHVIZ_GRAPH_NAME
 The graph name.
 .INDENT 7.0
 .IP \(bu 2
-Mandatory : NO
+Mandatory: NO
 .IP \(bu 2
-Default   : “GG”
+Default: value of \fBCMAKE_PROJECT_NAME\fP
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
 .B GRAPHVIZ_GRAPH_HEADER
-The header written at the top of the graphviz file.
+The header written at the top of the Graphviz files.
 .INDENT 7.0
 .IP \(bu 2
-Mandatory : NO
+Mandatory: NO
 .IP \(bu 2
-Default   : “node [n  fontsize = “12”];”
+Default: “node [ fontsize = “12” ];”
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
 .B GRAPHVIZ_NODE_PREFIX
-The prefix for each node in the graphviz file.
+The prefix for each node in the Graphviz files.
 .INDENT 7.0
 .IP \(bu 2
-Mandatory : NO
+Mandatory: NO
 .IP \(bu 2
-Default   : “node”
+Default: “node”
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
 .B GRAPHVIZ_EXECUTABLES
-Set this to FALSE to exclude executables from the generated graphs.
+Set to FALSE to exclude executables from the generated graphs.
 .INDENT 7.0
 .IP \(bu 2
-Mandatory : NO
+Mandatory: NO
 .IP \(bu 2
-Default   : TRUE
+Default: TRUE
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
 .B GRAPHVIZ_STATIC_LIBS
-Set this to FALSE to exclude static libraries from the generated graphs.
+Set to FALSE to exclude static libraries from the generated graphs.
 .INDENT 7.0
 .IP \(bu 2
-Mandatory : NO
+Mandatory: NO
 .IP \(bu 2
-Default   : TRUE
+Default: TRUE
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
 .B GRAPHVIZ_SHARED_LIBS
-Set this to FALSE to exclude shared libraries from the generated graphs.
+Set to FALSE to exclude shared libraries from the generated graphs.
 .INDENT 7.0
 .IP \(bu 2
-Mandatory : NO
+Mandatory: NO
 .IP \(bu 2
-Default   : TRUE
+Default: TRUE
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
 .B GRAPHVIZ_MODULE_LIBS
-Set this to FALSE to exclude module libraries from the generated graphs.
+Set to FALSE to exclude module libraries from the generated graphs.
 .INDENT 7.0
 .IP \(bu 2
-Mandatory : NO
+Mandatory: NO
 .IP \(bu 2
-Default   : TRUE
+Default: TRUE
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B GRAPHVIZ_INTERFACE_LIBS
+Set to FALSE to exclude interface libraries from the generated graphs.
+.INDENT 7.0
+.IP \(bu 2
+Mandatory: NO
+.IP \(bu 2
+Default: TRUE
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B GRAPHVIZ_OBJECT_LIBS
+Set to FALSE to exclude object libraries from the generated graphs.
+.INDENT 7.0
+.IP \(bu 2
+Mandatory: NO
+.IP \(bu 2
+Default: TRUE
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B GRAPHVIZ_UNKNOWN_LIBS
+Set to FALSE to exclude unknown libraries from the generated graphs.
+.INDENT 7.0
+.IP \(bu 2
+Mandatory: NO
+.IP \(bu 2
+Default: TRUE
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
 .B GRAPHVIZ_EXTERNAL_LIBS
-Set this to FALSE to exclude external libraries from the generated graphs.
+Set to FALSE to exclude external libraries from the generated graphs.
 .INDENT 7.0
 .IP \(bu 2
-Mandatory : NO
+Mandatory: NO
 .IP \(bu 2
-Default   : TRUE
+Default: TRUE
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B GRAPHVIZ_CUSTOM_TARGETS
+Set to TRUE to include custom targets in the generated graphs.
+.INDENT 7.0
+.IP \(bu 2
+Mandatory: NO
+.IP \(bu 2
+Default: FALSE
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
 .B GRAPHVIZ_IGNORE_TARGETS
-A list of regular expressions for ignoring targets.
+A list of regular expressions for names of targets to exclude from the
+generated graphs.
 .INDENT 7.0
 .IP \(bu 2
-Mandatory : NO
+Mandatory: NO
 .IP \(bu 2
-Default   : empty
+Default: empty
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
 .B GRAPHVIZ_GENERATE_PER_TARGET
-Set this to FALSE to exclude per target graphs \fBfoo.dot.<target>\fP\&.
+Set to FALSE to not generate per\-target graphs \fBfoo.dot.<target>\fP\&.
 .INDENT 7.0
 .IP \(bu 2
-Mandatory : NO
+Mandatory: NO
 .IP \(bu 2
-Default   : TRUE
+Default: TRUE
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
 .B GRAPHVIZ_GENERATE_DEPENDERS
-Set this to FALSE to exclude depender graphs \fBfoo.dot.<target>.dependers\fP\&.
+Set to FALSE to not generate depender graphs \fBfoo.dot.<target>.dependers\fP\&.
 .INDENT 7.0
 .IP \(bu 2
-Mandatory : NO
+Mandatory: NO
 .IP \(bu 2
-Default   : TRUE
+Default: TRUE
 .UNINDENT
 .UNINDENT
 .SS CMakePackageConfigHelpers
@@ -2542,13 +3026,13 @@ scope keywords must be used.  Example:
 .nf
 .ft C
 cmake_print_properties(TARGETS foo bar PROPERTIES
-                       LOCATION INTERFACE_INCLUDE_DIRS)
+                       LOCATION INTERFACE_INCLUDE_DIRECTORIES)
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
 .sp
-This will print the LOCATION and INTERFACE_INCLUDE_DIRS properties for
+This will print the LOCATION and INTERFACE_INCLUDE_DIRECTORIES properties for
 both targets foo and bar.
 .INDENT 0.0
 .INDENT 3.5
@@ -2587,9 +3071,9 @@ Gives:
 .UNINDENT
 .SS CMakePrintSystemInformation
 .sp
-print system information
+Print system information.
 .sp
-This file can be used for diagnostic purposes just include it in a
+This module serves diagnostic purposes. Just include it in a
 project to see various internal CMake variables.
 .SS CMakePushCheckState
 .sp
@@ -2642,27 +3126,26 @@ of 8.0.50608.0 to be used in a project even if that version was not
 found in the .manifest file.
 .SS CPackComponent
 .sp
-Build binary and source package installers
-.SS Variables concerning CPack Components
+Configure components for binary installers and source packages.
+.SS Introduction
 .sp
-The CPackComponent module is the module which handles the component
-part of CPack.  See CPack module for general information about CPack.
+This module is automatically included by \fBCPack\fP\&.
 .sp
-For certain kinds of binary installers (including the graphical
-installers on macOS and Windows), CPack generates installers that
-allow users to select individual application components to install.
-The contents of each of the components are identified by the COMPONENT
-argument of CMake’s INSTALL command.  These components can be
+Certain binary installers (especially the graphical installers) generated
+by CPack allow users to select individual application \fIcomponents\fP to install.
+This module allows developers to configure the packaging of such components.
+.sp
+Contents is assigned to components by the \fBCOMPONENT\fP
+argument of CMake’s \fBinstall()\fP command.  Components can be
 annotated with user\-friendly names and descriptions, inter\-component
 dependencies, etc., and grouped in various ways to customize the
-resulting installer.  See the cpack_add_* commands, described below,
-for more information about component\-specific installations.
+resulting installer, using the commands described below.
 .sp
-Component\-specific installation allows users to select specific sets
-of components to install during the install process.  Installation
-components are identified by the COMPONENT argument of CMake’s INSTALL
-commands, and should be further described by the following CPack
-commands:
+To specify different groupings for different CPack generators use
+a CPACK_PROJECT_CONFIG_FILE.
+.SS Variables
+.sp
+The following variables influence the component\-specific packaging:
 .INDENT 0.0
 .TP
 .B CPACK_COMPONENTS_ALL
@@ -2706,20 +3189,18 @@ component.  One can change the default behavior by setting this variable to
 Specify how components are grouped for multi\-package component\-aware CPack
 generators.
 .sp
-Some generators like RPM or ARCHIVE family (TGZ, ZIP, …) generates
-several packages files when asked for component packaging.  They group
-the component differently depending on the value of this variable:
+Some generators like RPM or ARCHIVE (TGZ, ZIP, …) may generate
+several packages files when there are components, depending
+on the value of this variable:
 .INDENT 7.0
 .IP \(bu 2
-ONE_PER_GROUP (default): creates one package file per component group
+ONE_PER_GROUP (default): create one package per component group
 .IP \(bu 2
-ALL_COMPONENTS_IN_ONE : creates a single package with all (requested) components
+IGNORE : create one package per component (ignore the groups)
 .IP \(bu 2
-IGNORE : creates one package per component, i.e. IGNORE component group
+ALL_COMPONENTS_IN_ONE : create a single package with all requested
+components
 .UNINDENT
-.sp
-One can specify different grouping for different CPack generator by
-using a CPACK_PROJECT_CONFIG_FILE.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -2756,13 +3237,14 @@ True if this component is required.
 .B CPACK_COMPONENT_<compName>_DISABLED
 True if this component is not selected to be installed by default.
 .UNINDENT
+.SS Commands
+.SS Add component
 .INDENT 0.0
 .TP
 .B cpack_add_component
 .UNINDENT
 .sp
-Describes a CPack installation
-component named by the COMPONENT argument to a CMake INSTALL command.
+Describe an installation component.
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -2783,11 +3265,11 @@ cpack_add_component(compname
 .UNINDENT
 .UNINDENT
 .sp
-The cmake_add_component command describes an installation component,
-which the user can opt to install or remove as part of the graphical
-installation process.  compname is the name of the component, as
-provided to the COMPONENT argument of one or more CMake INSTALL
-commands.
+\fBcompname\fP is the name of an installation component, as defined by the
+\fBCOMPONENT\fP argument of one or more CMake \fBinstall()\fP commands.
+With the \fBcpack_add_component\fP command one can set a name, a description,
+and other attributes of an installation component.
+One can also assign a component to a component group.
 .sp
 DISPLAY_NAME is the displayed name of the component, used in graphical
 installers to display the component name.  This value can be any
@@ -2839,6 +3321,7 @@ the component.  See cpack_configure_downloads for more information.
 .sp
 PLIST gives a filename that is passed to pkgbuild with the
 \fB\-\-component\-plist\fP argument when using the productbuild generator.
+.SS Add component group
 .INDENT 0.0
 .TP
 .B cpack_add_component_group
@@ -2893,6 +3376,7 @@ single entry.
 .sp
 BOLD_TITLE indicates that the group title should appear in bold, to
 call the user’s attention to the group.
+.SS Add installation type
 .INDENT 0.0
 .TP
 .B cpack_add_install_type
@@ -2923,6 +3407,7 @@ argument to cpack_add_component.
 DISPLAY_NAME is the displayed name of the install type, which will
 typically show up in a drop\-down box within a graphical installer.
 This value can be any string.
+.SS Configure downloads
 .INDENT 0.0
 .TP
 .B cpack_configure_downloads
@@ -2995,13 +3480,12 @@ NO_ADD_REMOVE turns off this behavior.  This option is ignored on Mac
 OS X.
 .SS CPackIFW
 .sp
-The documentation for the CPack IFW generator has moved here: \fBCPack IFW Generator\fP
-.sp
-This module looks for the location of the command line utilities supplied
-with the Qt Installer Framework (\fI\%QtIFW\fP).
+This module looks for the location of the command\-line utilities supplied with the
+\fI\%Qt Installer Framework\fP
+(QtIFW).
 .sp
 The module also defines several commands to control the behavior of the
-CPack \fBIFW\fP generator.
+\fBCPack IFW Generator\fP\&.
 .SS Commands
 .sp
 The module defines the following commands:
@@ -3055,7 +3539,7 @@ It is a equivalent of the \fBHIDDEN\fP option from the
 .TP
 .B \fBFORCED_INSTALLATION\fP
 if set, then the component must always be installed.
-It is a equivalent of the \fBREQUARED\fP option from the
+It is a equivalent of the \fBREQUIRED\fP option from the
 \fBcpack_add_component()\fP command.
 .TP
 .B \fBREQUIRES_ADMIN_RIGHTS\fP
@@ -3095,10 +3579,10 @@ version of CMake. Please use \fBSORTING_PRIORITY\fP option instead.
 .TP
 .B \fBDEPENDS\fP | \fBDEPENDENCIES\fP
 list of dependency component or component group identifiers in
-\fI\%QtIFW\fP style.
+QtIFW style.
 .TP
 .B \fBAUTO_DEPEND_ON\fP
-list of identifiers of component or component group in \fI\%QtIFW\fP style
+list of identifiers of component or component group in QtIFW style
 that this component has an automatic dependency on.
 .TP
 .B \fBLICENSES\fP
@@ -3208,10 +3692,10 @@ version of CMake. Please use \fBSORTING_PRIORITY\fP option instead.
 .TP
 .B \fBDEPENDS\fP | \fBDEPENDENCIES\fP
 list of dependency component or component group identifiers in
-\fI\%QtIFW\fP style.
+QtIFW style.
 .TP
 .B \fBAUTO_DEPEND_ON\fP
-list of identifiers of component or component group in \fI\%QtIFW\fP style
+list of identifiers of component or component group in QtIFW style
 that this component group has an automatic dependency on.
 .TP
 .B \fBLICENSES\fP
@@ -3244,7 +3728,7 @@ instead of all.
 .INDENT 0.0
 .TP
 .B cpack_ifw_add_repository
-Add \fI\%QtIFW\fP specific remote repository to binary installer.
+Add QtIFW specific remote repository to binary installer.
 .INDENT 7.0
 .INDENT 3.5
 .sp
@@ -3283,7 +3767,7 @@ is string to display instead of the URL.
 .INDENT 0.0
 .TP
 .B cpack_ifw_update_repository
-Update \fI\%QtIFW\fP specific repository from remote repository.
+Update QtIFW specific repository from remote repository.
 .INDENT 7.0
 .INDENT 3.5
 .sp
@@ -3370,24 +3854,29 @@ variable, or the empty string if the variable is not defined.
 .UNINDENT
 .SS CPack
 .sp
-Build binary and source package installers.
+Configure generators for binary installers and source packages.
 .SS Introduction
 .sp
-The CPack module generates a file \fBCPackConfig.cmake\fP intended for
-use in a subsequent run of  the \fBcpack\fP program
-where it steers the generation of installers or/and source packages.
+The CPack module generates the configuration files \fBCPackConfig.cmake\fP
+and \fBCPackSourceConfig.cmake\fP\&. They are intended for use in a subsequent
+run of  the \fBcpack\fP program where they steer the generation
+of installers or/and source packages.
 .sp
-Inclusion of the CPack module adds two new build targets, \fBpackage\fP
-and \fBpackage_source\fP, which build the binary and source installers
-respectively.  The generated binary installers contain everything
-installed via CMake’s \fBinstall()\fP command (and the deprecated
-commands \fBinstall_files()\fP, \fBinstall_programs()\fP, and
-\fBinstall_targets()\fP).
+Depending on the CMake generator, the CPack module may also add two new build
+targets, \fBpackage\fP and \fBpackage_source\fP\&. See the \fI\%packaging targets\fP
+section below for details.
 .sp
-For certain kinds of binary installers (including the graphical
-installers on macOS and Windows), CPack generates installers that
-allow users to select individual application components to install.
-See \fBCPackComponent\fP module for further details.
+The generated binary installers will contain all files that have been installed
+via CMake’s \fBinstall()\fP command (and the deprecated commands
+\fBinstall_files()\fP, \fBinstall_programs()\fP, and
+\fBinstall_targets()\fP).  Certain kinds of binary installers can be
+configured such that users can select individual application components to
+install.  See the \fBCPackComponent\fP module for further details.
+.sp
+Source packages (configured through \fBCPackSourceConfig.cmake\fP and generated
+by the \fBCPack Archive Generator\fP) will contain all source files in
+the project directory except those specified in
+\fI\%CPACK_SOURCE_IGNORE_FILES\fP\&.
 .SS CPack Generators
 .sp
 The \fI\%CPACK_GENERATOR\fP variable has different meanings in different
@@ -3398,10 +3887,6 @@ generator.  In a \fI\%CPACK_PROJECT_CONFIG_FILE\fP,
 \fI\%CPACK_GENERATOR\fP is a \fIstring naming a single generator\fP\&.  If you
 need per\-cpack\-generator logic to control \fIother\fP cpack settings, then you
 need a \fI\%CPACK_PROJECT_CONFIG_FILE\fP\&.
-.sp
-The CMake source tree itself contains a \fI\%CPACK_PROJECT_CONFIG_FILE\fP\&.
-See the top level file \fBCMakeCPackOptions.cmake.in\fP for an example.
-.sp
 If set, the \fI\%CPACK_PROJECT_CONFIG_FILE\fP is included automatically
 on a per\-generator basis.  It only need contain overrides.
 .sp
@@ -3432,6 +3917,21 @@ This is the key: For each generator listed in \fI\%CPACK_GENERATOR\fP in
 \fBCPackConfig.cmake\fP, cpack will \fIreset\fP \fI\%CPACK_GENERATOR\fP
 internally to \fIthe one currently being used\fP and then include the
 \fI\%CPACK_PROJECT_CONFIG_FILE\fP\&.
+.sp
+For a list of available generators, see \fBcpack\-generators(7)\fP\&.
+.SS Targets package and package_source
+.sp
+If CMake is run with the Makefile, Ninja, or Xcode generator, then
+\fBinclude(CPack)\fP generates a target \fBpackage\fP\&. This makes it possible
+to build a binary installer from CMake, Make, or Ninja: Instead of \fBcpack\fP,
+one may call \fBcmake \-\-build . \-\-target package\fP or \fBmake package\fP or
+\fBninja package\fP\&. The VS generator creates an uppercase target \fBPACKAGE\fP\&.
+.sp
+If CMake is run with the Makefile or Ninja generator, then \fBinclude(CPack)\fP
+also generates a target \fBpackage_source\fP\&. To build a source package,
+instead of \fBcpack \-G TGZ \-\-config CPackSourceConfig.cmake\fP one may call
+\fBcmake \-\-build . \-\-target package_source\fP, \fBmake package_source\fP,
+or \fBninja package_source\fP\&.
 .SS Variables common to all CPack Generators
 .sp
 Before including this CPack module in your \fBCMakeLists.txt\fP file, there
@@ -3739,7 +4239,22 @@ Directory for the installed files.
 .INDENT 0.0
 .TP
 .B CPACK_INSTALL_COMMANDS
-Extra commands to install components.
+Extra commands to install components.  The environment variable
+\fBCMAKE_INSTALL_PREFIX\fP is set to the temporary install directory
+during execution.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B CPACK_INSTALL_SCRIPTS
+Extra CMake scripts executed by CPack during its local staging
+installation, which is done right before packaging the files.
+The scripts are not called by a standalone install (e.g.: \fBmake install\fP).
+For every script, the following variables will be set:
+\fBCMAKE_CURRENT_SOURCE_DIR\fP, \fBCMAKE_CURRENT_BINARY_DIR\fP
+and \fBCMAKE_INSTALL_PREFIX\fP (which is set to the staging install
+directory).  The singular form \fBCMAKE_INSTALL_SCRIPT\fP is supported as
+an alternative variable for historical reasons, but its value is ignored if
+\fBCMAKE_INSTALL_SCRIPTS\fP is set and a warning will be issued.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -4158,7 +4673,7 @@ After generating this tar file, it can be sent to CDash for display with the
 \fBctest_submit(CDASH_UPLOAD)\fP command.
 .INDENT 0.0
 .TP
-.B cdash_coverage_collect_gcov
+.B ctest_coverage_collect_gcov
 .INDENT 7.0
 .INDENT 3.5
 .sp
@@ -4181,6 +4696,17 @@ Run gcov and package a tar file for CDash.  The options are:
 Specify the location of the \fB\&.tar\fP file to be created for later
 upload to CDash.  Relative paths will be interpreted with respect
 to the top\-level build directory.
+.TP
+.B \fBTARBALL_COMPRESSION <option>\fP Specify a compression algorithm for the
+\fBTARBALL\fP data file.  Using this option reduces the size of the data file
+before it is submitted to CDash.  \fB<option>\fP must be one of \fBGZIP\fP,
+\fBBZIP2\fP, \fBXZ\fP, \fBZSTD\fP, \fBFROM_EXT\fP, or an expression that CMake
+evaluates as \fBFALSE\fP\&. The default value is \fBBZIP2\fP\&.
+.sp
+If \fBFROM_EXT\fP is specified, the resulting file will be compressed based on
+the file extension of the \fB<tarfile>\fP (i.e. \fB\&.tar.gz\fP will use \fBGZIP\fP
+compression). File extensions that will produce compressed output include
+\fB\&.tar.gz\fP, \fB\&.tgz\fP, \fB\&.tar.bzip2\fP, \fB\&.tbz\fP, \fB\&.tar.xz\fP, and \fB\&.txz\fP\&.
 .TP
 .B \fBSOURCE <source_dir>\fP
 Specify the top\-level source directory for the build.
@@ -4795,6 +5321,7 @@ it must set this variable to a short one\-line message describing
 the reason for failure.
 .UNINDENT
 .SS ExternalProject
+.SS Commands
 .SS External Project Definition
 .INDENT 0.0
 .TP
@@ -4842,7 +5369,7 @@ Directory in which to store temporary files.
 .TP
 .B \fBSTAMP_DIR <dir>\fP
 Directory in which to store the timestamps of each step. Log files from
-individual steps are also created in here unless overriden by LOG_DIR
+individual steps are also created in here unless overridden by LOG_DIR
 (see \fILogging Options\fP below).
 .TP
 .B \fBLOG_DIR <dir>\fP
@@ -5087,7 +5614,14 @@ defaults to \fBorigin\fP\&.
 .TP
 .B \fBGIT_SUBMODULES <module>...\fP
 Specific git submodules that should also be updated. If this option is
-not provided, all git submodules will be updated.
+not provided, all git submodules will be updated. When \fBCMP0097\fP
+is set to \fBNEW\fP if this value is set to an empty string then no submodules
+are initialized or updated.
+.TP
+.B \fBGIT_SUBMODULES_RECURSE <bool>\fP
+Specify whether git submodules (if any) should update recursively by
+passing the \fB\-\-recursive\fP flag to \fBgit submodule update\fP\&.
+If not specified, the default is on.
 .TP
 .B \fBGIT_SHALLOW <bool>\fP
 When this option is enabled, the \fBgit clone\fP operation will be given
@@ -5109,6 +5643,44 @@ Specify a list of config options to pass to \fBgit clone\fP\&. Each option
 listed will be transformed into its own \fB\-\-config <option>\fP on the
 \fBgit clone\fP command line, with each option required to be in the
 form \fBkey=value\fP\&.
+.TP
+.B \fBGIT_REMOTE_UPDATE_STRATEGY <strategy>\fP
+When \fBGIT_TAG\fP refers to a remote branch, this option can be used to
+specify how the update step behaves.  The \fB<strategy>\fP must be one of
+the following:
+.INDENT 7.0
+.TP
+.B \fBCHECKOUT\fP
+Ignore the local branch and always checkout the branch specified by
+\fBGIT_TAG\fP\&.
+.TP
+.B \fBREBASE\fP
+Try to rebase the current branch to the one specified by \fBGIT_TAG\fP\&.
+If there are local uncommitted changes, they will be stashed first
+and popped again after rebasing.  If rebasing or popping stashed
+changes fail, abort the rebase and halt with an error.
+When \fBGIT_REMOTE_UPDATE_STRATEGY\fP is not present, this is the
+default strategy unless the default has been overridden with
+\fBCMAKE_EP_GIT_REMOTE_UPDATE_STRATEGY\fP (see below).
+.TP
+.B \fBREBASE_CHECKOUT\fP
+Same as \fBREBASE\fP except if the rebase fails, an annotated tag will
+be created at the original \fBHEAD\fP position from before the rebase
+and then checkout \fBGIT_TAG\fP just like the \fBCHECKOUT\fP strategy.
+The message stored on the annotated tag will give information about
+what was attempted and the tag name will include a timestamp so that
+each failed run will add a new tag.  This strategy ensures no changes
+will be lost, but updates should always succeed if \fBGIT_TAG\fP refers
+to a valid ref unless there are uncommitted changes that cannot be
+popped successfully.
+.UNINDENT
+.sp
+The variable \fBCMAKE_EP_GIT_REMOTE_UPDATE_STRATEGY\fP can be set to
+override the default strategy.  This variable should not be set by a
+project, it is intended for the user to set.  It is primarily intended
+for use in continuous integration scripts to ensure that when history
+is rewritten on a remote branch, the build doesn’t end up with unintended
+changes or failed builds resulting from conflicts during rebase operations.
 .UNINDENT
 .TP
 .B \fISubversion\fP
@@ -5263,7 +5835,7 @@ different behavior depending on whether the build starts from a fresh
 build directory or re\-uses previous build contents.
 .sp
 If the CMake generator is the \fBGreen Hills MULTI\fP and not overridden then
-the orginal projects settings for the GHS toolset and target system
+the original project’s settings for the GHS toolset and target system
 customization cache variables are propagated into the external project.
 .TP
 .B \fBSOURCE_SUBDIR <dir>\fP
@@ -5581,7 +6153,7 @@ ExternalProject_Add_Step(<name> <step> [<option>...])
 .sp
 \fB<name>\fP is the same as the name passed to the original call to
 \fI\%ExternalProject_Add()\fP\&. The specified \fB<step>\fP must not be one of
-the pre\-defined steps (\fBmkdir\fP, \fBdownload\fP, \fBupdate\fP, \fBskip\-update\fP,
+the pre\-defined steps (\fBmkdir\fP, \fBdownload\fP, \fBupdate\fP,
 \fBpatch\fP, \fBconfigure\fP, \fBbuild\fP, \fBinstall\fP or \fBtest\fP). The supported
 options are:
 .INDENT 7.0
@@ -6419,6 +6991,7 @@ populated elsewhere in the project already.  This is a more low level
 operation and would not normally be the way the module is used, but it is
 sometimes useful as part of implementing some higher level feature or to
 populate some content in CMake’s script mode.
+.SS Commands
 .SS Declaring Content Details
 .INDENT 0.0
 .TP
@@ -6454,9 +7027,13 @@ the content being populated multiple times.
 The \fB<contentOptions>\fP can be any of the download or update/patch options
 that the \fBExternalProject_Add()\fP command understands.  The configure,
 build, install and test steps are explicitly disabled and therefore options
-related to them will be ignored.  In most cases, \fB<contentOptions>\fP will
-just be a couple of options defining the download method and method\-specific
-details like a commit tag or archive hash.  For example:
+related to them will be ignored.  The \fBSOURCE_SUBDIR\fP option is an
+exception, see \fI\%FetchContent_MakeAvailable()\fP for details on how that
+affects behavior.
+.sp
+In most cases, \fB<contentOptions>\fP will just be a couple of options defining
+the download method and method\-specific details like a commit tag or archive
+hash.  For example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
@@ -6519,8 +7096,9 @@ endif()
 The above is such a common pattern that, where no custom steps are needed
 between the calls to \fI\%FetchContent_Populate()\fP and
 \fBadd_subdirectory()\fP, equivalent logic can be obtained by calling
-\fI\%FetchContent_MakeAvailable()\fP instead (and should be preferred where
-it meets the needs of the project).
+\fI\%FetchContent_MakeAvailable()\fP instead.  Where it meets the needs of
+the project, \fI\%FetchContent_MakeAvailable()\fP should be preferred, as it
+is simpler and provides additional features over the pattern above.
 .INDENT 0.0
 .TP
 .B FetchContent_Populate
@@ -6719,6 +7297,8 @@ sub\-build created to perform the population.  The default value is
 \fB${CMAKE_CURRENT_BINARY_DIR}/<lcName>\-subbuild\fP and it would be unusual
 to need to override this default.  If a relative path is specified, it will
 be interpreted as relative to \fBCMAKE_CURRENT_BINARY_DIR\fP\&.
+This option should not be confused with the \fBSOURCE_SUBDIR\fP option which
+only affects the \fI\%FetchContent_MakeAvailable()\fP command.
 .TP
 .B \fBSOURCE_DIR\fP, \fBBINARY_DIR\fP
 The \fBSOURCE_DIR\fP and \fBBINARY_DIR\fP arguments are supported by
@@ -6818,14 +7398,21 @@ FetchContent_MakeAvailable( <name1> [<name2>...] )
 .sp
 This command implements the common pattern typically needed for most
 dependencies.  It iterates over each of the named dependencies in turn
-and for each one it loosely follows the same
+and for each one it loosely follows the
 \fI\%canonical pattern\fP as
-presented at the beginning of this section.  One small difference to
-that pattern is that it will only call \fBadd_subdirectory()\fP on the
+presented at the beginning of this section.  An important difference is
+that \fBadd_subdirectory()\fP will only be called on the
 populated content if there is a \fBCMakeLists.txt\fP file in its top level
 source directory.  This allows the command to be used for dependencies
 that make downloaded content available at a known location but which do
 not need or support being added directly to the build.
+.sp
+The \fBSOURCE_SUBDIR\fP option can be given in the declared details to
+instruct \fBFetchContent_MakeAvailable()\fP to look for a \fBCMakeLists.txt\fP
+file in a subdirectory below the top level (i.e. the same way that
+\fBSOURCE_SUBDIR\fP is used by the \fBExternalProject_Add()\fP command).
+\fBSOURCE_SUBDIR\fP must always be a relative path.  See the next section
+for an example of this option.
 .UNINDENT
 .SS Examples
 .sp
@@ -6851,6 +7438,30 @@ FetchContent_Declare(
 # After the following call, the CMake targets defined by googletest and
 # Catch2 will be defined and available to the rest of the build
 FetchContent_MakeAvailable(googletest Catch2)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+If the sub\-project’s \fBCMakeLists.txt\fP file is not at the top level of its
+source tree, the \fBSOURCE_SUBDIR\fP option can be used to tell \fBFetchContent\fP
+where to find it.  The following example shows how to use that option and
+it also sets a variable which is meaningful to the subproject before pulling
+it into the main build:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+include(FetchContent)
+FetchContent_Declare(
+  protobuf
+  GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
+  GIT_TAG        v3.12.0
+  SOURCE_SUBDIR  cmake
+)
+set(protobuf_BUILD_TESTS OFF)
+FetchContent_MakeAvailable(protobuf)
 .ft P
 .fi
 .UNINDENT
@@ -7073,6 +7684,8 @@ find_package_handle_standard_args(<PackageName>
   [VERSION_VAR <version\-var>]
   [HANDLE_COMPONENTS]
   [CONFIG_MODE]
+  [NAME_MISMATCHED]
+  [REASON_FAILURE_MESSAGE <reason\-failure\-message>]
   [FAIL_MESSAGE <custom\-failure\-message>]
   )
 .ft P
@@ -7106,7 +7719,8 @@ Specify the variables which are required for this package.
 These may be named in the generated failure message asking the
 user to set the missing variable values.  Therefore these should
 typically be cache entries such as \fBFOO_LIBRARY\fP and not output
-variables like \fBFOO_LIBRARIES\fP\&.
+variables like \fBFOO_LIBRARIES\fP\&. This option is mandatory if
+\fBHANDLE_COMPONENTS\fP is not specified.
 .TP
 .B \fBVERSION_VAR <version\-var>\fP
 Specify the name of a variable that holds the version of the package
@@ -7132,9 +7746,19 @@ a \fBVERSION_VAR\fP value of \fB<PackageName>_VERSION\fP\&.  The command
 will automatically check whether the package configuration file
 was found.
 .TP
+.B \fBREASON_FAILURE_MESSAGE <reason\-failure\-message>\fP
+Specify a custom message of the reason for the failure which will be
+appended to the default generated message.
+.TP
 .B \fBFAIL_MESSAGE <custom\-failure\-message>\fP
 Specify a custom failure message instead of using the default
 generated message.  Not recommended.
+.TP
+.B \fBNAME_MISMATCHED\fP
+Indicate that the \fB<PackageName>\fP does not match
+\fB${CMAKE_FIND_PACKAGE_NAME}\fP\&. This is usually a mistake and raises a
+warning, but it may be intentional for usage of the command for components
+of a larger package.
 .UNINDENT
 .UNINDENT
 .sp
@@ -7159,6 +7783,20 @@ and \fBREQUIRED\fP was used, it fails with a
 used or not.  If it is found, success will be reported, including
 the content of the first \fB<required\-var>\fP\&.  On repeated CMake runs,
 the same message will not be printed again.
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+If \fB<PackageName>\fP does not match \fBCMAKE_FIND_PACKAGE_NAME\fP for the
+calling module, a warning that there is a mismatch is given. The
+\fBFPHSA_NAME_MISMATCHED\fP variable may be set to bypass the warning if using
+the old signature and the \fBNAME_MISMATCHED\fP argument using the new
+signature. To avoid forcing the caller to require newer versions of CMake for
+usage, the variable’s value will be used if defined when the
+\fBNAME_MISMATCHED\fP argument is not passed for the new signature (but using
+both is an error)..
+.UNINDENT
+.UNINDENT
 .sp
 Example for the full signature:
 .INDENT 0.0
@@ -7730,6 +8368,9 @@ This function is deprecated.  Set the target properties
 \fBCXX_VISIBILITY_PRESET\fP and
 \fBVISIBILITY_INLINES_HIDDEN\fP instead.
 .SS GetPrerequisites
+.sp
+Deprecated since version 3.16: Use \fBfile(GET_RUNTIME_DEPENDENCIES)\fP instead.
+
 .sp
 Functions to analyze and list executable file prerequisites.
 .sp
@@ -8310,13 +8951,15 @@ gtest_discover_tests(target
                      [PROPERTIES name1 value1...]
                      [TEST_LIST var]
                      [DISCOVERY_TIMEOUT seconds]
+                     [XML_OUTPUT_DIR dir]
+                     [DISCOVERY_MODE <POST_BUILD|PRE_TEST>]
 )
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
 .sp
-\fBgtest_discover_tests\fP sets up a post\-build command on the test executable
+\fBgtest_discover_tests()\fP sets up a post\-build command on the test executable
 that generates the list of tests by parsing the output from running the test
 with the \fB\-\-gtest_list_tests\fP argument.  Compared to the source parsing
 approach of \fI\%gtest_add_tests()\fP, this ensures that the full list of
@@ -8374,7 +9017,7 @@ this behavior.
 .TP
 .B \fBPROPERTIES name1 value1...\fP
 Specifies additional properties to be set on all tests discovered by this
-invocation of \fBgtest_discover_tests\fP\&.
+invocation of \fBgtest_discover_tests()\fP\&.
 .TP
 .B \fBTEST_LIST var\fP
 Make the list of tests available in the variable \fBvar\fP, rather than the
@@ -8402,6 +9045,29 @@ problem.  The ambiguous behavior of the \fBTIMEOUT\fP keyword in 3.10.1
 and 3.10.2 has not been preserved.
 .UNINDENT
 .UNINDENT
+.TP
+.B \fBXML_OUTPUT_DIR dir\fP
+If specified, the parameter is passed along with \fB\-\-gtest_output=xml:\fP
+to test executable. The actual file name is the same as the test target,
+including prefix and suffix. This should be used instead of
+\fBEXTRA_ARGS \-\-gtest_output=xml\fP to avoid race conditions writing the
+XML result output when using parallel test execution.
+.TP
+.B \fBDISCOVERY_MODE\fP
+Provides greater control over when \fBgtest_discover_tests()\fP performs test
+discovery. By default, \fBPOST_BUILD\fP sets up a post\-build command
+to perform test discovery at build time. In certain scenarios, like
+cross\-compiling, this \fBPOST_BUILD\fP behavior is not desirable.
+By contrast, \fBPRE_TEST\fP delays test discovery until just prior to test
+execution. This way test discovery occurs in the target environment
+where the test has a better chance at finding appropriate runtime
+dependencies.
+.sp
+\fBDISCOVERY_MODE\fP defaults to the value of the
+\fBCMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE\fP variable if it is not
+passed when calling \fBgtest_discover_tests()\fP\&. This provides a mechanism
+for globally selecting a preferred test discovery behavior without having
+to modify each call site.
 .UNINDENT
 .UNINDENT
 .SS InstallRequiredSystemLibraries
@@ -9222,6 +9888,17 @@ configuration\-specific files generated by \fBSWIG\fP\&. All build
 configurations must result in the same generated source file.
 .UNINDENT
 .UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+For Make\-based generators, \fBswig_add_library\fP does not track file
+dependencies, so depending on the \fB<name>_swig_compilation\fP custom target
+is required for targets which require the \fBswig\fP\-generated files to
+exist. Other generators may depend on the source files that would be
+generated by SWIG.
+.UNINDENT
+.UNINDENT
 .INDENT 7.0
 .TP
 .B \fBTYPE\fP
@@ -9600,7 +10277,7 @@ to the version of CMake that introduced the given API and less
 than the version of CMake that introduced its succeeding API.
 The value of the \fBCMAKE_MINIMUM_REQUIRED_VERSION\fP
 variable is used if no explicit version is specified.
-(As of CMake version 3.15.4 there is only one API version.)
+(As of CMake version 3.18.4 there is only one API version.)
 .sp
 \fBPROLOG\fP may be specified as text content to write at the start of the
 header. \fBEPILOG\fP may be specified as text content to write at the end
@@ -9982,7 +10659,7 @@ the absolute path of the asound library
 .SS FindArmadillo
 .sp
 Find the Armadillo C++ library.
-Armadillo is library for linear algebra & scientific computing.
+Armadillo is a library for linear algebra & scientific computing.
 .sp
 Using Armadillo:
 .INDENT 0.0
@@ -10159,8 +10836,9 @@ add_executable(Foo main.cpp ${BISON_MyParser_OUTPUTS})
 Find Basic Linear Algebra Subprograms (BLAS) library
 .sp
 This module finds an installed Fortran library that implements the
-BLAS linear\-algebra interface (see \fI\%http://www.netlib.org/blas/\fP).  The
-list of libraries searched for is taken from the \fBautoconf\fP macro file,
+BLAS linear\-algebra interface (see \fI\%http://www.netlib.org/blas/\fP).
+.sp
+The approach follows that taken for the \fBautoconf\fP macro file,
 \fBacx_blas.m4\fP (distributed at
 \fI\%http://ac\-archive.sourceforge.net/ac\-archive/acx_blas.html\fP).
 .SS Input Variables
@@ -10176,49 +10854,59 @@ If set, checks only the specified vendor, if not set checks all the
 possibilities.  List of vendors valid in this module:
 .INDENT 7.0
 .IP \(bu 2
-Goto
+\fBGoto\fP
 .IP \(bu 2
-OpenBLAS
+\fBOpenBLAS\fP
 .IP \(bu 2
-FLAME
+\fBFLAME\fP
 .IP \(bu 2
-ATLAS PhiPACK
+\fBATLAS PhiPACK\fP
 .IP \(bu 2
-CXML
+\fBCXML\fP
 .IP \(bu 2
-DXML
+\fBDXML\fP
 .IP \(bu 2
-SunPerf
+\fBSunPerf\fP
 .IP \(bu 2
-SCSL
+\fBSCSL\fP
 .IP \(bu 2
-SGIMATH
+\fBSGIMATH\fP
 .IP \(bu 2
-IBMESSL
+\fBIBMESSL\fP
 .IP \(bu 2
-Intel10_32 (intel mkl v10 32 bit)
+\fBIntel10_32\fP (intel mkl v10 32 bit)
 .IP \(bu 2
-Intel10_64lp (intel mkl v10+ 64 bit, threaded code, lp64 model)
+\fBIntel10_64lp\fP (intel mkl v10+ 64 bit, threaded code, lp64 model)
 .IP \(bu 2
-Intel10_64lp_seq (intel mkl v10+ 64 bit, sequential code, lp64 model)
+\fBIntel10_64lp_seq\fP (intel mkl v10+ 64 bit, sequential code, lp64 model)
 .IP \(bu 2
-Intel10_64ilp (intel mkl v10+ 64 bit, threaded code, ilp64 model)
+\fBIntel10_64ilp\fP (intel mkl v10+ 64 bit, threaded code, ilp64 model)
 .IP \(bu 2
-Intel10_64ilp_seq (intel mkl v10+ 64 bit, sequential code, ilp64 model)
+\fBIntel10_64ilp_seq\fP (intel mkl v10+ 64 bit, sequential code, ilp64 model)
 .IP \(bu 2
-Intel (obsolete versions of mkl 32 and 64 bit)
+\fBIntel10_64_dyn\fP (intel mkl v10+ 64 bit, single dynamic library)
 .IP \(bu 2
-ACML
+\fBIntel\fP (obsolete versions of mkl 32 and 64 bit)
 .IP \(bu 2
-ACML_MP
+\fBACML\fP
 .IP \(bu 2
-ACML_GPU
+\fBACML_MP\fP
 .IP \(bu 2
-Apple
+\fBACML_GPU\fP
 .IP \(bu 2
-NAS
+\fBApple\fP
 .IP \(bu 2
-Generic
+\fBNAS\fP
+.IP \(bu 2
+\fBArm\fP
+.IP \(bu 2
+\fBArm_mp\fP
+.IP \(bu 2
+\fBArm_ilp64\fP
+.IP \(bu 2
+\fBArm_ilp64_mp\fP
+.IP \(bu 2
+\fBGeneric\fP
 .UNINDENT
 .TP
 .B \fBBLA_F95\fP
@@ -10227,6 +10915,14 @@ if \fBON\fP tries to find the BLAS95 interfaces
 .B \fBBLA_PREFER_PKGCONFIG\fP
 if set \fBpkg\-config\fP will be used to search for a BLAS library first
 and if one is found that is preferred
+.UNINDENT
+.SS Imported targets
+.sp
+This module defines the following \fBIMPORTED\fP target:
+.INDENT 0.0
+.TP
+.B \fBBLAS::BLAS\fP
+The libraries to use for BLAS, if found.
 .UNINDENT
 .SS Result Variables
 .sp
@@ -10254,7 +10950,8 @@ library implementing the BLAS95 interface is found
 \fBNOTE:\fP
 .INDENT 0.0
 .INDENT 3.5
-C or CXX must be enabled to use Intel Math Kernel Library (MKL)
+C, CXX or Fortran must be enabled to detect a BLAS library.
+C or CXX must be enabled to use Intel Math Kernel Library (MKL).
 .sp
 For example, to use Intel MKL libraries and/or Intel compiler:
 .INDENT 0.0
@@ -10272,8 +10969,10 @@ find_package(BLAS)
 .UNINDENT
 .SS Hints
 .sp
-Set \fBMKLROOT\fP environment variable to a directory that contains an MKL
-installation.
+Set the \fBMKLROOT\fP environment variable to a directory that contains an MKL
+installation, or add the directory to the dynamic library loader environment
+variable for your platform (\fBLIB\fP, \fBDYLD_LIBRARY_PATH\fP or
+\fBLD_LIBRARY_PATH\fP).
 .SS FindBacktrace
 .sp
 Find provider for \fI\%backtrace(3)\fP\&.
@@ -10519,6 +11218,10 @@ Boost_COMPILER           \- Set to the compiler\-specific library suffix
                            used if multiple compatible suffixes should
                            be tested for, in decreasing order of
                            preference.
+Boost_LIB_PREFIX         \- Set to the platform\-specific library name
+                           prefix (e.g. "lib") used by Boost static libs.
+                           This is needed only on platforms where CMake
+                           does not know the prefix by default.
 Boost_ARCHITECTURE       \- Set to the architecture\-specific library suffix
                            (e.g. "\-x64").  Default is auto\-computed for the
                            C++ compiler in use.
@@ -10813,6 +11516,494 @@ The following cache variables may also be set:
 .B \fBCUPS_INCLUDE_DIR\fP
 the directory containing the Cups headers
 .UNINDENT
+.SS FindCUDAToolkit
+.sp
+This script locates the NVIDIA CUDA toolkit and the associated libraries, but
+does not require the \fBCUDA\fP language be enabled for a given project. This
+module does not search for the NVIDIA CUDA Samples.
+.SS Search Behavior
+.sp
+Finding the CUDA Toolkit requires finding the \fBnvcc\fP executable, which is
+searched for in the following order:
+.INDENT 0.0
+.IP 1. 3
+If the \fBCUDA\fP language has been enabled we will use the directory
+containing the compiler as the first search location for \fBnvcc\fP\&.
+.IP 2. 3
+If the \fBCUDAToolkit_ROOT\fP cmake configuration variable (e.g.,
+\fB\-DCUDAToolkit_ROOT=/some/path\fP) \fIor\fP environment variable is defined, it
+will be searched.  If both an environment variable \fBand\fP a
+configuration variable are specified, the \fIconfiguration\fP variable takes
+precedence.
+.sp
+The directory specified here must be such that the executable \fBnvcc\fP can be
+found underneath the directory specified by \fBCUDAToolkit_ROOT\fP\&.  If
+\fBCUDAToolkit_ROOT\fP is specified, but no \fBnvcc\fP is found underneath, this
+package is marked as \fBnot\fP found.  No subsequent search attempts are
+performed.
+.IP 3. 3
+If the CUDA_PATH environment variable is defined, it will be searched.
+.IP 4. 3
+The user’s path is searched for \fBnvcc\fP using \fBfind_program()\fP\&.  If
+this is found, no subsequent search attempts are performed.  Users are
+responsible for ensuring that the first \fBnvcc\fP to show up in the path is
+the desired path in the event that multiple CUDA Toolkits are installed.
+.IP 5. 3
+On Unix systems, if the symbolic link \fB/usr/local/cuda\fP exists, this is
+used.  No subsequent search attempts are performed.  No default symbolic link
+location exists for the Windows platform.
+.IP 6. 3
+The platform specific default install locations are searched.  If exactly one
+candidate is found, this is used.  The default CUDA Toolkit install locations
+searched are:
+.TS
+center;
+|l|l|.
+_
+T{
+Platform
+T}	T{
+Search Pattern
+T}
+_
+T{
+macOS
+T}	T{
+\fB/Developer/NVIDIA/CUDA\-X.Y\fP
+T}
+_
+T{
+Other Unix
+T}	T{
+\fB/usr/local/cuda\-X.Y\fP
+T}
+_
+T{
+Windows
+T}	T{
+\fBC:\eProgram Files\eNVIDIA GPU Computing Toolkit\eCUDA\evX.Y\fP
+T}
+_
+.TE
+.sp
+Where \fBX.Y\fP would be a specific version of the CUDA Toolkit, such as
+\fB/usr/local/cuda\-9.0\fP or
+\fBC:\eProgram Files\eNVIDIA GPU Computing Toolkit\eCUDA\ev9.0\fP
+.sp
+\fBNOTE:\fP
+.INDENT 3.0
+.INDENT 3.5
+When multiple CUDA Toolkits are installed in the default location of a
+system (e.g., both \fB/usr/local/cuda\-9.0\fP and \fB/usr/local/cuda\-10.0\fP
+exist but the \fB/usr/local/cuda\fP symbolic link does \fBnot\fP exist), this
+package is marked as \fBnot\fP found.
+.sp
+There are too many factors involved in making an automatic decision in
+the presence of multiple CUDA Toolkits being installed.  In this
+situation, users are encouraged to either (1) set \fBCUDAToolkit_ROOT\fP or
+(2) ensure that the correct \fBnvcc\fP executable shows up in \fB$PATH\fP for
+\fBfind_program()\fP to find.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS Options
+.INDENT 0.0
+.TP
+.B \fBVERSION\fP
+If specified, describes the version of the CUDA Toolkit to search for.
+.TP
+.B \fBREQUIRED\fP
+If specified, configuration will error if a suitable CUDA Toolkit is not
+found.
+.TP
+.B \fBQUIET\fP
+If specified, the search for a suitable CUDA Toolkit will not produce any
+messages.
+.TP
+.B \fBEXACT\fP
+If specified, the CUDA Toolkit is considered found only if the exact
+\fBVERSION\fP specified is recovered.
+.UNINDENT
+.SS Imported targets
+.sp
+An imported target named \fBCUDA::toolkit\fP is provided.
+.sp
+This module defines \fBIMPORTED\fP targets for each
+of the following libraries that are part of the CUDAToolkit:
+.INDENT 0.0
+.IP \(bu 2
+\fI\%CUDA Runtime Library\fP
+.IP \(bu 2
+\fI\%CUDA Driver Library\fP
+.IP \(bu 2
+\fI\%cuBLAS\fP
+.IP \(bu 2
+\fI\%cuFFT\fP
+.IP \(bu 2
+\fI\%cuRAND\fP
+.IP \(bu 2
+\fI\%cuSOLVER\fP
+.IP \(bu 2
+\fI\%cuSPARSE\fP
+.IP \(bu 2
+\fI\%cuPTI\fP
+.IP \(bu 2
+\fI\%NPP\fP
+.IP \(bu 2
+\fI\%nvBLAS\fP
+.IP \(bu 2
+\fI\%nvGRAPH\fP
+.IP \(bu 2
+\fI\%nvJPEG\fP
+.IP \(bu 2
+\fI\%nvidia\-ML\fP
+.IP \(bu 2
+\fI\%nvRTC\fP
+.IP \(bu 2
+\fI\%nvToolsExt\fP
+.IP \(bu 2
+\fI\%OpenCL\fP
+.IP \(bu 2
+\fI\%cuLIBOS\fP
+.UNINDENT
+.SS CUDA Runtime Library
+.sp
+The CUDA Runtime library (cudart) are what most applications will typically
+need to link against to make any calls such as \fIcudaMalloc\fP, and \fIcudaFree\fP\&.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::cudart\fP
+.IP \(bu 2
+\fBCUDA::cudart_static\fP
+.UNINDENT
+.SS CUDA Driver Library
+.sp
+The CUDA Driver library (cuda) are used by applications that use calls
+such as \fIcuMemAlloc\fP, and \fIcuMemFree\fP\&. This is generally used by advanced
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::cuda_driver\fP
+.IP \(bu 2
+\fBCUDA::cuda_driver\fP
+.UNINDENT
+.SS cuBLAS
+.sp
+The \fI\%cuBLAS\fP library.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::cublas\fP
+.IP \(bu 2
+\fBCUDA::cublas_static\fP
+.IP \(bu 2
+\fBCUDA::cublasLt\fP starting in CUDA 10.1
+.IP \(bu 2
+\fBCUDA::cublasLt_static\fP starting in CUDA 10.1
+.UNINDENT
+.SS cuFFT
+.sp
+The \fI\%cuFFT\fP library.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::cufft\fP
+.IP \(bu 2
+\fBCUDA::cufftw\fP
+.IP \(bu 2
+\fBCUDA::cufft_static\fP
+.IP \(bu 2
+\fBCUDA::cufftw_static\fP
+.UNINDENT
+.SS cuRAND
+.sp
+The \fI\%cuRAND\fP library.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::curand\fP
+.IP \(bu 2
+\fBCUDA::curand_static\fP
+.UNINDENT
+.SS cuSOLVER
+.sp
+The \fI\%cuSOLVER\fP library.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::cusolver\fP
+.IP \(bu 2
+\fBCUDA::cusolver_static\fP
+.UNINDENT
+.SS cuSPARSE
+.sp
+The \fI\%cuSPARSE\fP library.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::cusparse\fP
+.IP \(bu 2
+\fBCUDA::cusparse_static\fP
+.UNINDENT
+.SS cupti
+.sp
+The \fI\%NVIDIA CUDA Profiling Tools Interface\fP\&.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::cupti\fP
+.IP \(bu 2
+\fBCUDA::cupti_static\fP
+.UNINDENT
+.SS NPP
+.sp
+The \fI\%NPP\fP libraries.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fInppc\fP:
+.INDENT 2.0
+.IP \(bu 2
+\fBCUDA::nppc\fP
+.IP \(bu 2
+\fBCUDA::nppc_static\fP
+.UNINDENT
+.IP \(bu 2
+\fInppial\fP: Arithmetic and logical operation functions in \fInppi_arithmetic_and_logical_operations.h\fP
+.INDENT 2.0
+.IP \(bu 2
+\fBCUDA::nppial\fP
+.IP \(bu 2
+\fBCUDA::nppial_static\fP
+.UNINDENT
+.IP \(bu 2
+\fInppicc\fP: Color conversion and sampling functions in \fInppi_color_conversion.h\fP
+.INDENT 2.0
+.IP \(bu 2
+\fBCUDA::nppicc\fP
+.IP \(bu 2
+\fBCUDA::nppicc_static\fP
+.UNINDENT
+.IP \(bu 2
+\fInppicom\fP: JPEG compression and decompression functions in \fInppi_compression_functions.h\fP
+Removed starting in CUDA 11.0, use \fI\%nvJPEG\fP instead.
+.INDENT 2.0
+.IP \(bu 2
+\fBCUDA::nppicom\fP
+.IP \(bu 2
+\fBCUDA::nppicom_static\fP
+.UNINDENT
+.IP \(bu 2
+\fInppidei\fP: Data exchange and initialization functions in \fInppi_data_exchange_and_initialization.h\fP
+.INDENT 2.0
+.IP \(bu 2
+\fBCUDA::nppidei\fP
+.IP \(bu 2
+\fBCUDA::nppidei_static\fP
+.UNINDENT
+.IP \(bu 2
+\fInppif\fP: Filtering and computer vision functions in \fInppi_filter_functions.h\fP
+.INDENT 2.0
+.IP \(bu 2
+\fBCUDA::nppif\fP
+.IP \(bu 2
+\fBCUDA::nppif_static\fP
+.UNINDENT
+.IP \(bu 2
+\fInppig\fP: Geometry transformation functions found in \fInppi_geometry_transforms.h\fP
+.INDENT 2.0
+.IP \(bu 2
+\fBCUDA::nppig\fP
+.IP \(bu 2
+\fBCUDA::nppig_static\fP
+.UNINDENT
+.IP \(bu 2
+\fInppim\fP: Morphological operation functions found in \fInppi_morphological_operations.h\fP
+.INDENT 2.0
+.IP \(bu 2
+\fBCUDA::nppim\fP
+.IP \(bu 2
+\fBCUDA::nppim_static\fP
+.UNINDENT
+.IP \(bu 2
+\fInppist\fP: Statistics and linear transform in \fInppi_statistics_functions.h\fP and \fInppi_linear_transforms.h\fP
+.INDENT 2.0
+.IP \(bu 2
+\fBCUDA::nppist\fP
+.IP \(bu 2
+\fBCUDA::nppist_static\fP
+.UNINDENT
+.IP \(bu 2
+\fInppisu\fP: Memory support functions in \fInppi_support_functions.h\fP
+.INDENT 2.0
+.IP \(bu 2
+\fBCUDA::nppisu\fP
+.IP \(bu 2
+\fBCUDA::nppisu_static\fP
+.UNINDENT
+.IP \(bu 2
+\fInppitc\fP: Threshold and compare operation functions in \fInppi_threshold_and_compare_operations.h\fP
+.INDENT 2.0
+.IP \(bu 2
+\fBCUDA::nppitc\fP
+.IP \(bu 2
+\fBCUDA::nppitc_static\fP
+.UNINDENT
+.IP \(bu 2
+\fInpps\fP:
+.INDENT 2.0
+.IP \(bu 2
+\fBCUDA::npps\fP
+.IP \(bu 2
+\fBCUDA::npps_static\fP
+.UNINDENT
+.UNINDENT
+.SS nvBLAS
+.sp
+The \fI\%nvBLAS\fP libraries.
+This is a shared library only.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::nvblas\fP
+.UNINDENT
+.SS nvGRAPH
+.sp
+The \fI\%nvGRAPH\fP library.
+Removed starting in CUDA 11.0
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::nvgraph\fP
+.IP \(bu 2
+\fBCUDA::nvgraph_static\fP
+.UNINDENT
+.SS nvJPEG
+.sp
+The \fI\%nvJPEG\fP library.
+Introduced in CUDA 10.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::nvjpeg\fP
+.IP \(bu 2
+\fBCUDA::nvjpeg_static\fP
+.UNINDENT
+.SS nvRTC
+.sp
+The \fI\%nvRTC\fP (Runtime Compilation) library.
+This is a shared library only.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::nvrtc\fP
+.UNINDENT
+.SS nvidia\-ML
+.sp
+The \fI\%NVIDIA Management Library\fP\&.
+This is a shared library only.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::nvml\fP
+.UNINDENT
+.SS nvToolsExt
+.sp
+The \fI\%NVIDIA Tools Extension\fP\&.
+This is a shared library only.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::nvToolsExt\fP
+.UNINDENT
+.SS OpenCL
+.sp
+The \fI\%NVIDIA OpenCL Library\fP\&.
+This is a shared library only.
+.sp
+Targets Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::OpenCL\fP
+.UNINDENT
+.SS cuLIBOS
+.sp
+The cuLIBOS library is a backend thread abstraction layer library which is
+static only.  The \fBCUDA::cublas_static\fP, \fBCUDA::cusparse_static\fP,
+\fBCUDA::cufft_static\fP, \fBCUDA::curand_static\fP, and (when implemented) NPP
+libraries all automatically have this dependency linked.
+.sp
+Target Created:
+.INDENT 0.0
+.IP \(bu 2
+\fBCUDA::culibos\fP
+.UNINDENT
+.sp
+\fBNote\fP: direct usage of this target by consumers should not be necessary.
+.SS Result variables
+.INDENT 0.0
+.TP
+.B \fBCUDAToolkit_FOUND\fP
+A boolean specifying whether or not the CUDA Toolkit was found.
+.TP
+.B \fBCUDAToolkit_VERSION\fP
+The exact version of the CUDA Toolkit found (as reported by
+\fBnvcc \-\-version\fP).
+.TP
+.B \fBCUDAToolkit_VERSION_MAJOR\fP
+The major version of the CUDA Toolkit.
+.TP
+.B \fBCUDAToolkit_VERSION_MAJOR\fP
+The minor version of the CUDA Toolkit.
+.TP
+.B \fBCUDAToolkit_VERSION_PATCH\fP
+The patch version of the CUDA Toolkit.
+.TP
+.B \fBCUDAToolkit_BIN_DIR\fP
+The path to the CUDA Toolkit library directory that contains the CUDA
+executable \fBnvcc\fP\&.
+.TP
+.B \fBCUDAToolkit_INCLUDE_DIRS\fP
+The path to the CUDA Toolkit \fBinclude\fP folder containing the header files
+required to compile a project linking against CUDA.
+.TP
+.B \fBCUDAToolkit_LIBRARY_DIR\fP
+The path to the CUDA Toolkit library directory that contains the CUDA
+Runtime library \fBcudart\fP\&.
+.TP
+.B \fBCUDAToolkit_LIBRARY_ROOT\fP
+The path to the CUDA Toolkit directory containing the nvvm directory and
+version.txt.
+.TP
+.B \fBCUDAToolkit_TARGET_DIR\fP
+The path to the CUDA Toolkit directory including the target architecture
+when cross\-compiling. When not cross\-compiling this will be equivalant to
+\fBCUDAToolkit_ROOT_DIR\fP\&.
+.TP
+.B \fBCUDAToolkit_NVCC_EXECUTABLE\fP
+The path to the NVIDIA CUDA compiler \fBnvcc\fP\&.  Note that this path may
+\fBnot\fP be the same as
+\fBCMAKE_CUDA_COMPILER\fP\&.  \fBnvcc\fP must be
+found to determine the CUDA Toolkit version as well as determining other
+features of the Toolkit.  This variable is set for the convenience of
+modules that depend on this one.
+.UNINDENT
 .SS FindCURL
 .sp
 Find the native CURL headers and libraries.
@@ -10853,6 +12044,14 @@ List of libraries when using \fBcurl\fP\&.
 .B \fBCURL_VERSION_STRING\fP
 The version of \fBcurl\fP found.
 .UNINDENT
+.SS CURL CMake
+.sp
+If CURL was built using the CMake buildsystem then it provides its own
+\fBCURLConfig.cmake\fP file for use with the \fBfind_package()\fP command’s
+config mode. This module looks for this file and, if found,
+returns its results with no further action.
+.sp
+Set \fBCURL_NO_CURL_CMAKE\fP to \fBON\fP to disable this search.
 .SS FindCurses
 .sp
 Find the curses or ncurses include file and library.
@@ -10869,6 +12068,9 @@ The include directories needed to use Curses.
 .TP
 .B \fBCURSES_LIBRARIES\fP
 The libraries needed to use Curses.
+.TP
+.B \fBCURSES_CFLAGS\fP
+Parameters which ought be given to C/C++ compilers when using Curses.
 .TP
 .B \fBCURSES_HAVE_CURSES_H\fP
 True if curses.h is available.
@@ -11394,6 +12596,7 @@ documentation.
 doxygen_add_docs(targetName
     [filesOrDirs...]
     [ALL]
+    [USE_STAMP_FILE]
     [WORKING_DIRECTORY dir]
     [COMMENT comment])
 .ft P
@@ -11419,7 +12622,19 @@ If provided, the optional \fBcomment\fP will be passed as the \fBCOMMENT\fP for
 the \fBadd_custom_target()\fP command used to create the custom target
 internally.
 .sp
-If ALL is set, the target will be added to the default build target.
+If \fBALL\fP is set, the target will be added to the default build target.
+.sp
+If \fBUSE_STAMP_FILE\fP is set, the custom command defined by this function will
+create a stamp file with the name \fB<targetName>.stamp\fP in the current
+binary directory whenever doxygen is re\-run.  With this option present, all
+items in \fB<filesOrDirs>\fP must be files (i.e. no directories, symlinks or
+wildcards) and each of the files must exist at the time
+\fBdoxygen_add_docs()\fP is called.  An error will be raised if any of the
+items listed is missing or is not a file when \fBUSE_STAMP_FILE\fP is given.
+A dependency will be created on each of the files so that doxygen will only
+be re\-run if one of the files is updated.  Without the \fBUSE_STAMP_FILE\fP
+option, doxygen will always be re\-run if the \fB<targetName>\fP target is built
+regardless of whether anything listed in \fB<filesOrDirs>\fP has changed.
 .sp
 The contents of the generated \fBDoxyfile\fP can be customized by setting CMake
 variables before calling \fBdoxygen_add_docs()\fP\&. Any variable with a name of
@@ -12593,20 +13808,27 @@ GNUPLOT_VERSION_STRING will not work for old versions like 3.7.1.
 .SS FindGnuTLS
 .sp
 Find the GNU Transport Layer Security library (gnutls)
+.SS IMPORTED Targets
 .sp
-Once done this will define
+This module defines \fBIMPORTED\fP target \fBGnuTLS::GnuTLS\fP, if
+gnutls has been found.
+.SS Result Variables
 .INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-GNUTLS_FOUND \- System has gnutls
-GNUTLS_INCLUDE_DIR \- The gnutls include directory
-GNUTLS_LIBRARIES \- The libraries needed to use gnutls
-GNUTLS_DEFINITIONS \- Compiler switches required for using gnutls
-.ft P
-.fi
-.UNINDENT
+.TP
+.B \fBGNUTLS_FOUND\fP
+System has gnutls
+.TP
+.B \fBGNUTLS_INCLUDE_DIR\fP
+The gnutls include directory
+.TP
+.B \fBGNUTLS_LIBRARIES\fP
+The libraries needed to use gnutls
+.TP
+.B \fBGNUTLS_DEFINITIONS\fP
+Compiler switches required for using gnutls
+.TP
+.B \fBGNUTLS_VERSION\fP
+version of gnutls.
 .UNINDENT
 .SS FindGSL
 .sp
@@ -12752,133 +13974,114 @@ See \fBGoogleTest\fP for information on the \fBgtest_add_tests()\fP
 and \fBgtest_discover_tests()\fP commands.
 .SS FindGTK2
 .sp
-Find the GTK2 widget libraries and several of its
-other optional components like \fBgtkmm\fP, \fBglade\fP, and \fBglademm\fP\&.
-.sp
-NOTE: If you intend to use version checking, CMake 2.6.2 or later is
-.INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-required.
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
+Find the GTK2 widget libraries and several of its other optional components
+like \fBgtkmm\fP, \fBglade\fP, and \fBglademm\fP\&.
 .sp
 Specify one or more of the following components as you call this find
 module.  See example below.
 .INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-gtk
-gtkmm
-glade
-glademm
-.ft P
-.fi
+.IP \(bu 2
+\fBgtk\fP
+.IP \(bu 2
+\fBgtkmm\fP
+.IP \(bu 2
+\fBglade\fP
+.IP \(bu 2
+\fBglademm\fP
 .UNINDENT
-.UNINDENT
+.SS Result Variables
 .sp
 The following variables will be defined for your use
 .INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-GTK2_FOUND \- Were all of your specified components found?
-GTK2_INCLUDE_DIRS \- All include directories
-GTK2_LIBRARIES \- All libraries
-GTK2_TARGETS \- All imported targets
-GTK2_DEFINITIONS \- Additional compiler flags
-.ft P
-.fi
+.TP
+.B \fBGTK2_FOUND\fP
+Were all of your specified components found?
+.TP
+.B \fBGTK2_INCLUDE_DIRS\fP
+All include directories
+.TP
+.B \fBGTK2_LIBRARIES\fP
+All libraries
+.TP
+.B \fBGTK2_TARGETS\fP
+All imported targets
+.TP
+.B \fBGTK2_DEFINITIONS\fP
+Additional compiler flags
+.TP
+.B \fBGTK2_VERSION\fP
+The version of GTK2 found (x.y.z)
+.TP
+.B \fBGTK2_MAJOR_VERSION\fP
+The major version of GTK2
+.TP
+.B \fBGTK2_MINOR_VERSION\fP
+The minor version of GTK2
+.TP
+.B \fBGTK2_PATCH_VERSION\fP
+The patch version of GTK2
 .UNINDENT
-.UNINDENT
-.INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-GTK2_VERSION \- The version of GTK2 found (x.y.z)
-GTK2_MAJOR_VERSION \- The major version of GTK2
-GTK2_MINOR_VERSION \- The minor version of GTK2
-GTK2_PATCH_VERSION \- The patch version of GTK2
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
+.SS Input Variables
 .sp
 Optional variables you can define prior to calling this module:
 .INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-GTK2_DEBUG \- Enables verbose debugging of the module
-GTK2_ADDITIONAL_SUFFIXES \- Allows defining additional directories to
-                           search for include files
-.ft P
-.fi
+.TP
+.B \fBGTK2_DEBUG\fP
+Enables verbose debugging of the module
+.TP
+.B \fBGTK2_ADDITIONAL_SUFFIXES\fP
+Allows defining additional directories to search for include files
 .UNINDENT
-.UNINDENT
+.SS Example Usage
 .sp
-================= Example Usage:
+Call \fBfind_package()\fP once.  Here are some examples to pick from:
+.sp
+Require GTK 2.6 or later:
 .INDENT 0.0
 .INDENT 3.5
 .sp
 .nf
 .ft C
-Call find_package() once, here are some examples to pick from:
+find_package(GTK2 2.6 REQUIRED gtk)
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
+.sp
+Require GTK 2.10 or later and Glade:
 .INDENT 0.0
 .INDENT 3.5
 .sp
 .nf
 .ft C
-Require GTK 2.6 or later
-    find_package(GTK2 2.6 REQUIRED gtk)
+find_package(GTK2 2.10 REQUIRED gtk glade)
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
+.sp
+Search for GTK/GTKMM 2.8 or later:
 .INDENT 0.0
 .INDENT 3.5
 .sp
 .nf
 .ft C
-Require GTK 2.10 or later and Glade
-    find_package(GTK2 2.10 REQUIRED gtk glade)
+find_package(GTK2 2.8 COMPONENTS gtk gtkmm)
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
-.INDENT 0.0
-.INDENT 3.5
 .sp
-.nf
-.ft C
-Search for GTK/GTKMM 2.8 or later
-    find_package(GTK2 2.8 COMPONENTS gtk gtkmm)
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
+Use the results:
 .INDENT 0.0
 .INDENT 3.5
 .sp
 .nf
 .ft C
 if(GTK2_FOUND)
-   include_directories(${GTK2_INCLUDE_DIRS})
-   add_executable(mygui mygui.cc)
-   target_link_libraries(mygui ${GTK2_LIBRARIES})
+  include_directories(${GTK2_INCLUDE_DIRS})
+  add_executable(mygui mygui.cc)
+  target_link_libraries(mygui ${GTK2_LIBRARIES})
 endif()
 .ft P
 .fi
@@ -12915,9 +14118,12 @@ The module will optionally accept the \fBCOMPONENTS\fP argument.  If no
 \fBCOMPONENTS\fP are specified, then the find module will default to finding
 only the \fBHDF5\fP C library.  If one or more \fBCOMPONENTS\fP are specified, the
 module will attempt to find the language bindings for the specified
-components.  The only valid components are \fBC\fP, \fBCXX\fP, \fBFortran\fP, \fBHL\fP,
-and \fBFortran_HL\fP\&.  If the \fBCOMPONENTS\fP argument is not given, the module will
+components.  The valid components are \fBC\fP, \fBCXX\fP, \fBFortran\fP, \fBHL\fP\&.
+\fBHL\fP refers to the “high\-level” HDF5 functions for C and Fortran.
+If the \fBCOMPONENTS\fP argument is not given, the module will
 attempt to find only the C bindings.
+For example, to use Fortran HDF5 and HDF5\-HL functions, do:
+\fBfind_package(HDF5 COMPONENTS Fortran HL)\fP\&.
 .sp
 This module will read the variable
 \fBHDF5_USE_STATIC_LIBRARIES\fP to determine whether or not to prefer a
@@ -12925,16 +14131,11 @@ static link to a dynamic link for \fBHDF5\fP and all of it’s dependencies.
 To use this feature, make sure that the \fBHDF5_USE_STATIC_LIBRARIES\fP
 variable is set before the call to find_package.
 .sp
-To provide the module with a hint about where to find your \fBHDF5\fP
-installation, you can set the environment variable \fBHDF5_ROOT\fP\&.  The
-Find module will then look in this path when searching for \fBHDF5\fP
-executables, paths, and libraries.
-.sp
 Both the serial and parallel \fBHDF5\fP wrappers are considered and the first
 directory to contain either one will be used.  In the event that both appear
 in the same directory the serial version is preferentially selected. This
 behavior can be reversed by setting the variable \fBHDF5_PREFER_PARALLEL\fP to
-\fBTrue\fP\&.
+\fBTRUE\fP\&.
 .sp
 In addition to finding the includes and libraries required to compile
 an \fBHDF5\fP client application, this module also makes an effort to find
@@ -13034,11 +14235,11 @@ path to the HDF5 dataset comparison tool
 .UNINDENT
 .SS Hints
 .sp
-The following variable can be set to guide the search for HDF5 libraries and includes:
+The following variables can be set to guide the search for HDF5 libraries and includes:
 .INDENT 0.0
 .TP
-.B \fBHDF5_ROOT\fP
-Specify the path to the HDF5 installation to use.
+.B \fBHDF5_PREFER_PARALLEL\fP
+set \fBtrue\fP to prefer parallel HDF5 (by default, serial is preferred)
 .TP
 .B \fBHDF5_FIND_DEBUG\fP
 Set \fBtrue\fP to get extra debugging output.
@@ -14171,10 +15372,10 @@ Author: Alexander Neundorf <\fI\%neundorf@kde.org\fP>
 .sp
 Find Linear Algebra PACKage (LAPACK) library
 .sp
-This module finds an installed fortran library that implements the
+This module finds an installed Fortran library that implements the
 LAPACK linear\-algebra interface (see \fI\%http://www.netlib.org/lapack/\fP).
 .sp
-The approach follows that taken for the autoconf macro file,
+The approach follows that taken for the \fBautoconf\fP macro file,
 \fBacx_lapack.m4\fP (distributed at
 \fI\%http://ac\-archive.sourceforge.net/ac\-archive/acx_lapack.html\fP).
 .SS Input Variables
@@ -14190,6 +15391,10 @@ If set, checks only the specified vendor, if not set checks all the
 possibilities.  List of vendors valid in this module:
 .INDENT 7.0
 .IP \(bu 2
+\fBOpenBLAS\fP
+.IP \(bu 2
+\fBFLAME\fP
+.IP \(bu 2
 \fBIntel10_32\fP (intel mkl v10 32 bit)
 .IP \(bu 2
 \fBIntel10_64lp\fP (intel mkl v10+ 64 bit, threaded code, lp64 model)
@@ -14200,11 +15405,9 @@ possibilities.  List of vendors valid in this module:
 .IP \(bu 2
 \fBIntel10_64ilp_seq\fP (intel mkl v10+ 64 bit, sequential code, ilp64 model)
 .IP \(bu 2
+\fBIntel10_64_dyn\fP (intel mkl v10+ 64 bit, single dynamic library)
+.IP \(bu 2
 \fBIntel\fP (obsolete versions of mkl 32 and 64 bit)
-.IP \(bu 2
-\fBOpenBLAS\fP
-.IP \(bu 2
-\fBFLAME\fP
 .IP \(bu 2
 \fBACML\fP
 .IP \(bu 2
@@ -14212,11 +15415,27 @@ possibilities.  List of vendors valid in this module:
 .IP \(bu 2
 \fBNAS\fP
 .IP \(bu 2
+\fBArm\fP
+.IP \(bu 2
+\fBArm_mp\fP
+.IP \(bu 2
+\fBArm_ilp64\fP
+.IP \(bu 2
+\fBArm_ilp64_mp\fP
+.IP \(bu 2
 \fBGeneric\fP
 .UNINDENT
 .TP
 .B \fBBLA_F95\fP
-if \fBON\fP tries to find BLAS95/LAPACK95
+if \fBON\fP tries to find the BLAS95/LAPACK95 interfaces
+.UNINDENT
+.SS Imported targets
+.sp
+This module defines the following \fBIMPORTED\fP target:
+.INDENT 0.0
+.TP
+.B \fBLAPACK::LAPACK\fP
+The libraries to use for LAPACK, if found.
 .UNINDENT
 .SS Result Variables
 .sp
@@ -14227,7 +15446,7 @@ This module defines the following variables:
 library implementing the LAPACK interface is found
 .TP
 .B \fBLAPACK_LINKER_FLAGS\fP
-uncached list of required linker flags (excluding \-l and \-L).
+uncached list of required linker flags (excluding \fB\-l\fP and \fB\-L\fP).
 .TP
 .B \fBLAPACK_LIBRARIES\fP
 uncached list of libraries (using full path name) to link against
@@ -14244,7 +15463,8 @@ library implementing the LAPACK95 interface is found
 \fBNOTE:\fP
 .INDENT 0.0
 .INDENT 3.5
-C or CXX must be enabled to use Intel MKL
+C, CXX or Fortran must be enabled to detect a BLAS/LAPACK library.
+C or CXX must be enabled to use Intel Math Kernel Library (MKL).
 .sp
 For example, to use Intel MKL libraries and/or Intel compiler:
 .INDENT 0.0
@@ -14351,6 +15571,18 @@ LibArchive_VERSION      \- libarchive 3\-component version number
 .fi
 .UNINDENT
 .UNINDENT
+.sp
+The module defines the following \fBIMPORTED\fP targets:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+LibArchive::LibArchive  \- target for linking against libarchive
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .SS FindLibinput
 .sp
 Find libinput headers and library.
@@ -14428,8 +15660,15 @@ version number as a string (ex: “5.0.3”)
 Find the XML processing library (libxml2).
 .SS IMPORTED Targets
 .sp
-This module defines \fBIMPORTED\fP target \fBLibXml2::LibXml2\fP, if
-libxml2 has been found.
+The following \fBIMPORTED\fP targets may be defined:
+.INDENT 0.0
+.TP
+.B \fBLibXml2::LibXml2\fP
+If the libxml2 library has been found
+.TP
+.B \fBLibXml2::xmllint\fP
+If the xmllint command\-line executable has been found
+.UNINDENT
 .SS Result variables
 .sp
 This module will set the following variables in your project:
@@ -14471,26 +15710,39 @@ path to the LibXml2 library
 .sp
 Find the XSL Transformations, Extensible Stylesheet Language
 Transformations (XSLT) library (LibXslt)
+.SS IMPORTED Targets
 .sp
-Once done this will define
+The following \fBIMPORTED\fP targets may be defined:
+.INDENT 0.0
+.TP
+.B \fBLibXslt::LibXslt\fP
+If the libxslt library has been found
+.TP
+.B \fBLibXslt::LibExslt\fP
+If the libexslt library has been found
+.TP
+.B \fBLibXslt::xsltproc\fP
+If the xsltproc command\-line executable has been found
+.UNINDENT
+.SS Result variables
+.sp
+This module will set the following variables in your project:
 .INDENT 0.0
 .INDENT 3.5
-.sp
-.nf
-.ft C
 LIBXSLT_FOUND \- system has LibXslt
 LIBXSLT_INCLUDE_DIR \- the LibXslt include directory
 LIBXSLT_LIBRARIES \- Link these to LibXslt
 LIBXSLT_DEFINITIONS \- Compiler switches required for using LibXslt
 LIBXSLT_VERSION_STRING \- version of LibXslt found (since CMake 2.8.8)
-.ft P
-.fi
 .UNINDENT
 .UNINDENT
 .sp
 Additionally, the following two variables are set (but not required
 for using xslt):
 .INDENT 0.0
+.TP
+.B \fBLIBXSLT_EXSLT_INCLUDE_DIR\fP
+The include directory for exslt.
 .TP
 .B \fBLIBXSLT_EXSLT_LIBRARIES\fP
 Link to these if you need to link against the exslt library.
@@ -15174,6 +16426,7 @@ matlab_add_mex(
     [DOCUMENTATION file.txt]
     [LINK_TO target1 target2 ...]
     [R2017b | R2018a]
+    [EXCLUDE_FROM_ALL]
     [...]
 )
 .ft P
@@ -15214,6 +16467,11 @@ to R2018a. Defaults to \fBR2017b\fP\&.
 .B \fBMODULE\fP or \fBSHARED\fP may be given to specify the type of library to be
 created. \fBEXECUTABLE\fP may be given to create an executable instead of
 a library. If no type is given explicitly, the type is \fBSHARED\fP\&.
+.TP
+.B \fBEXCLUDE_FROM_ALL\fP
+This option has the same meaning as for \fBEXCLUDE_FROM_ALL\fP and
+is forwarded to \fBadd_library()\fP or \fBadd_executable()\fP
+commands.
 .UNINDENT
 .sp
 The documentation file is not processed and should be in the following
@@ -15442,19 +16700,37 @@ Flags to pass to \fBmpiexec\fP after other flags.
 .UNINDENT
 .SS Variables for locating MPI
 .sp
-This module performs a three step search for an MPI implementation:
+This module performs a four step search for an MPI implementation:
 .INDENT 0.0
 .IP 1. 3
+Search for \fBMPIEXEC_EXECUTABLE\fP and, if found, use its base directory.
+.IP 2. 3
 Check if the compiler has MPI support built\-in. This is the case if the user passed a
 compiler wrapper as \fBCMAKE_<LANG>_COMPILER\fP or if they’re on a Cray system.
-.IP 2. 3
-Attempt to find an MPI compiler wrapper and determine the compiler information from it.
 .IP 3. 3
+Attempt to find an MPI compiler wrapper and determine the compiler information from it.
+.IP 4. 3
 Try to find an MPI implementation that does not ship such a wrapper by guessing settings.
 Currently, only Microsoft MPI and MPICH2 on Windows are supported.
 .UNINDENT
 .sp
-For controlling the second step, the following variables may be set:
+For controlling the \fBMPIEXEC_EXECUTABLE\fP step, the following variables may be set:
+.INDENT 0.0
+.TP
+.B \fBMPIEXEC_EXECUTABLE\fP
+Manually specify the location of \fBmpiexec\fP\&.
+.TP
+.B \fBMPI_HOME\fP
+Specify the base directory of the MPI installation.
+.TP
+.B \fBENV{MPI_HOME}\fP
+Environment variable to specify the base directory of the MPI installation.
+.TP
+.B \fBENV{I_MPI_ROOT}\fP
+Environment variable to specify the base directory of the MPI installation.
+.UNINDENT
+.sp
+For controlling the compiler wrapper step, the following variables may be set:
 .INDENT 0.0
 .TP
 .B \fBMPI_<lang>_COMPILER\fP
@@ -15722,6 +16998,17 @@ Variable indicating if OpenACC support for \fB<lang>\fP was detected.
 .TP
 .B \fBOpenACC_<lang>_FLAGS\fP
 OpenACC compiler flags for \fB<lang>\fP, separated by spaces.
+.TP
+.B \fBOpenACC_<lang>_OPTIONS\fP
+OpenACC compiler flags for \fB<lang>\fP, as a list. Suitable for usage
+with target_compile_options or target_link_options.
+.UNINDENT
+.sp
+Additionally, the module provides \fBIMPORTED\fP targets:
+.INDENT 0.0
+.TP
+.B \fBOpenACC::OpenACC_<lang>\fP
+Target for using OpenACC from \fB<lang>\fP\&.
 .UNINDENT
 .sp
 The module will also try to provide the OpenACC version variables:
@@ -15751,15 +17038,50 @@ be returned with OpenACC_<lang>_FLAGS.
 .SS FindOpenAL
 .sp
 Finds Open Audio Library (OpenAL).
-This module defines \fBOPENAL_LIBRARY OPENAL_FOUND\fP, if
-false, do not try to link to OpenAL \fBOPENAL_INCLUDE_DIR\fP, where to find
-the headers.
 .sp
-\fB$OPENALDIR\fP is an environment variable that would correspond to the
-\fB\&./configure \-\-prefix=$OPENALDIR\fP used in building OpenAL.
+Projects using this module should use \fB#include "al.h"\fP to include the OpenAL
+header file, \fBnot\fP \fB#include <AL/al.h>\fP\&.  The reason for this is that the
+latter is not entirely portable.  Windows/Creative Labs does not by default put
+their headers in \fBAL/\fP and macOS uses the convention \fB<OpenAL/al.h>\fP\&.
+.SS Hints
 .sp
-Created by Eric Wing.  This was influenced by the \fBFindSDL.cmake\fP
-module.
+Environment variable \fB$OPENALDIR\fP can be used to set the prefix of OpenAL
+installation to be found.
+.sp
+By default on macOS, system framework is search first.  In other words,
+OpenAL is searched in the following order:
+.INDENT 0.0
+.IP 1. 3
+System framework: \fB/System/Library/Frameworks\fP, whose priority can be
+changed via setting the \fBCMAKE_FIND_FRAMEWORK\fP variable.
+.IP 2. 3
+Environment variable \fB$OPENALDIR\fP\&.
+.IP 3. 3
+System paths.
+.IP 4. 3
+User\-compiled framework: \fB~/Library/Frameworks\fP\&.
+.IP 5. 3
+Manually compiled framework: \fB/Library/Frameworks\fP\&.
+.IP 6. 3
+Add\-on package: \fB/opt\fP\&.
+.UNINDENT
+.SS Result Variables
+.sp
+This module defines the following variables:
+.INDENT 0.0
+.TP
+.B \fBOPENAL_FOUND\fP
+If false, do not try to link to OpenAL
+.TP
+.B \fBOPENAL_INCLUDE_DIR\fP
+OpenAL include directory
+.TP
+.B \fBOPENAL_LIBRARY\fP
+Path to the OpenAL library
+.TP
+.B \fBOPENAL_VERSION_STRING\fP
+Human\-readable string containing the version of OpenAL
+.UNINDENT
 .SS FindOpenCL
 .sp
 Finds Open Computing Language (OpenCL)
@@ -15963,6 +17285,10 @@ Variable indicating if OpenMP support for \fB<lang>\fP was detected.
 .TP
 .B \fBOpenMP_<lang>_FLAGS\fP
 OpenMP compiler flags for \fB<lang>\fP, separated by spaces.
+.TP
+.B \fBOpenMP_<lang>_INCLUDE_DIRS\fP
+Directories that must be added to the header search path for \fB<lang>\fP
+when using OpenMP.
 .UNINDENT
 .sp
 For linking with OpenMP code written in \fB<lang>\fP, the following
@@ -16015,6 +17341,14 @@ OpenMP version implemented by the \fB<lang>\fP compiler.
 The specification date is formatted as given in the OpenMP standard:
 \fByyyymm\fP where \fByyyy\fP and \fBmm\fP represents the year and month of
 the OpenMP specification implemented by the \fB<lang>\fP compiler.
+.sp
+For some compilers, it may be necessary to add a header search path to find
+the relevant OpenMP headers.  This location may be language\-specific.  Where
+this is needed, the module may attempt to find the location, but it can be
+provided directly by setting the \fBOpenMP_<lang>_INCLUDE_DIR\fP cache variable.
+Note that this variable is an _input_ control to the module.  Project code
+should use the \fBOpenMP_<lang>_INCLUDE_DIRS\fP _output_ variable if it needs
+to know what include directories are needed.
 .SS FindOpenSceneGraph
 .sp
 Find OpenSceneGraph (3D graphics application programming interface)
@@ -16172,7 +17506,35 @@ The OpenSSL \fBssl\fP library, if found.
 .TP
 .B \fBOpenSSL::Crypto\fP
 The OpenSSL \fBcrypto\fP library, if found.
+.TP
+.B \fBOpenSSL::applink\fP
+The OpenSSL \fBapplink\fP components that might be need to be compiled into
+projects under MSVC. This target is available only if found OpenSSL version
+is not less than 0.9.8. By linking this target the above OpenSSL targets can
+be linked even if the project has different MSVC runtime configurations with
+the above OpenSSL targets. This target has no effect on plaforms other than
+MSVC.
 .UNINDENT
+.sp
+NOTE: Due to how \fBINTERFACE_SOURCES\fP are consumed by the consuming target,
+unless you certainly know what you are doing, it is always prefered to link
+\fBOpenSSL::applink\fP target as \fBPRIVATE\fP and to make sure that this target is
+linked at most once for the whole dependency graph of any library or
+executable:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+target_link_libraries(myTarget PRIVATE OpenSSL::applink)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Otherwise you would probably encounter unexpected random problems when building
+and linking, as both the ISO C and the ISO C++ standard claims almost nothing
+about what a link process should be.
 .SS Result Variables
 .sp
 This module will set the following variables in your project:
@@ -16188,14 +17550,25 @@ The OpenSSL include directory.
 .B \fBOPENSSL_CRYPTO_LIBRARY\fP
 The OpenSSL crypto library.
 .TP
+.B \fBOPENSSL_CRYPTO_LIBRARIES\fP
+The OpenSSL crypto library and its dependencies.
+.TP
 .B \fBOPENSSL_SSL_LIBRARY\fP
 The OpenSSL SSL library.
 .TP
+.B \fBOPENSSL_SSL_LIBRARIES\fP
+The OpenSSL SSL library and its dependencies.
+.TP
 .B \fBOPENSSL_LIBRARIES\fP
-All OpenSSL libraries.
+All OpenSSL libraries and their dependencies.
 .TP
 .B \fBOPENSSL_VERSION\fP
 This is set to \fB$major.$minor.$revision$patch\fP (e.g. \fB0.9.8s\fP).
+.TP
+.B \fBOPENSSL_APPLINK_SOURCE\fP
+The sources in the target \fBOpenSSL::applink\fP that is mentioned above. This
+variable shall always be undefined if found openssl version is less than
+0.9.8 or if platform is not MSVC.
 .UNINDENT
 .SS Hints
 .sp
@@ -16245,7 +17618,7 @@ OSGANIMATION_LIBRARY \- The OSG library OSGANIMATION_LIBRARY_DEBUG \-
 The OSG debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgDB
@@ -16319,7 +17692,7 @@ OSGFX_LIBRARY \- The osgFX library OSGFX_LIBRARY_DEBUG \- The osgFX
 debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgGA
@@ -16345,7 +17718,7 @@ OSGGA_LIBRARY \- The osgGA library OSGGA_LIBRARY_DEBUG \- The osgGA
 debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgIntrospection
@@ -16372,7 +17745,7 @@ OSGINTROSPECTION_LIBRARY \- The osgIntrospection library
 OSGINTROSPECTION_LIBRARY_DEBUG \- The osgIntrospection debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgManipulator
@@ -16399,7 +17772,7 @@ OSGMANIPULATOR_LIBRARY \- The osgManipulator library
 OSGMANIPULATOR_LIBRARY_DEBUG \- The osgManipulator debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgParticle
@@ -16425,7 +17798,7 @@ OSGPARTICLE_LIBRARY \- The osgParticle library
 OSGPARTICLE_LIBRARY_DEBUG \- The osgParticle debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgPresentation
@@ -16452,7 +17825,7 @@ OSGPRESENTATION_LIBRARY \- The osgPresentation library
 OSGPRESENTATION_LIBRARY_DEBUG \- The osgPresentation debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.  Modified to work with osgPresentation by Robert
 Osfield, January 2012.
@@ -16479,7 +17852,7 @@ OSGPRODUCER_LIBRARY \- The osgProducer library
 OSGPRODUCER_LIBRARY_DEBUG \- The osgProducer debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgQt
@@ -16504,7 +17877,7 @@ OSGQT_LIBRARY \- The osgQt library OSGQT_LIBRARY_DEBUG \- The osgQt
 debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.  Modified to work with osgQt by Robert Osfield,
 January 2012.
@@ -16535,7 +17908,7 @@ OSG_LIBRARY \- The OSG library OSG_LIBRARY_DEBUG \- The OSG debug
 library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgShadow
@@ -16561,7 +17934,7 @@ OSGSHADOW_LIBRARY \- The osgShadow library OSGSHADOW_LIBRARY_DEBUG \-
 The osgShadow debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgSim
@@ -16587,7 +17960,7 @@ OSGSIM_LIBRARY \- The osgSim library OSGSIM_LIBRARY_DEBUG \- The osgSim
 debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgTerrain
@@ -16613,7 +17986,7 @@ OSGTERRAIN_LIBRARY \- The osgTerrain library OSGTERRAIN_LIBRARY_DEBUG \-
 The osgTerrain debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgText
@@ -16639,7 +18012,7 @@ OSGTEXT_LIBRARY \- The osgText library OSGTEXT_LIBRARY_DEBUG \- The
 osgText debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgUtil
@@ -16665,7 +18038,7 @@ OSGUTIL_LIBRARY \- The osgUtil library OSGUTIL_LIBRARY_DEBUG \- The
 osgUtil debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgViewer
@@ -16691,7 +18064,7 @@ OSGVIEWER_LIBRARY \- The osgViewer library OSGVIEWER_LIBRARY_DEBUG \-
 The osgViewer debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgVolume
@@ -16717,7 +18090,7 @@ OSGVOLUME_LIBRARY \- The osgVolume library OSGVOLUME_LIBRARY_DEBUG \-
 The osgVolume debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindosgWidget
@@ -16743,7 +18116,7 @@ OSGWIDGET_LIBRARY \- The osgWidget library OSGWIDGET_LIBRARY_DEBUG \-
 The osgWidget debug library
 .sp
 $OSGDIR is an environment variable that would correspond to the
-./configure –prefix=$OSGDIR used in building osg.
+\&./configure –prefix=$OSGDIR used in building osg.
 .sp
 FindosgWidget.cmake tweaked from Findosg* suite as created by Eric
 Wing.
@@ -16875,7 +18248,7 @@ the library to link against PHYSFS_FOUND, if false, do not try to link
 to PHYSFS PHYSFS_INCLUDE_DIR, where to find physfs.h
 .sp
 $PHYSFSDIR is an environment variable that would correspond to the
-./configure –prefix=$PHYSFSDIR used in building PHYSFS.
+\&./configure –prefix=$PHYSFSDIR used in building PHYSFS.
 .sp
 Created by Eric Wing.
 .SS FindPike
@@ -17114,6 +18487,10 @@ pkg_search_module(<prefix>
 .UNINDENT
 .UNINDENT
 .sp
+If a module is found, the \fB<prefix>_MODULE_NAME\fP variable will contain the
+name of the matching module. This variable can be used if you need to run
+\fI\%pkg_get_variable()\fP\&.
+.sp
 Example:
 .INDENT 7.0
 .INDENT 3.5
@@ -17273,7 +18650,7 @@ if false, do not try to link to Producer PRODUCER_INCLUDE_DIR, where
 to find the headers
 .sp
 $PRODUCER_DIR is an environment variable that would correspond to the
-./configure –prefix=$PRODUCER_DIR used in building osg.
+\&./configure –prefix=$PRODUCER_DIR used in building osg.
 .sp
 Created by Eric Wing.
 .SS FindProtobuf
@@ -17451,7 +18828,7 @@ protobuf_generate_python (<PY> [<ARGN>...])
 Variable to define with autogenerated Python files
 .TP
 .B \fBARGN\fP
-\fB\&.proto\fP filess
+\fB\&.proto\fP files
 .UNINDENT
 .UNINDENT
 .SS FindPython
@@ -17459,7 +18836,7 @@ Variable to define with autogenerated Python files
 Find Python interpreter, compiler and development environment (include
 directories and libraries).
 .sp
-Three components are supported:
+The following components are supported:
 .INDENT 0.0
 .IP \(bu 2
 \fBInterpreter\fP: search for Python interpreter.
@@ -17467,15 +18844,28 @@ Three components are supported:
 \fBCompiler\fP: search for Python compiler. Only offered by IronPython.
 .IP \(bu 2
 \fBDevelopment\fP: search for development artifacts (include directories and
-libraries).
+libraries). This component includes two sub\-components which can be specified
+independently:
+.INDENT 2.0
+.IP \(bu 2
+\fBDevelopment.Module\fP: search for artifacts for Python module
+developments.
+.IP \(bu 2
+\fBDevelopment.Embed\fP: search for artifacts for Python embedding
+developments.
+.UNINDENT
 .IP \(bu 2
 \fBNumPy\fP: search for NumPy include directories.
 .UNINDENT
 .sp
-If no \fBCOMPONENTS\fP is specified, \fBInterpreter\fP is assumed.
+If no \fBCOMPONENTS\fP are specified, \fBInterpreter\fP is assumed.
+.sp
+If component \fBDevelopment\fP is specified, it implies sub\-components
+\fBDevelopment.Module\fP and \fBDevelopment.Embed\fP\&.
 .sp
 To ensure consistent versions between components \fBInterpreter\fP, \fBCompiler\fP,
-\fBDevelopment\fP and \fBNumPy\fP, specify all components at the same time:
+\fBDevelopment\fP (or one of its sub\-components) and \fBNumPy\fP, specify all
+components at the same time:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -17495,10 +18885,11 @@ To manage concurrent versions 3 and 2 of Python, use \fBFindPython3\fP and
 \fBNOTE:\fP
 .INDENT 0.0
 .INDENT 3.5
-If components \fBInterpreter\fP and \fBDevelopment\fP are both specified, this
-module search only for interpreter with same platform architecture as the one
-defined by \fBCMake\fP configuration. This contraint does not apply if only
-\fBInterpreter\fP component is specified.
+If components \fBInterpreter\fP and \fBDevelopment\fP (or one of its
+sub\-components) are both specified, this module search only for interpreter
+with same platform architecture as the one defined by \fBCMake\fP
+configuration. This contraint does not apply if only \fBInterpreter\fP
+component is specified.
 .UNINDENT
 .UNINDENT
 .SS Imported Targets
@@ -17513,13 +18904,13 @@ Python interpreter. Target defined if component \fBInterpreter\fP is found.
 .B \fBPython::Compiler\fP
 Python compiler. Target defined if component \fBCompiler\fP is found.
 .TP
+.B \fBPython::Module\fP
+Python library for Python module. Target defined if component
+\fBDevelopment.Module\fP is found.
+.TP
 .B \fBPython::Python\fP
 Python library for Python embedding. Target defined if component
-\fBDevelopment\fP is found.
-.TP
-.B \fBPython::Module\fP
-Python library for Python module. Target defined if component \fBDevelopment\fP
-is found.
+\fBDevelopment.Embed\fP is found.
 .TP
 .B \fBPython::NumPy\fP
 NumPy Python library. Target defined if component \fBNumPy\fP is found.
@@ -17554,6 +18945,8 @@ Anaconda
 Canopy
 .IP \(bu 2
 IronPython
+.IP \(bu 2
+PyPy
 .UNINDENT
 .UNINDENT
 .TP
@@ -17561,25 +18954,39 @@ IronPython
 Standard platform independent installation directory.
 .sp
 Information returned by
-\fBdistutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=True)\fP\&.
+\fBdistutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=True)\fP
+or else \fBsysconfig.get_path(\(aqstdlib\(aq)\fP\&.
 .TP
 .B \fBPython_STDARCH\fP
 Standard platform dependent installation directory.
 .sp
 Information returned by
-\fBdistutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=True)\fP\&.
+\fBdistutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=True)\fP
+or else \fBsysconfig.get_path(\(aqplatstdlib\(aq)\fP\&.
 .TP
 .B \fBPython_SITELIB\fP
 Third\-party platform independent installation directory.
 .sp
 Information returned by
-\fBdistutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False)\fP\&.
+\fBdistutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False)\fP
+or else \fBsysconfig.get_path(\(aqpurelib\(aq)\fP\&.
 .TP
 .B \fBPython_SITEARCH\fP
 Third\-party platform dependent installation directory.
 .sp
 Information returned by
-\fBdistutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=False)\fP\&.
+\fBdistutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=False)\fP
+or else \fBsysconfig.get_path(\(aqplatlib\(aq)\fP\&.
+.TP
+.B \fBPython_SOABI\fP
+Extension suffix for modules.
+.sp
+Information returned by
+\fBdistutils.sysconfig.get_config_var(\(aqSOABI\(aq)\fP or computed from
+\fBdistutils.sysconfig.get_config_var(\(aqEXT_SUFFIX\(aq)\fP or
+\fBpython\-config \-\-extension\-suffix\fP\&. If package \fBdistutils.sysconfig\fP is
+not available, \fBsysconfig.get_config_var(\(aqSOABI\(aq)\fP or
+\fBsysconfig.get_config_var(\(aqEXT_SUFFIX\(aq)\fP are used.
 .TP
 .B \fBPython_Compiler_FOUND\fP
 System has the Python compiler.
@@ -17597,8 +19004,17 @@ IronPython
 .UNINDENT
 .UNINDENT
 .TP
+.B \fBPython_DOTNET_LAUNCHER\fP
+The \fB\&.Net\fP interpreter. Only used by \fBIronPython\fP implementation.
+.TP
 .B \fBPython_Development_FOUND\fP
 System has the Python development artifacts.
+.TP
+.B \fBPython_Development.Module_FOUND\fP
+System has the Python development artifacts for Python module.
+.TP
+.B \fBPython_Development.Embed_FOUND\fP
+System has the Python development artifacts for Python embedding.
 .TP
 .B \fBPython_INCLUDE_DIRS\fP
 The Python include directories.
@@ -17623,6 +19039,9 @@ Python minor version.
 .TP
 .B \fBPython_VERSION_PATCH\fP
 Python patch version.
+.TP
+.B \fBPython_PyPy_VERSION\fP
+Python PyPy version.
 .TP
 .B \fBPython_NumPy_FOUND\fP
 System has the NumPy.
@@ -17650,10 +19069,83 @@ If set to TRUE, search \fBonly\fP for static libraries.
 If set to FALSE, search \fBonly\fP for shared libraries.
 .UNINDENT
 .TP
+.B \fBPython_FIND_ABI\fP
+This variable defines which ABIs, as defined in
+\fI\%PEP 3149\fP, should be searched.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+This hint will be honored only when searched for \fBPython\fP version 3.
+.UNINDENT
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+If \fBPython_FIND_ABI\fP is not defined, any ABI will be searched.
+.UNINDENT
+.UNINDENT
+.sp
+The \fBPython_FIND_ABI\fP variable is a 3\-tuple specifying, in that order,
+\fBpydebug\fP (\fBd\fP), \fBpymalloc\fP (\fBm\fP) and \fBunicode\fP (\fBu\fP) flags.
+Each element can be set to one of the following:
+.INDENT 7.0
+.IP \(bu 2
+\fBON\fP: Corresponding flag is selected.
+.IP \(bu 2
+\fBOFF\fP: Corresponding flag is not selected.
+.IP \(bu 2
+\fBANY\fP: The two posibilties (\fBON\fP and \fBOFF\fP) will be searched.
+.UNINDENT
+.sp
+From this 3\-tuple, various ABIs will be searched starting from the most
+specialized to the most general. Moreover, \fBdebug\fP versions will be
+searched \fBafter\fP \fBnon\-debug\fP ones.
+.sp
+For example, if we have:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+set (Python_FIND_ABI "ON" "ANY" "ANY")
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The following flags combinations will be appended, in that order, to the
+artifact names: \fBdmu\fP, \fBdm\fP, \fBdu\fP, and \fBd\fP\&.
+.sp
+And to search any possible ABIs:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+set (Python_FIND_ABI "ANY" "ANY" "ANY")
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The following combinations, in that order, will be used: \fBmu\fP, \fBm\fP,
+\fBu\fP, \fB<empty>\fP, \fBdmu\fP, \fBdm\fP, \fBdu\fP and \fBd\fP\&.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+This hint is useful only on \fBPOSIX\fP systems. So, on \fBWindows\fP systems,
+when \fBPython_FIND_ABI\fP is defined, \fBPython\fP distributions from
+\fI\%python.org\fP will be found only if value for
+each flag is \fBOFF\fP or \fBANY\fP\&.
+.UNINDENT
+.UNINDENT
+.TP
 .B \fBPython_FIND_STRATEGY\fP
 This variable defines how lookup will be done.
-The \fBPython_FIND_STRATEGY\fP variable can be set to empty or one of the
-following:
+The \fBPython_FIND_STRATEGY\fP variable can be set to one of the following:
 .INDENT 7.0
 .IP \(bu 2
 \fBVERSION\fP: Try to find the most recent version in all specified
@@ -17669,8 +19161,7 @@ This is the default if policy \fBCMP0094\fP is set to \fBNEW\fP\&.
 .B \fBPython_FIND_REGISTRY\fP
 On Windows the \fBPython_FIND_REGISTRY\fP variable determine the order
 of preference between registry and environment variables.
-the \fBPython_FIND_REGISTRY\fP variable can be set to empty or one of the
-following:
+the \fBPython_FIND_REGISTRY\fP variable can be set to one of the following:
 .INDENT 7.0
 .IP \(bu 2
 \fBFIRST\fP: Try to use registry before environment variables.
@@ -17684,8 +19175,8 @@ This is the default.
 .B \fBPython_FIND_FRAMEWORK\fP
 On macOS the \fBPython_FIND_FRAMEWORK\fP variable determine the order of
 preference between Apple\-style and unix\-style package components.
-This variable can be set to empty or take same values as
-\fBCMAKE_FIND_FRAMEWORK\fP variable.
+This variable can take same values as \fBCMAKE_FIND_FRAMEWORK\fP
+variable.
 .sp
 \fBNOTE:\fP
 .INDENT 7.0
@@ -17698,11 +19189,11 @@ If \fBPython_FIND_FRAMEWORK\fP is not defined, \fBCMAKE_FIND_FRAMEWORK\fP
 variable will be used, if any.
 .TP
 .B \fBPython_FIND_VIRTUALENV\fP
-This variable defines the handling of virtual environments. It is meaningfull
-only when a virtual environment is active (i.e. the \fBactivate\fP script has
-been evaluated). In this case, it takes precedence over
-\fBPython_FIND_REGISTRY\fP and \fBCMAKE_FIND_FRAMEWORK\fP variables.
-The \fBPython_FIND_VIRTUALENV\fP variable can be set to empty or one of the
+This variable defines the handling of virtual environments managed by
+\fBvirtualenv\fP or \fBconda\fP\&. It is meaningful only when a virtual environment
+is active (i.e. the \fBactivate\fP script has been evaluated). In this case, it
+takes precedence over \fBPython_FIND_REGISTRY\fP and \fBCMAKE_FIND_FRAMEWORK\fP
+variables.  The \fBPython_FIND_VIRTUALENV\fP variable can be set to one of the
 following:
 .INDENT 7.0
 .IP \(bu 2
@@ -17713,10 +19204,134 @@ paths to look\-up for the interpreter. This is the default.
 interpreter.
 .IP \(bu 2
 \fBSTANDARD\fP: The virtual environment is not used to look\-up for the
-interpreter. In this case, variable \fBPython_FIND_REGISTRY\fP (Windows)
-or \fBCMAKE_FIND_FRAMEWORK\fP (macOS) can be set with value \fBLAST\fP or
+interpreter but environment variable \fBPATH\fP is always considered.
+In this case, variable \fBPython_FIND_REGISTRY\fP (Windows) or
+\fBCMAKE_FIND_FRAMEWORK\fP (macOS) can be set with value \fBLAST\fP or
 \fBNEVER\fP to select preferably the interpreter from the virtual
 environment.
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+If the component \fBDevelopment\fP is requested, it is \fBstrongly\fP
+recommended to also include the component \fBInterpreter\fP to get expected
+result.
+.UNINDENT
+.UNINDENT
+.TP
+.B \fBPython_FIND_IMPLEMENTATIONS\fP
+This variable defines, in an ordered list, the different implementations
+which will be searched. The \fBPython_FIND_IMPLEMENTATIONS\fP variable can
+hold the following values:
+.INDENT 7.0
+.IP \(bu 2
+\fBCPython\fP: this is the standard implementation. Various products, like
+\fBAnaconda\fP or \fBActivePython\fP, rely on this implementation.
+.IP \(bu 2
+\fBIronPython\fP: This implementation use the \fBCSharp\fP language for
+\fB\&.NET Framework\fP on top of the \fIDynamic Language Runtime\fP (\fBDLR\fP).
+See \fI\%IronPython\fP\&.
+.IP \(bu 2
+\fBPyPy\fP: This implementation use \fBRPython\fP language and
+\fBRPython translation toolchain\fP to produce the python interpreter.
+See \fI\%PyPy\fP\&.
+.UNINDENT
+.sp
+The default value is:
+.INDENT 7.0
+.IP \(bu 2
+Windows platform: \fBCPython\fP, \fBIronPython\fP
+.IP \(bu 2
+Other platforms: \fBCPython\fP
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+This hint has the lowest priority of all hints, so even if, for example,
+you specify \fBIronPython\fP first and \fBCPython\fP in second, a python
+product based on \fBCPython\fP can be selected because, for example with
+\fBPython_FIND_STRATEGY=LOCATION\fP, each location will be search first for
+\fBIronPython\fP and second for \fBCPython\fP\&.
+.UNINDENT
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+When \fBIronPython\fP is specified, on platforms other than \fBWindows\fP, the
+\fB\&.Net\fP interpreter (i.e. \fBmono\fP command) is expected to be available
+through the \fBPATH\fP variable.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS Artifacts Specification
+.sp
+To solve special cases, it is possible to specify directly the artifacts by
+setting the following variables:
+.INDENT 0.0
+.TP
+.B \fBPython_EXECUTABLE\fP
+The path to the interpreter.
+.TP
+.B \fBPython_COMPILER\fP
+The path to the compiler.
+.TP
+.B \fBPython_DOTNET_LAUNCHER\fP
+The \fB\&.Net\fP interpreter. Only used by \fBIronPython\fP implementation.
+.TP
+.B \fBPython_LIBRARY\fP
+The path to the library. It will be used to compute the
+variables \fBPython_LIBRARIES\fP, \fBPython_LIBRAY_DIRS\fP and
+\fBPython_RUNTIME_LIBRARY_DIRS\fP\&.
+.TP
+.B \fBPython_INCLUDE_DIR\fP
+The path to the directory of the \fBPython\fP headers. It will be used to
+compute the variable \fBPython_INCLUDE_DIRS\fP\&.
+.TP
+.B \fBPython_NumPy_INCLUDE_DIR\fP
+The path to the directory of the \fBNumPy\fP headers. It will be used to
+compute the variable \fBPython_NumPy_INCLUDE_DIRS\fP\&.
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+All paths must be absolute. Any artifact specified with a relative path
+will be ignored.
+.UNINDENT
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+When an artifact is specified, all \fBHINTS\fP will be ignored and no search
+will be performed for this artifact.
+.sp
+If more than one artifact is specified, it is the user’s responsability to
+ensure the consistency of the various artifacts.
+.UNINDENT
+.UNINDENT
+.sp
+By default, this module supports multiple calls in different directories of a
+project with different version/component requirements while providing correct
+and consistent results for each call. To support this behavior, \fBCMake\fP cache
+is not used in the traditional way which can be problematic for interactive
+specification. So, to enable also interactive specification, module behavior
+can be controled with the following variable:
+.INDENT 0.0
+.TP
+.B \fBPython_ARTIFACTS_INTERACTIVE\fP
+Selects the behavior of the module. This is a boolean variable:
+.INDENT 7.0
+.IP \(bu 2
+If set to \fBTRUE\fP: Create CMake cache entries for the above artifact
+specification variables so that users can edit them interactively.
+This disables support for multiple version/component requirements.
+.IP \(bu 2
+If set to \fBFALSE\fP or undefined: Enable multiple version/component
+requirements.
 .UNINDENT
 .UNINDENT
 .SS Commands
@@ -17731,19 +19346,23 @@ Python module naming rules:
 .sp
 .nf
 .ft C
-Python_add_library (my_module MODULE src1.cpp)
+Python_add_library (<name> [STATIC | SHARED | MODULE [WITH_SOABI]]
+                    <source1> [<source2> ...])
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
 .sp
-If library type is not specified, \fBMODULE\fP is assumed.
+If the library type is not specified, \fBMODULE\fP is assumed.
+.sp
+For \fBMODULE\fP library type, if option \fBWITH_SOABI\fP is specified, the
+module suffix will include the \fBPython_SOABI\fP value, if any.
 .SS FindPython2
 .sp
 Find Python 2 interpreter, compiler and development environment (include
 directories and libraries).
 .sp
-Three components are supported:
+The following components are supported:
 .INDENT 0.0
 .IP \(bu 2
 \fBInterpreter\fP: search for Python 2 interpreter
@@ -17751,15 +19370,28 @@ Three components are supported:
 \fBCompiler\fP: search for Python 2 compiler. Only offered by IronPython.
 .IP \(bu 2
 \fBDevelopment\fP: search for development artifacts (include directories and
-libraries)
+libraries). This component includes two sub\-components which can be specified
+independently:
+.INDENT 2.0
+.IP \(bu 2
+\fBDevelopment.Module\fP: search for artifacts for Python 2 module
+developments.
+.IP \(bu 2
+\fBDevelopment.Embed\fP: search for artifacts for Python 2 embedding
+developments.
+.UNINDENT
 .IP \(bu 2
 \fBNumPy\fP: search for NumPy include directories.
 .UNINDENT
 .sp
-If no \fBCOMPONENTS\fP is specified, \fBInterpreter\fP is assumed.
+If no \fBCOMPONENTS\fP are specified, \fBInterpreter\fP is assumed.
+.sp
+If component \fBDevelopment\fP is specified, it implies sub\-components
+\fBDevelopment.Module\fP and \fBDevelopment.Embed\fP\&.
 .sp
 To ensure consistent versions between components \fBInterpreter\fP, \fBCompiler\fP,
-\fBDevelopment\fP and \fBNumPy\fP, specify all components at the same time:
+\fBDevelopment\fP (or one of its sub\-components) and \fBNumPy\fP, specify all
+components at the same time:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -17780,10 +19412,11 @@ for you.
 \fBNOTE:\fP
 .INDENT 0.0
 .INDENT 3.5
-If components \fBInterpreter\fP and \fBDevelopment\fP are both specified, this
-module search only for interpreter with same platform architecture as the one
-defined by \fBCMake\fP configuration. This contraint does not apply if only
-\fBInterpreter\fP component is specified.
+If components \fBInterpreter\fP and \fBDevelopment\fP (or one of its
+sub\-components) are both specified, this module search only for interpreter
+with same platform architecture as the one defined by \fBCMake\fP
+configuration. This contraint does not apply if only \fBInterpreter\fP
+component is specified.
 .UNINDENT
 .UNINDENT
 .SS Imported Targets
@@ -17798,13 +19431,13 @@ Python 2 interpreter. Target defined if component \fBInterpreter\fP is found.
 .B \fBPython2::Compiler\fP
 Python 2 compiler. Target defined if component \fBCompiler\fP is found.
 .TP
-.B \fBPython2::Python\fP
-Python 2 library for Python embedding. Target defined if component
-\fBDevelopment\fP is found.
-.TP
 .B \fBPython2::Module\fP
 Python 2 library for Python module. Target defined if component
-\fBDevelopment\fP is found.
+\fBDevelopment.Module\fP is found.
+.TP
+.B \fBPython2::Python\fP
+Python 2 library for Python embedding. Target defined if component
+\fBDevelopment.Embed\fP is found.
 .TP
 .B \fBPython2::NumPy\fP
 NumPy library for Python 2. Target defined if component \fBNumPy\fP is found.
@@ -17839,6 +19472,8 @@ Anaconda
 Canopy
 .IP \(bu 2
 IronPython
+.IP \(bu 2
+PyPy
 .UNINDENT
 .UNINDENT
 .TP
@@ -17846,25 +19481,29 @@ IronPython
 Standard platform independent installation directory.
 .sp
 Information returned by
-\fBdistutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=True)\fP\&.
+\fBdistutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=True)\fP
+or else \fBsysconfig.get_path(\(aqstdlib\(aq)\fP\&.
 .TP
 .B \fBPython2_STDARCH\fP
 Standard platform dependent installation directory.
 .sp
 Information returned by
-\fBdistutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=True)\fP\&.
+\fBdistutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=True)\fP
+or else \fBsysconfig.get_path(\(aqplatstdlib\(aq)\fP\&.
 .TP
 .B \fBPython2_SITELIB\fP
 Third\-party platform independent installation directory.
 .sp
 Information returned by
-\fBdistutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False)\fP\&.
+\fBdistutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False)\fP
+or else \fBsysconfig.get_path(\(aqpurelib\(aq)\fP\&.
 .TP
 .B \fBPython2_SITEARCH\fP
 Third\-party platform dependent installation directory.
 .sp
 Information returned by
-\fBdistutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=False)\fP\&.
+\fBdistutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=False)\fP
+or else \fBsysconfig.get_path(\(aqplatlib\(aq)\fP\&.
 .TP
 .B \fBPython2_Compiler_FOUND\fP
 System has the Python 2 compiler.
@@ -17882,8 +19521,17 @@ IronPython
 .UNINDENT
 .UNINDENT
 .TP
+.B \fBPython2_DOTNET_LAUNCHER\fP
+The \fB\&.Net\fP interpreter. Only used by \fBIronPython\fP implementation.
+.TP
 .B \fBPython2_Development_FOUND\fP
 System has the Python 2 development artifacts.
+.TP
+.B \fBPython2_Development.Module_FOUND\fP
+System has the Python 2 development artifacts for Python module.
+.TP
+.B \fBPython2_Development.Embed_FOUND\fP
+System has the Python 2 development artifacts for Python embedding.
 .TP
 .B \fBPython2_INCLUDE_DIRS\fP
 The Python 2 include directories.
@@ -17908,6 +19556,9 @@ Python 2 minor version.
 .TP
 .B \fBPython2_VERSION_PATCH\fP
 Python 2 patch version.
+.TP
+.B \fBPython2_PyPy_VERSION\fP
+Python 2 PyPy version.
 .TP
 .B \fBPython2_NumPy_FOUND\fP
 System has the NumPy.
@@ -17937,8 +19588,7 @@ If set to FALSE, search \fBonly\fP for shared libraries.
 .TP
 .B \fBPython2_FIND_STRATEGY\fP
 This variable defines how lookup will be done.
-The \fBPython2_FIND_STRATEGY\fP variable can be set to empty or one of the
-following:
+The \fBPython2_FIND_STRATEGY\fP variable can be set to one of the following:
 .INDENT 7.0
 .IP \(bu 2
 \fBVERSION\fP: Try to find the most recent version in all specified
@@ -17954,8 +19604,7 @@ This is the default if policy \fBCMP0094\fP is set to \fBNEW\fP\&.
 .B \fBPython2_FIND_REGISTRY\fP
 On Windows the \fBPython2_FIND_REGISTRY\fP variable determine the order
 of preference between registry and environment variables.
-the \fBPython2_FIND_REGISTRY\fP variable can be set to empty or one of the
-following:
+the \fBPython2_FIND_REGISTRY\fP variable can be set to one of the following:
 .INDENT 7.0
 .IP \(bu 2
 \fBFIRST\fP: Try to use registry before environment variables.
@@ -17969,8 +19618,8 @@ This is the default.
 .B \fBPython2_FIND_FRAMEWORK\fP
 On macOS the \fBPython2_FIND_FRAMEWORK\fP variable determine the order of
 preference between Apple\-style and unix\-style package components.
-This variable can be set to empty or take same values as
-\fBCMAKE_FIND_FRAMEWORK\fP variable.
+This variable can take same values as \fBCMAKE_FIND_FRAMEWORK\fP
+variable.
 .sp
 \fBNOTE:\fP
 .INDENT 7.0
@@ -17983,11 +19632,11 @@ If \fBPython2_FIND_FRAMEWORK\fP is not defined, \fBCMAKE_FIND_FRAMEWORK\fP
 variable will be used, if any.
 .TP
 .B \fBPython2_FIND_VIRTUALENV\fP
-This variable defines the handling of virtual environments. It is meaningfull
-only when a virtual environment is active (i.e. the \fBactivate\fP script has
-been evaluated). In this case, it takes precedence over
-\fBPython2_FIND_REGISTRY\fP and \fBCMAKE_FIND_FRAMEWORK\fP variables.
-The \fBPython2_FIND_VIRTUALENV\fP variable can be set to empty or one of the
+This variable defines the handling of virtual environments managed by
+\fBvirtualenv\fP or \fBconda\fP\&. It is meaningful only when a virtual environment
+is active (i.e. the \fBactivate\fP script has been evaluated). In this case, it
+takes precedence over \fBPython2_FIND_REGISTRY\fP and \fBCMAKE_FIND_FRAMEWORK\fP
+variables.  The \fBPython2_FIND_VIRTUALENV\fP variable can be set to one of the
 following:
 .INDENT 7.0
 .IP \(bu 2
@@ -17998,15 +19647,139 @@ paths to look\-up for the interpreter. This is the default.
 interpreter.
 .IP \(bu 2
 \fBSTANDARD\fP: The virtual environment is not used to look\-up for the
-interpreter. In this case, variable \fBPython2_FIND_REGISTRY\fP (Windows)
-or \fBCMAKE_FIND_FRAMEWORK\fP (macOS) can be set with value \fBLAST\fP or
+interpreter but environment variable \fBPATH\fP is always considered.
+In this case, variable \fBPython2_FIND_REGISTRY\fP (Windows) or
+\fBCMAKE_FIND_FRAMEWORK\fP (macOS) can be set with value \fBLAST\fP or
 \fBNEVER\fP to select preferably the interpreter from the virtual
 environment.
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+If the component \fBDevelopment\fP is requested, it is \fBstrongly\fP
+recommended to also include the component \fBInterpreter\fP to get expected
+result.
+.UNINDENT
+.UNINDENT
+.TP
+.B \fBPython2_FIND_IMPLEMENTATIONS\fP
+This variable defines, in an ordered list, the different implementations
+which will be searched. The \fBPython2_FIND_IMPLEMENTATIONS\fP variable can
+hold the following values:
+.INDENT 7.0
+.IP \(bu 2
+\fBCPython\fP: this is the standard implementation. Various products, like
+\fBAnaconda\fP or \fBActivePython\fP, rely on this implementation.
+.IP \(bu 2
+\fBIronPython\fP: This implementation use the \fBCSharp\fP language for
+\fB\&.NET Framework\fP on top of the \fIDynamic Language Runtime\fP (\fBDLR\fP).
+See \fI\%IronPython\fP\&.
+.IP \(bu 2
+\fBPyPy\fP: This implementation use \fBRPython\fP language and
+\fBRPython translation toolchain\fP to produce the python interpreter.
+See \fI\%PyPy\fP\&.
+.UNINDENT
+.sp
+The default value is:
+.INDENT 7.0
+.IP \(bu 2
+Windows platform: \fBCPython\fP, \fBIronPython\fP
+.IP \(bu 2
+Other platforms: \fBCPython\fP
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+This hint has the lowest priority of all hints, so even if, for example,
+you specify \fBIronPython\fP first and \fBCPython\fP in second, a python
+product based on \fBCPython\fP can be selected because, for example with
+\fBPython2_FIND_STRATEGY=LOCATION\fP, each location will be search first for
+\fBIronPython\fP and second for \fBCPython\fP\&.
+.UNINDENT
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+When \fBIronPython\fP is specified, on platforms other than \fBWindows\fP, the
+\fB\&.Net\fP interpreter (i.e. \fBmono\fP command) is expected to be available
+through the \fBPATH\fP variable.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS Artifacts Specification
+.sp
+To solve special cases, it is possible to specify directly the artifacts by
+setting the following variables:
+.INDENT 0.0
+.TP
+.B \fBPython2_EXECUTABLE\fP
+The path to the interpreter.
+.TP
+.B \fBPython2_COMPILER\fP
+The path to the compiler.
+.TP
+.B \fBPython2_DOTNET_LAUNCHER\fP
+The \fB\&.Net\fP interpreter. Only used by \fBIronPython\fP implementation.
+.TP
+.B \fBPython2_LIBRARY\fP
+The path to the library. It will be used to compute the
+variables \fBPython2_LIBRARIES\fP, \fBPython2_LIBRAY_DIRS\fP and
+\fBPython2_RUNTIME_LIBRARY_DIRS\fP\&.
+.TP
+.B \fBPython2_INCLUDE_DIR\fP
+The path to the directory of the \fBPython\fP headers. It will be used to
+compute the variable \fBPython2_INCLUDE_DIRS\fP\&.
+.TP
+.B \fBPython2_NumPy_INCLUDE_DIR\fP
+The path to the directory of the \fBNumPy\fP headers. It will be used to
+compute the variable \fBPython2_NumPy_INCLUDE_DIRS\fP\&.
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+All paths must be absolute. Any artifact specified with a relative path
+will be ignored.
+.UNINDENT
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+When an artifact is specified, all \fBHINTS\fP will be ignored and no search
+will be performed for this artifact.
+.sp
+If more than one artifact is specified, it is the user’s responsability to
+ensure the consistency of the various artifacts.
+.UNINDENT
+.UNINDENT
+.sp
+By default, this module supports multiple calls in different directories of a
+project with different version/component requirements while providing correct
+and consistent results for each call. To support this behavior, \fBCMake\fP cache
+is not used in the traditional way which can be problematic for interactive
+specification. So, to enable also interactive specification, module behavior
+can be controled with the following variable:
+.INDENT 0.0
+.TP
+.B \fBPython2_ARTIFACTS_INTERACTIVE\fP
+Selects the behavior of the module. This is a boolean variable:
+.INDENT 7.0
+.IP \(bu 2
+If set to \fBTRUE\fP: Create CMake cache entries for the above artifact
+specification variables so that users can edit them interactively.
+This disables support for multiple version/component requirements.
+.IP \(bu 2
+If set to \fBFALSE\fP or undefined: Enable multiple version/component
+requirements.
 .UNINDENT
 .UNINDENT
 .SS Commands
 .sp
-This module defines the command \fBPython_add_library\fP (when
+This module defines the command \fBPython2_add_library\fP (when
 \fBCMAKE_ROLE\fP is \fBPROJECT\fP), which has the same semantics as
 \fBadd_library()\fP and adds a dependency to target \fBPython2::Python\fP or,
 when library type is \fBMODULE\fP, to target \fBPython2::Module\fP and takes care
@@ -18016,7 +19789,8 @@ of Python module naming rules:
 .sp
 .nf
 .ft C
-Python2_add_library (my_module MODULE src1.cpp)
+Python2_add_library (<name> [STATIC | SHARED | MODULE]
+                     <source1> [<source2> ...])
 .ft P
 .fi
 .UNINDENT
@@ -18028,7 +19802,7 @@ If library type is not specified, \fBMODULE\fP is assumed.
 Find Python 3 interpreter, compiler and development environment (include
 directories and libraries).
 .sp
-Three components are supported:
+The following components are supported:
 .INDENT 0.0
 .IP \(bu 2
 \fBInterpreter\fP: search for Python 3 interpreter
@@ -18036,15 +19810,28 @@ Three components are supported:
 \fBCompiler\fP: search for Python 3 compiler. Only offered by IronPython.
 .IP \(bu 2
 \fBDevelopment\fP: search for development artifacts (include directories and
-libraries)
+libraries). This component includes two sub\-components which can be specified
+independently:
+.INDENT 2.0
+.IP \(bu 2
+\fBDevelopment.Module\fP: search for artifacts for Python 3 module
+developments.
+.IP \(bu 2
+\fBDevelopment.Embed\fP: search for artifacts for Python 3 embedding
+developments.
+.UNINDENT
 .IP \(bu 2
 \fBNumPy\fP: search for NumPy include directories.
 .UNINDENT
 .sp
-If no \fBCOMPONENTS\fP is specified, \fBInterpreter\fP is assumed.
+If no \fBCOMPONENTS\fP are specified, \fBInterpreter\fP is assumed.
+.sp
+If component \fBDevelopment\fP is specified, it implies sub\-components
+\fBDevelopment.Module\fP and \fBDevelopment.Embed\fP\&.
 .sp
 To ensure consistent versions between components \fBInterpreter\fP, \fBCompiler\fP,
-\fBDevelopment\fP and \fBNumPy\fP, specify all components at the same time:
+\fBDevelopment\fP (or one of its sub\-components) and \fBNumPy\fP, specify all
+components at the same time:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -18065,10 +19852,11 @@ for you.
 \fBNOTE:\fP
 .INDENT 0.0
 .INDENT 3.5
-If components \fBInterpreter\fP and \fBDevelopment\fP are both specified, this
-module search only for interpreter with same platform architecture as the one
-defined by \fBCMake\fP configuration. This contraint does not apply if only
-\fBInterpreter\fP component is specified.
+If components \fBInterpreter\fP and \fBDevelopment\fP (or one of its
+sub\-components) are both specified, this module search only for interpreter
+with same platform architecture as the one defined by \fBCMake\fP
+configuration. This contraint does not apply if only \fBInterpreter\fP
+component is specified.
 .UNINDENT
 .UNINDENT
 .SS Imported Targets
@@ -18083,13 +19871,13 @@ Python 3 interpreter. Target defined if component \fBInterpreter\fP is found.
 .B \fBPython3::Compiler\fP
 Python 3 compiler. Target defined if component \fBCompiler\fP is found.
 .TP
-.B \fBPython3::Python\fP
-Python 3 library for Python embedding. Target defined if component
-\fBDevelopment\fP is found.
-.TP
 .B \fBPython3::Module\fP
 Python 3 library for Python module. Target defined if component
-\fBDevelopment\fP is found.
+\fBDevelopment.Module\fP is found.
+.TP
+.B \fBPython3::Python\fP
+Python 3 library for Python embedding. Target defined if component
+\fBDevelopment.Embed\fP is found.
 .TP
 .B \fBPython3::NumPy\fP
 NumPy library for Python 3. Target defined if component \fBNumPy\fP is found.
@@ -18124,6 +19912,8 @@ Anaconda
 Canopy
 .IP \(bu 2
 IronPython
+.IP \(bu 2
+PyPy
 .UNINDENT
 .UNINDENT
 .TP
@@ -18131,25 +19921,39 @@ IronPython
 Standard platform independent installation directory.
 .sp
 Information returned by
-\fBdistutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=True)\fP\&.
+\fBdistutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=True)\fP
+or else \fBsysconfig.get_path(\(aqstdlib\(aq)\fP\&.
 .TP
 .B \fBPython3_STDARCH\fP
 Standard platform dependent installation directory.
 .sp
 Information returned by
-\fBdistutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=True)\fP\&.
+\fBdistutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=True)\fP
+or else \fBsysconfig.get_path(\(aqplatstdlib\(aq)\fP\&.
 .TP
 .B \fBPython3_SITELIB\fP
 Third\-party platform independent installation directory.
 .sp
 Information returned by
-\fBdistutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False)\fP\&.
+\fBdistutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False)\fP
+or else \fBsysconfig.get_path(\(aqpurelib\(aq)\fP\&.
 .TP
 .B \fBPython3_SITEARCH\fP
 Third\-party platform dependent installation directory.
 .sp
 Information returned by
-\fBdistutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=False)\fP\&.
+\fBdistutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=False)\fP
+or else \fBsysconfig.get_path(\(aqplatlib\(aq)\fP\&.
+.TP
+.B \fBPython3_SOABI\fP
+Extension suffix for modules.
+.sp
+Information returned by
+\fBdistutils.sysconfig.get_config_var(\(aqSOABI\(aq)\fP or computed from
+\fBdistutils.sysconfig.get_config_var(\(aqEXT_SUFFIX\(aq)\fP or
+\fBpython3\-config \-\-extension\-suffix\fP\&. If package \fBdistutils.sysconfig\fP is
+not available, \fBsysconfig.get_config_var(\(aqSOABI\(aq)\fP or
+\fBsysconfig.get_config_var(\(aqEXT_SUFFIX\(aq)\fP are used.
 .TP
 .B \fBPython3_Compiler_FOUND\fP
 System has the Python 3 compiler.
@@ -18167,8 +19971,17 @@ IronPython
 .UNINDENT
 .UNINDENT
 .TP
+.B \fBPython3_DOTNET_LAUNCHER\fP
+The \fB\&.Net\fP interpreter. Only used by \fBIronPython\fP implementation.
+.TP
 .B \fBPython3_Development_FOUND\fP
 System has the Python 3 development artifacts.
+.TP
+.B \fBPython3_Development.Module_FOUND\fP
+System has the Python 3 development artifacts for Python module.
+.TP
+.B \fBPython3_Development.Embed_FOUND\fP
+System has the Python 3 development artifacts for Python embedding.
 .TP
 .B \fBPython3_INCLUDE_DIRS\fP
 The Python 3 include directories.
@@ -18193,6 +20006,9 @@ Python 3 minor version.
 .TP
 .B \fBPython3_VERSION_PATCH\fP
 Python 3 patch version.
+.TP
+.B \fBPython3_PyPy_VERSION\fP
+Python 3 PyPy version.
 .TP
 .B \fBPython3_NumPy_FOUND\fP
 System has the NumPy.
@@ -18220,10 +20036,76 @@ If set to TRUE, search \fBonly\fP for static libraries.
 If set to FALSE, search \fBonly\fP for shared libraries.
 .UNINDENT
 .TP
+.B \fBPython3_FIND_ABI\fP
+This variable defines which ABIs, as defined in
+\fI\%PEP 3149\fP, should be searched.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+If \fBPython3_FIND_ABI\fP is not defined, any ABI will be searched.
+.UNINDENT
+.UNINDENT
+.sp
+The \fBPython3_FIND_ABI\fP variable is a 3\-tuple specifying, in that order,
+\fBpydebug\fP (\fBd\fP), \fBpymalloc\fP (\fBm\fP) and \fBunicode\fP (\fBu\fP) flags.
+Each element can be set to one of the following:
+.INDENT 7.0
+.IP \(bu 2
+\fBON\fP: Corresponding flag is selected.
+.IP \(bu 2
+\fBOFF\fP: Corresponding flag is not selected.
+.IP \(bu 2
+\fBANY\fP: The two posibilties (\fBON\fP and \fBOFF\fP) will be searched.
+.UNINDENT
+.sp
+From this 3\-tuple, various ABIs will be searched starting from the most
+specialized to the most general. Moreover, \fBdebug\fP versions will be
+searched \fBafter\fP \fBnon\-debug\fP ones.
+.sp
+For example, if we have:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+set (Python3_FIND_ABI "ON" "ANY" "ANY")
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The following flags combinations will be appended, in that order, to the
+artifact names: \fBdmu\fP, \fBdm\fP, \fBdu\fP, and \fBd\fP\&.
+.sp
+And to search any possible ABIs:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+set (Python3_FIND_ABI "ANY" "ANY" "ANY")
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The following combinations, in that order, will be used: \fBmu\fP, \fBm\fP,
+\fBu\fP, \fB<empty>\fP, \fBdmu\fP, \fBdm\fP, \fBdu\fP and \fBd\fP\&.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+This hint is useful only on \fBPOSIX\fP systems. So, on \fBWindows\fP systems,
+when \fBPython3_FIND_ABI\fP is defined, \fBPython\fP distributions from
+\fI\%python.org\fP will be found only if value for
+each flag is \fBOFF\fP or \fBANY\fP\&.
+.UNINDENT
+.UNINDENT
+.TP
 .B \fBPython3_FIND_STRATEGY\fP
 This variable defines how lookup will be done.
-The \fBPython3_FIND_STRATEGY\fP variable can be set to empty or one of the
-following:
+The \fBPython3_FIND_STRATEGY\fP variable can be set to one of the following:
 .INDENT 7.0
 .IP \(bu 2
 \fBVERSION\fP: Try to find the most recent version in all specified
@@ -18239,8 +20121,7 @@ This is the default if policy \fBCMP0094\fP is set to \fBNEW\fP\&.
 .B \fBPython3_FIND_REGISTRY\fP
 On Windows the \fBPython3_FIND_REGISTRY\fP variable determine the order
 of preference between registry and environment variables.
-The \fBPython3_FIND_REGISTRY\fP variable can be set to empty or one of the
-following:
+The \fBPython3_FIND_REGISTRY\fP variable can be set to one of the following:
 .INDENT 7.0
 .IP \(bu 2
 \fBFIRST\fP: Try to use registry before environment variables.
@@ -18254,8 +20135,8 @@ This is the default.
 .B \fBPython3_FIND_FRAMEWORK\fP
 On macOS the \fBPython3_FIND_FRAMEWORK\fP variable determine the order of
 preference between Apple\-style and unix\-style package components.
-This variable can be set to empty or take same values as
-\fBCMAKE_FIND_FRAMEWORK\fP variable.
+This variable can take same values as \fBCMAKE_FIND_FRAMEWORK\fP
+variable.
 .sp
 \fBNOTE:\fP
 .INDENT 7.0
@@ -18268,11 +20149,11 @@ If \fBPython3_FIND_FRAMEWORK\fP is not defined, \fBCMAKE_FIND_FRAMEWORK\fP
 variable will be used, if any.
 .TP
 .B \fBPython3_FIND_VIRTUALENV\fP
-This variable defines the handling of virtual environments. It is meaningfull
-only when a virtual environment is active (i.e. the \fBactivate\fP script has
-been evaluated). In this case, it takes precedence over
-\fBPython3_FIND_REGISTRY\fP and \fBCMAKE_FIND_FRAMEWORK\fP variables.
-The \fBPython3_FIND_VIRTUALENV\fP variable can be set to empty or one of the
+This variable defines the handling of virtual environments managed by
+\fBvirtualenv\fP or \fBconda\fP\&. It is meaningful only when a virtual environment
+is active (i.e. the \fBactivate\fP script has been evaluated). In this case, it
+takes precedence over \fBPython3_FIND_REGISTRY\fP and \fBCMAKE_FIND_FRAMEWORK\fP
+variables.  The \fBPython3_FIND_VIRTUALENV\fP variable can be set to one of the
 following:
 .INDENT 7.0
 .IP \(bu 2
@@ -18283,15 +20164,139 @@ paths to look\-up for the interpreter. This is the default.
 interpreter.
 .IP \(bu 2
 \fBSTANDARD\fP: The virtual environment is not used to look\-up for the
-interpreter. In this case, variable \fBPython3_FIND_REGISTRY\fP (Windows)
-or \fBCMAKE_FIND_FRAMEWORK\fP (macOS) can be set with value \fBLAST\fP or
+interpreter but environment variable \fBPATH\fP is always considered.
+In this case, variable \fBPython3_FIND_REGISTRY\fP (Windows) or
+\fBCMAKE_FIND_FRAMEWORK\fP (macOS) can be set with value \fBLAST\fP or
 \fBNEVER\fP to select preferably the interpreter from the virtual
 environment.
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+If the component \fBDevelopment\fP is requested, it is \fBstrongly\fP
+recommended to also include the component \fBInterpreter\fP to get expected
+result.
+.UNINDENT
+.UNINDENT
+.TP
+.B \fBPython3_FIND_IMPLEMENTATIONS\fP
+This variable defines, in an ordered list, the different implementations
+which will be searched. The \fBPython3_FIND_IMPLEMENTATIONS\fP variable can
+hold the following values:
+.INDENT 7.0
+.IP \(bu 2
+\fBCPython\fP: this is the standard implementation. Various products, like
+\fBAnaconda\fP or \fBActivePython\fP, rely on this implementation.
+.IP \(bu 2
+\fBIronPython\fP: This implementation use the \fBCSharp\fP language for
+\fB\&.NET Framework\fP on top of the \fIDynamic Language Runtime\fP (\fBDLR\fP).
+See \fI\%IronPython\fP\&.
+.IP \(bu 2
+\fBPyPy\fP: This implementation use \fBRPython\fP language and
+\fBRPython translation toolchain\fP to produce the python interpreter.
+See \fI\%PyPy\fP\&.
+.UNINDENT
+.sp
+The default value is:
+.INDENT 7.0
+.IP \(bu 2
+Windows platform: \fBCPython\fP, \fBIronPython\fP
+.IP \(bu 2
+Other platforms: \fBCPython\fP
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+This hint has the lowest priority of all hints, so even if, for example,
+you specify \fBIronPython\fP first and \fBCPython\fP in second, a python
+product based on \fBCPython\fP can be selected because, for example with
+\fBPython3_FIND_STRATEGY=LOCATION\fP, each location will be search first for
+\fBIronPython\fP and second for \fBCPython\fP\&.
+.UNINDENT
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+When \fBIronPython\fP is specified, on platforms other than \fBWindows\fP, the
+\fB\&.Net\fP interpreter (i.e. \fBmono\fP command) is expected to be available
+through the \fBPATH\fP variable.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS Artifacts Specification
+.sp
+To solve special cases, it is possible to specify directly the artifacts by
+setting the following variables:
+.INDENT 0.0
+.TP
+.B \fBPython3_EXECUTABLE\fP
+The path to the interpreter.
+.TP
+.B \fBPython3_COMPILER\fP
+The path to the compiler.
+.TP
+.B \fBPython3_DOTNET_LAUNCHER\fP
+The \fB\&.Net\fP interpreter. Only used by \fBIronPython\fP implementation.
+.TP
+.B \fBPython3_LIBRARY\fP
+The path to the library. It will be used to compute the
+variables \fBPython3_LIBRARIES\fP, \fBPython3_LIBRAY_DIRS\fP and
+\fBPython3_RUNTIME_LIBRARY_DIRS\fP\&.
+.TP
+.B \fBPython3_INCLUDE_DIR\fP
+The path to the directory of the \fBPython\fP headers. It will be used to
+compute the variable \fBPython3_INCLUDE_DIRS\fP\&.
+.TP
+.B \fBPython3_NumPy_INCLUDE_DIR\fP
+The path to the directory of the \fBNumPy\fP headers. It will be used to
+compute the variable \fBPython3_NumPy_INCLUDE_DIRS\fP\&.
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+All paths must be absolute. Any artifact specified with a relative path
+will be ignored.
+.UNINDENT
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+When an artifact is specified, all \fBHINTS\fP will be ignored and no search
+will be performed for this artifact.
+.sp
+If more than one artifact is specified, it is the user’s responsability to
+ensure the consistency of the various artifacts.
+.UNINDENT
+.UNINDENT
+.sp
+By default, this module supports multiple calls in different directories of a
+project with different version/component requirements while providing correct
+and consistent results for each call. To support this behavior, \fBCMake\fP cache
+is not used in the traditional way which can be problematic for interactive
+specification. So, to enable also interactive specification, module behavior
+can be controled with the following variable:
+.INDENT 0.0
+.TP
+.B \fBPython3_ARTIFACTS_INTERACTIVE\fP
+Selects the behavior of the module. This is a boolean variable:
+.INDENT 7.0
+.IP \(bu 2
+If set to \fBTRUE\fP: Create CMake cache entries for the above artifact
+specification variables so that users can edit them interactively.
+This disables support for multiple version/component requirements.
+.IP \(bu 2
+If set to \fBFALSE\fP or undefined: Enable multiple version/component
+requirements.
 .UNINDENT
 .UNINDENT
 .SS Commands
 .sp
-This module defines the command \fBPython_add_library\fP (when
+This module defines the command \fBPython3_add_library\fP (when
 \fBCMAKE_ROLE\fP is \fBPROJECT\fP), which has the same semantics as
 \fBadd_library()\fP and adds a dependency to target \fBPython3::Python\fP or,
 when library type is \fBMODULE\fP, to target \fBPython3::Module\fP and takes care
@@ -18301,13 +20306,17 @@ of Python module naming rules:
 .sp
 .nf
 .ft C
-Python3_add_library (my_module MODULE src1.cpp)
+Python3_add_library (<name> [STATIC | SHARED | MODULE [WITH_SOABI]]
+                     <source1> [<source2> ...])
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
 .sp
-If library type is not specified, \fBMODULE\fP is assumed.
+If the library type is not specified, \fBMODULE\fP is assumed.
+.sp
+For \fBMODULE\fP library type, if option \fBWITH_SOABI\fP is specified, the
+module suffix will include the \fBPython3_SOABI\fP value, if any.
 .SS FindQt3
 .sp
 Locate Qt include paths and libraries
@@ -18753,7 +20762,7 @@ QUICKTIME_FOUND, if false, do not try to link to gdal
 QUICKTIME_INCLUDE_DIR, where to find the headers
 .sp
 $QUICKTIME_DIR is an environment variable that would correspond to the
-./configure –prefix=$QUICKTIME_DIR
+\&./configure –prefix=$QUICKTIME_DIR
 .sp
 Created by Eric Wing.
 .SS FindRTI
@@ -18798,37 +20807,104 @@ Report problems to <\fI\%certi\-devel@nongnu.org\fP>
 Find Ruby
 .sp
 This module finds if Ruby is installed and determines where the
-include files and libraries are.  Ruby 1.8, 1.9, 2.0 and 2.1 are
+include files and libraries are.  Ruby 1.8 through 2.7 are
 supported.
 .sp
 The minimum required version of Ruby can be specified using the
-standard syntax, e.g.  find_package(Ruby 1.8)
+standard syntax, e.g.
+.INDENT 0.0
+.INDENT 3.5
 .sp
-It also determines what the name of the library is.  This code sets
-the following variables:
+.nf
+.ft C
+find_package(Ruby 2.5.1 EXACT REQUIRED)
+# OR
+find_package(Ruby 2.4)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+It also determines what the name of the library is.
+.sp
+Virtual environments such as RVM are handled as well, by passing
+the argument \fBRuby_FIND_VIRTUALENV\fP
+.SS Result Variables
+.sp
+This module will set the following variables in your project:
+.INDENT 0.0
+.TP
+.B \fBRuby_FOUND\fP
+set to true if ruby was found successfully
+.TP
+.B \fBRuby_EXECUTABLE\fP
+full path to the ruby binary
+.TP
+.B \fBRuby_INCLUDE_DIRS\fP
+include dirs to be used when using the ruby library
+.TP
+.B \fBRuby_LIBRARIES\fP
+libraries needed to use ruby from C.
+.TP
+.B \fBRuby_VERSION\fP
+the version of ruby which was found, e.g. “1.8.7”
+.TP
+.B \fBRuby_VERSION_MAJOR\fP
+Ruby major version.
+.TP
+.B \fBRuby_VERSION_MINOR\fP
+Ruby minor version.
+.TP
+.B \fBRuby_VERSION_PATCH\fP
+Ruby patch version.
+.UNINDENT
+.sp
+The following variables are also provided for compatibility reasons,
+don’t use them in new code:
 .INDENT 0.0
 .TP
 .B \fBRUBY_EXECUTABLE\fP
-full path to the ruby binary
+same as Ruby_EXECUTABLE.
 .TP
 .B \fBRUBY_INCLUDE_DIRS\fP
-include dirs to be used when using the ruby library
-.TP
-.B \fBRUBY_LIBRARY\fP
-full path to the ruby library
-.TP
-.B \fBRUBY_VERSION\fP
-the version of ruby which was found, e.g. “1.8.7”
-.TP
-.B \fBRUBY_FOUND\fP
-set to true if ruby ws found successfully
-.UNINDENT
-.sp
-Also:
-.INDENT 0.0
+same as Ruby_INCLUDE_DIRS.
 .TP
 .B \fBRUBY_INCLUDE_PATH\fP
-same as RUBY_INCLUDE_DIRS, only provided for compatibility reasons, don’t use it
+same as Ruby_INCLUDE_DIRS.
+.TP
+.B \fBRUBY_LIBRARY\fP
+same as Ruby_LIBRARY.
+.TP
+.B \fBRUBY_VERSION\fP
+same as Ruby_VERSION.
+.TP
+.B \fBRUBY_FOUND\fP
+same as Ruby_FOUND.
+.UNINDENT
+.SS Hints
+.INDENT 0.0
+.TP
+.B \fBRuby_ROOT_DIR\fP
+Define the root directory of a Ruby installation.
+.TP
+.B \fBRuby_FIND_VIRTUALENV\fP
+This variable defines the handling of virtual environments managed by
+\fBrvm\fP\&. It is meaningful only when a virtual environment
+is active (i.e. the \fBrvm\fP script has been evaluated or at least the
+\fBMY_RUBY_HOME\fP environment variable is set).
+The \fBRuby_FIND_VIRTUALENV\fP variable can be set to empty or
+one of the following:
+.INDENT 7.0
+.IP \(bu 2
+\fBFIRST\fP: The virtual environment is used before any other standard
+paths to look\-up for the interpreter. This is the default.
+.IP \(bu 2
+\fBONLY\fP: Only the virtual environment is used to look\-up for the
+interpreter.
+.IP \(bu 2
+\fBSTANDARD\fP: The virtual environment is not used to look\-up for the
+interpreter (assuming it isn’t still in the PATH…)
+.UNINDENT
 .UNINDENT
 .SS FindSDL_image
 .sp
@@ -18865,7 +20941,7 @@ SDLIMAGE_FOUND (same value as SDL_IMAGE_FOUND)
 .UNINDENT
 .sp
 $SDLDIR is an environment variable that would correspond to the
-./configure –prefix=$SDLDIR used in building SDL.
+\&./configure –prefix=$SDLDIR used in building SDL.
 .sp
 Created by Eric Wing.  This was influenced by the FindSDL.cmake
 module, but with modifications to recognize OS X frameworks and
@@ -18905,7 +20981,7 @@ SDLMIXER_FOUND (same value as SDL_MIXER_FOUND)
 .UNINDENT
 .sp
 $SDLDIR is an environment variable that would correspond to the
-./configure –prefix=$SDLDIR used in building SDL.
+\&./configure –prefix=$SDLDIR used in building SDL.
 .sp
 Created by Eric Wing.  This was influenced by the FindSDL.cmake
 module, but with modifications to recognize OS X frameworks and
@@ -18944,7 +21020,7 @@ SDLNET_FOUND (same value as SDL_NET_FOUND)
 .UNINDENT
 .sp
 $SDLDIR is an environment variable that would correspond to the
-./configure –prefix=$SDLDIR used in building SDL.
+\&./configure –prefix=$SDLDIR used in building SDL.
 .sp
 Created by Eric Wing.  This was influenced by the FindSDL.cmake
 module, but with modifications to recognize OS X frameworks and
@@ -19000,7 +21076,7 @@ SDL_LIBRARY variable, but when these values are unset, SDL_LIBRARY
 does not get created.
 .sp
 $SDLDIR is an environment variable that would correspond to the
-./configure –prefix=$SDLDIR used in building SDL.  l.e.galup 9\-20\-02
+\&./configure –prefix=$SDLDIR used in building SDL.  l.e.galup 9\-20\-02
 .sp
 Modified by Eric Wing.  Added code to assist with automated building
 by using environmental variables and providing a more
@@ -19142,7 +21218,7 @@ SDLTTF_FOUND (same value as SDL_TTF_FOUND)
 .UNINDENT
 .sp
 $SDLDIR is an environment variable that would correspond to the
-./configure –prefix=$SDLDIR used in building SDL.
+\&./configure –prefix=$SDLDIR used in building SDL.
 .sp
 Created by Eric Wing.  This was influenced by the FindSDL.cmake
 module, but with modifications to recognize OS X frameworks and
@@ -19168,8 +21244,7 @@ UPX: http://wildsau.idv.uni\-linz.ac.at/mfx/upx.html
 .sp
 – Typical Use
 .sp
-This module can be used to find Squish.  Currently Squish versions 3
-and 4 are supported.
+This module can be used to find Squish.
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -19210,14 +21285,14 @@ SQUISH_CLIENT_EXECUTABLE_FOUND  Was the client executable found?
 .UNINDENT
 .UNINDENT
 .sp
-It provides the function squish_v4_add_test() for adding a squish test
-to cmake using Squish 4.x:
+It provides the function squish_add_test() for adding a squish test
+to cmake using Squish >= 4.x:
 .INDENT 0.0
 .INDENT 3.5
 .sp
 .nf
 .ft C
-squish_v4_add_test(cmakeTestName
+squish_add_test(cmakeTestName
   AUT targetName SUITE suiteName TEST squishTestName
   [SETTINGSGROUP group] [PRE_COMMAND command] [POST_COMMAND command] )
 .ft P
@@ -19246,8 +21321,7 @@ the name of the squish test, i.e. the name of the subdirectory
 of the test inside the suite directory.
 .TP
 .B \fBSETTINGSGROUP group\fP
-if specified, the given settings group will be used for executing the test.
-If not specified, the groupname will be “CTest_<username>”
+deprecated, this argument will be ignored.
 .TP
 .B \fBPRE_COMMAND command\fP
 if specified, the given command will be executed before starting the squish test.
@@ -19261,13 +21335,12 @@ same as PRE_COMMAND, but after the squish test has been executed.
 .nf
 .ft C
 enable_testing()
-find_package(Squish 4.0)
+find_package(Squish 6.5)
 if (SQUISH_FOUND)
-   squish_v4_add_test(myTestName
+   squish_add_test(myTestName
      AUT myApp
      SUITE ${CMAKE_SOURCE_DIR}/tests/mySuite
      TEST someSquishTest
-     SETTINGSGROUP myGroup
      )
 endif ()
 .ft P
@@ -19294,23 +21367,10 @@ Use this macro to add a test using Squish 3.x.
 .nf
 .ft C
 enable_testing()
-find_package(Squish)
+find_package(Squish 3.0)
 if (SQUISH_FOUND)
   squish_v3_add_test(myTestName myApplication testCase envVars testWrapper)
 endif ()
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
-.sp
-macro SQUISH_ADD_TEST(testName applicationUnderTest testCase envVars
-testWrapper)
-.INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-This is deprecated. Use SQUISH_V3_ADD_TEST() if you are using Squish 3.x instead.
 .ft P
 .fi
 .UNINDENT
@@ -19430,29 +21490,57 @@ endif()
 .UNINDENT
 .SS FindSWIG
 .sp
-Find Simplified Wrapper and Interface Generator (SWIG)
+Find the Simplified Wrapper and Interface Generator (\fI\%SWIG\fP) executable.
 .sp
-This module finds an installed SWIG.  It sets the following variables:
+This module finds an installed SWIG and determines its version. If a
+\fBCOMPONENTS\fP or \fBOPTIONAL_COMPONENTS\fP argument is given to \fBfind_package\fP,
+it will also determine supported target languages.  The module sents the
+following variables:
+.INDENT 0.0
+.TP
+.B \fBSWIG_FOUND\fP
+Whether SWIG and any required components were found on the system.
+.TP
+.B \fBSWIG_EXECUTABLE\fP
+Path to the SWIG executable.
+.TP
+.B \fBSWIG_DIR\fP
+Path to the installed SWIG \fBLib\fP directory (result of \fBswig \-swiglib\fP).
+.TP
+.B \fBSWIG_VERSION\fP
+SWIG executable version (result of \fBswig \-version\fP).
+.TP
+.B \fBSWIG_<lang>_FOUND\fP
+If \fBCOMPONENTS\fP or \fBOPTIONAL_COMPONENTS\fP are requested, each available
+target language \fB<lang>\fP (lowercase) will be set to TRUE.
+.UNINDENT
+.sp
+Any \fBCOMPONENTS\fP given to \fBfind_package\fP should be the names of supported
+target languages as provided to the LANGUAGE argument of \fBswig_add_library\fP,
+such as \fBpython\fP or \fBperl5\fP\&. Language names \fImust\fP be lowercase.
+.sp
+All information is collected from the \fBSWIG_EXECUTABLE\fP, so the version
+to be found can be changed from the command line by means of setting
+\fBSWIG_EXECUTABLE\fP\&.
+.sp
+Example usage requiring SWIG 4.0 or higher and Python language support, with
+optional Fortran support:
 .INDENT 0.0
 .INDENT 3.5
 .sp
 .nf
 .ft C
-SWIG_FOUND \- set to "True" if SWIG is found
-SWIG_DIR \- the directory where swig is installed
-SWIG_EXECUTABLE \- the path to the swig executable
-SWIG_VERSION   \- the version number of the swig executable
+find_package(SWIG 4.0 COMPONENTS python OPTIONAL_COMPONENTS fortran)
+if(SWIG_FOUND)
+  message("SWIG found: ${SWIG_EXECUTABLE}")
+  if(NOT SWIG_fortran_FOUND)
+    message(WARNING "SWIG Fortran bindings cannot be generated")
+  endif()
+endif()
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
-.sp
-The minimum required version of SWIG can be specified using the
-standard syntax, e.g.   \fBfind_package(SWIG 1.1)\fP
-.sp
-All information is collected from the \fBSWIG_EXECUTABLE\fP, so the version
-to be found can be changed from the command line by means of setting
-\fBSWIG_EXECUTABLE\fP
 .SS FindTCL
 .sp
 TK_INTERNAL_PATH was removed.
@@ -19589,50 +21677,48 @@ variables were moved or removed.  Changes compared to CMake 2.4 are:
 .SS FindThreads
 .sp
 This module determines the thread library of the system.
+.SS Imported Targets
 .sp
-The following variables are set
+This module defines the following \fBIMPORTED\fP target:
 .INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-CMAKE_THREAD_LIBS_INIT     \- the thread library
-CMAKE_USE_WIN32_THREADS_INIT \- using WIN32 threads?
-CMAKE_USE_PTHREADS_INIT    \- are we using pthreads
-CMAKE_HP_PTHREADS_INIT     \- are we using hp pthreads
-.ft P
-.fi
+.TP
+.B \fBThreads::Threads\fP
+The thread library, if found.
 .UNINDENT
-.UNINDENT
+.SS Result Variables
 .sp
-The following import target is created
+The following variables are set:
 .INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-Threads::Threads
-.ft P
-.fi
+.TP
+.B \fBThreads_FOUND\fP
+If a supported thread library was found.
+.TP
+.B \fBCMAKE_THREAD_LIBS_INIT\fP
+The thread library to use. This may be empty if the thread functions
+are provided by the system libraries and no special flags are needed
+to use them.
+.TP
+.B \fBCMAKE_USE_WIN32_THREADS_INIT\fP
+If the found thread library is the win32 one.
+.TP
+.B \fBCMAKE_USE_PTHREADS_INIT\fP
+If the found thread library is pthread compatible.
+.TP
+.B \fBCMAKE_HP_PTHREADS_INIT\fP
+If the found thread library is the HP thread library.
 .UNINDENT
-.UNINDENT
-.sp
-If the use of the \-pthread compiler and linker flag is preferred then the
-caller can set
+.SS Variables Affecting Behavior
 .INDENT 0.0
-.INDENT 3.5
+.TP
+.B THREADS_PREFER_PTHREAD_FLAG
+If the use of the \-pthread compiler and linker flag is preferred then
+the caller can set this variable to TRUE. The compiler flag can only be
+used with the imported target. Use of both the imported target as well
+as this switch is highly recommended for new code.
 .sp
-.nf
-.ft C
-THREADS_PREFER_PTHREAD_FLAG
-.ft P
-.fi
+This variable has no effect if the system libraries provide the
+thread functions, i.e. when \fBCMAKE_THREAD_LIBS_INIT\fP will be empty.
 .UNINDENT
-.UNINDENT
-.sp
-The compiler flag can only be used with the imported
-target. Use of both the imported target as well as this switch is highly
-recommended for new code.
 .SS FindTIFF
 .sp
 Find the TIFF library (\fBlibtiff\fP).
@@ -19690,7 +21776,7 @@ Now \fBfind_package(VTK)\fP will search for \fBVTKConfig.cmake\fP
 directly.
 .SS FindVulkan
 .sp
-Find Vulkan, which isis a low\-overhead, cross\-platform 3D graphics
+Find Vulkan, which is a low\-overhead, cross\-platform 3D graphics
 and computing API.
 .SS IMPORTED Targets
 .sp
@@ -19724,6 +21810,13 @@ Vulkan_LIBRARY        \- the path to the Vulkan library
 .fi
 .UNINDENT
 .UNINDENT
+.SS Hints
+.sp
+The \fBVULKAN_SDK\fP environment variable optionally specifies the
+location of the Vulkan SDK root directory for the given
+architecture. It is typically set by sourcing the toplevel
+\fBsetup\-env.sh\fP script of the Vulkan SDK directory into the shell
+environment.
 .SS FindWget
 .sp
 Find wget
@@ -20069,6 +22162,10 @@ X11_X11_INCLUDE_PATH,          X11_X11_LIB,                              X11::X1
 X11_Xaccessrules_INCLUDE_PATH,
 X11_Xaccessstr_INCLUDE_PATH,                       X11_Xaccess_FOUND
 X11_Xau_INCLUDE_PATH,          X11_Xau_LIB,        X11_Xau_FOUND,        X11::Xau
+X11_xcb_INCLUDE_PATH,          X11_xcb_LIB,        X11_xcb_FOUND,        X11::xcb
+X11_X11_xcb_INCLUDE_PATH,      X11_X11_xcb_LIB,    X11_X11_xcb_FOUND,    X11::X11_xcb
+X11_xcb_icccm_INCLUDE_PATH,    X11_xcb_icccm_LIB,  X11_xcb_icccm_FOUND,  X11::xcb_icccm
+X11_xcb_xkb_INCLUDE_PATH,      X11_xcb_xkb_LIB,    X11_xcb_xkb_FOUND,    X11::xcb_xkb
 X11_Xcomposite_INCLUDE_PATH,   X11_Xcomposite_LIB, X11_Xcomposite_FOUND, X11::Xcomposite
 X11_Xcursor_INCLUDE_PATH,      X11_Xcursor_LIB,    X11_Xcursor_FOUND,    X11::Xcursor
 X11_Xdamage_INCLUDE_PATH,      X11_Xdamage_LIB,    X11_Xdamage_FOUND,    X11::Xdamage
@@ -20082,6 +22179,8 @@ X11_Xi_INCLUDE_PATH,           X11_Xi_LIB,         X11_Xi_FOUND,         X11::Xi
 X11_Xinerama_INCLUDE_PATH,     X11_Xinerama_LIB,   X11_Xinerama_FOUND,   X11::Xinerama
 X11_Xkb_INCLUDE_PATH,
 X11_Xkblib_INCLUDE_PATH,                           X11_Xkb_FOUND,        X11::Xkb
+X11_xkbcommon_INCLUDE_PATH,    X11_xkbcommon_LIB,  X11_xkbcommon_FOUND,  X11::xkbcommon
+X11_xkbcommon_X11_INCLUDE_PATH,X11_xkbcommon_X11_LIB,X11_xkbcommon_X11_FOUND,X11::xkbcommon_X11
 X11_xkbfile_INCLUDE_PATH,      X11_xkbfile_LIB,    X11_xkbfile_FOUND,    X11::xkbfile
 X11_Xmu_INCLUDE_PATH,          X11_Xmu_LIB,        X11_Xmu_FOUND,        X11::Xmu
 X11_Xpm_INCLUDE_PATH,          X11_Xpm_LIB,        X11_Xpm_FOUND,        X11::Xpm
@@ -20510,15 +22609,20 @@ WRITE_BASIC_CONFIG_VERSION_FILE( filename
 .SS FindCUDA
 .sp
 Deprecated since version 3.10: Superseded by first\-class support for the CUDA language in CMake.
+Superseded by the \fBFindCUDAToolkit\fP for CUDA toolkit libraries.
 
 .SS Replacement
 .sp
-It is no longer necessary to use this module or call \fBfind_package(CUDA)\fP\&.
-Instead, list \fBCUDA\fP among the languages named in the top\-level
-call to the \fBproject()\fP command, or call the
+It is no longer necessary to use this module or call \fBfind_package(CUDA)\fP
+for compiling CUDA code. Instead, list \fBCUDA\fP among the languages named
+in the top\-level call to the \fBproject()\fP command, or call the
 \fBenable_language()\fP command with \fBCUDA\fP\&.
 Then one can add CUDA (\fB\&.cu\fP) sources to programs directly
 in calls to \fBadd_library()\fP and \fBadd_executable()\fP\&.
+.sp
+To find and use the CUDA toolkit libraries the \fBFindCUDAToolkit\fP
+module has superseded this module.  It works whether or not the \fBCUDA\fP
+language is enabled.
 .SS Documentation of Deprecated Usage
 .sp
 Tools for building CUDA C files: libraries and build dependencies.
@@ -20872,7 +22976,8 @@ CUDA_nppial_LIBRARY   \-\- NVIDIA Performance Primitives lib (image processing).
 CUDA_nppicc_LIBRARY   \-\- NVIDIA Performance Primitives lib (image processing).
                          Only available for CUDA version 9.0.
 CUDA_nppicom_LIBRARY  \-\- NVIDIA Performance Primitives lib (image processing).
-                         Only available for CUDA version 9.0.
+                         Only available for CUDA version 9.0 \- 10.2.
+                         Replaced by nvjpeg.
 CUDA_nppidei_LIBRARY  \-\- NVIDIA Performance Primitives lib (image processing).
                          Only available for CUDA version 9.0.
 CUDA_nppif_LIBRARY    \-\- NVIDIA Performance Primitives lib (image processing).
@@ -20895,6 +23000,11 @@ CUDA_nvcuvenc_LIBRARY \-\- CUDA Video Encoder library.
 CUDA_nvcuvid_LIBRARY  \-\- CUDA Video Decoder library.
                          Only available for CUDA version 3.2+.
                          Windows only.
+CUDA_nvToolsExt_LIBRARY
+                      \-\- NVIDA CUDA Tools Extension library.
+                         Available for CUDA version 5+.
+CUDA_OpenCL_LIBRARY   \-\- NVIDA CUDA OpenCL library.
+                         Available for CUDA version 5+.
 .ft P
 .fi
 .UNINDENT
@@ -20942,6 +23052,17 @@ If calling both \fBfind_package(PythonInterp)\fP and
 \fBfind_package(PythonLibs)\fP, call \fBfind_package(PythonInterp)\fP first to
 get the currently active Python version by default with a consistent version
 of PYTHON_LIBRARIES.
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+A call to \fBfind_package(PythonInterp ${V})\fP for python version \fBV\fP
+may find a \fBpython\fP executable with no version suffix.  In this case
+no attempt is made to avoid python executables from other versions.
+Use \fBFindPython3\fP, \fBFindPython2\fP or \fBFindPython\fP
+instead.
+.UNINDENT
+.UNINDENT
 .SS FindPythonLibs
 .sp
 Deprecated since version 3.12: Use \fBFindPython3\fP, \fBFindPython2\fP or \fBFindPython\fP instead.
@@ -21179,6 +23300,6 @@ The documentation for the CPack RPM generator has moved here: \fBCPack RPM Gener
 The documentation for the CPack WIX generator has moved here:
 \fBCPack WIX Generator\fP
 .SH COPYRIGHT
-2000-2019 Kitware, Inc. and Contributors
+2000-2020 Kitware, Inc. and Contributors
 .\" Generated by docutils manpage writer.
 .

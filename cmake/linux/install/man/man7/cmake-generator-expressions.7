@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-GENERATOR-EXPRESSIONS" "7" "Sep 30, 2019" "3.15.4" "CMake"
+.TH "CMAKE-GENERATOR-EXPRESSIONS" "7" "Oct 06, 2020" "3.18.4" "CMake"
 .SH NAME
 cmake-generator-expressions \- CMake Generator Expressions
 .
@@ -64,8 +64,8 @@ Available boolean expressions are:
 .INDENT 0.0
 .TP
 .B \fB$<BOOL:string>\fP
-Converts \fBstring\fP to \fB0\fP or \fB1\fP according to the rules of the
-\fBif()\fP command.  Evaluates to \fB0\fP if any of the following is true:
+Converts \fBstring\fP to \fB0\fP or \fB1\fP\&. Evaluates to \fB0\fP if any of the
+following is true:
 .INDENT 7.0
 .IP \(bu 2
 \fBstring\fP is empty,
@@ -167,6 +167,18 @@ where \fBcompiler_ids\fP is a comma\-separated list.
 of the entries in \fBcompiler_ids\fP, otherwise \fB0\fP\&.
 See also the \fBCMAKE_<LANG>_COMPILER_ID\fP variable.
 .TP
+.B \fB$<OBJC_COMPILER_ID:compiler_ids>\fP
+where \fBcompiler_ids\fP is a comma\-separated list.
+\fB1\fP if the CMake’s compiler id of the Objective\-C compiler matches any one
+of the entries in \fBcompiler_ids\fP, otherwise \fB0\fP\&.
+See also the \fBCMAKE_<LANG>_COMPILER_ID\fP variable.
+.TP
+.B \fB$<OBJCXX_COMPILER_ID:compiler_ids>\fP
+where \fBcompiler_ids\fP is a comma\-separated list.
+\fB1\fP if the CMake’s compiler id of the Objective\-C++ compiler matches any one
+of the entries in \fBcompiler_ids\fP, otherwise \fB0\fP\&.
+See also the \fBCMAKE_<LANG>_COMPILER_ID\fP variable.
+.TP
 .B \fB$<Fortran_COMPILER_ID:compiler_ids>\fP
 where \fBcompiler_ids\fP is a comma\-separated list.
 \fB1\fP if the CMake’s compiler id of the Fortran compiler matches any one
@@ -183,6 +195,14 @@ See also the \fBCMAKE_<LANG>_COMPILER_VERSION\fP variable.
 .TP
 .B \fB$<CUDA_COMPILER_VERSION:version>\fP
 \fB1\fP if the version of the CXX compiler matches \fBversion\fP, otherwise \fB0\fP\&.
+See also the \fBCMAKE_<LANG>_COMPILER_VERSION\fP variable.
+.TP
+.B \fB$<OBJC_COMPILER_VERSION:version>\fP
+\fB1\fP if the version of the OBJC compiler matches \fBversion\fP, otherwise \fB0\fP\&.
+See also the \fBCMAKE_<LANG>_COMPILER_VERSION\fP variable.
+.TP
+.B \fB$<OBJCXX_COMPILER_VERSION:version>\fP
+\fB1\fP if the version of the OBJCXX compiler matches \fBversion\fP, otherwise \fB0\fP\&.
 See also the \fBCMAKE_<LANG>_COMPILER_VERSION\fP variable.
 .TP
 .B \fB$<Fortran_COMPILER_VERSION:version>\fP
@@ -246,7 +266,7 @@ would be expressed as:
 .nf
 .ft C
 target_compile_definitions(myapp
-  PRIVATE $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:Clang>>:COMPILING_CXX_WITH_CLANG>
+  PRIVATE $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:AppleClang,Clang>>:COMPILING_CXX_WITH_CLANG>
           $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:Intel>>:COMPILING_CXX_WITH_INTEL>
           $<$<AND:$<COMPILE_LANGUAGE:C>,$<C_COMPILER_ID:Clang>>:COMPILING_C_WITH_CLANG>
 )
@@ -309,6 +329,140 @@ target_link_libraries(myapp myapp_c myapp_cxx)
 .fi
 .UNINDENT
 .UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \fB$<LINK_LANG_AND_ID:language,compiler_ids>\fP
+\fB1\fP when the language used for link step matches \fBlanguage\fP and the
+CMake’s compiler id of the language linker matches any one of the entries
+in \fBcompiler_ids\fP, otherwise \fB0\fP\&. This expression is a short form for the
+combination of \fB$<LINK_LANGUAGE:language>\fP and
+\fB$<LANG_COMPILER_ID:compiler_ids>\fP\&. This expression may be used to specify
+link libraries, link options, link directories and link dependencies of a
+particular language and linker combination in a target. For example:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+add_library(libC_Clang ...)
+add_library(libCXX_Clang ...)
+add_library(libC_Intel ...)
+add_library(libCXX_Intel ...)
+
+add_executable(myapp main.c)
+if (CXX_CONFIG)
+  target_sources(myapp PRIVATE file.cxx)
+endif()
+target_link_libraries(myapp
+  PRIVATE $<$<LINK_LANG_AND_ID:CXX,Clang,AppleClang>:libCXX_Clang>
+          $<$<LINK_LANG_AND_ID:C,Clang,AppleClang>:libC_Clang>
+          $<$<LINK_LANG_AND_ID:CXX,Intel>:libCXX_Intel>
+          $<$<LINK_LANG_AND_ID:C,Intel>:libC_Intel>)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This specifies the use of different link libraries based on both the
+compiler id and link language. This example will have target \fBlibCXX_Clang\fP
+as link dependency when \fBClang\fP or \fBAppleClang\fP is the \fBCXX\fP
+linker, and \fBlibCXX_Intel\fP when \fBIntel\fP is the \fBCXX\fP linker.
+Likewise when the \fBC\fP linker is \fBClang\fP or \fBAppleClang\fP, target
+\fBlibC_Clang\fP will be added as link dependency and \fBlibC_Intel\fP when
+\fBIntel\fP is the \fBC\fP linker.
+.sp
+See \fI\%the note related to\fP
+\fB$<LINK_LANGUAGE:language>\fP for constraints about the usage of this
+generator expression.
+.TP
+.B \fB$<LINK_LANGUAGE:languages>\fP
+\fB1\fP when the language used for link step matches any of the entries
+in \fBlanguages\fP, otherwise \fB0\fP\&.  This expression may be used to specify
+link libraries, link options, link directories and link dependencies of a
+particular language in a target. For example:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+add_library(api_C ...)
+add_library(api_CXX ...)
+add_library(api INTERFACE)
+target_link_options(api INTERFACE $<$<LINK_LANGUAGE:C>:\-opt_c>
+                                    $<$<LINK_LANGUAGE:CXX>:\-opt_cxx>)
+target_link_libraries(api INTERFACE $<$<LINK_LANGUAGE:C>:api_C>
+                                    $<$<LINK_LANGUAGE:CXX>:api_CXX>)
+
+add_executable(myapp1 main.c)
+target_link_options(myapp1 PRIVATE api)
+
+add_executable(myapp2 main.cpp)
+target_link_options(myapp2 PRIVATE api)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This specifies to use the \fBapi\fP target for linking targets \fBmyapp1\fP and
+\fBmyapp2\fP\&. In practice, \fBmyapp1\fP will link with target \fBapi_C\fP and
+option \fB\-opt_c\fP because it will use \fBC\fP as link language. And \fBmyapp2\fP
+will link with \fBapi_CXX\fP and option \fB\-opt_cxx\fP because \fBCXX\fP will be
+the link language.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+To determine the link language of a target, it is required to collect,
+transitively, all the targets which will be linked to it. So, for link
+libraries properties, a double evaluation will be done. During the first
+evaluation, \fB$<LINK_LANGUAGE:..>\fP expressions will always return \fB0\fP\&.
+The link language computed after this first pass will be used to do the
+second pass. To avoid inconsistency, it is required that the second pass
+do not change the link language. Moreover, to avoid unexpected
+side\-effects, it is required to specify complete entities as part of the
+\fB$<LINK_LANGUAGE:..>\fP expression. For example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+add_library(lib STATIC file.cxx)
+add_library(libother STATIC file.c)
+
+# bad usage
+add_executable(myapp1 main.c)
+target_link_libraries(myapp1 PRIVATE lib$<$<LINK_LANGUAGE:C>:other>)
+
+# correct usage
+add_executable(myapp2 main.c)
+target_link_libraries(myapp2 PRIVATE $<$<LINK_LANGUAGE:C>:libother>)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+In this example, for \fBmyapp1\fP, the first pass will, unexpectedly,
+determine that the link language is \fBCXX\fP because the evaluation of the
+generator expression will be an empty string so \fBmyapp1\fP will depends on
+target \fBlib\fP which is \fBC++\fP\&. On the contrary, for \fBmyapp2\fP, the first
+evaluation will give \fBC\fP as link language, so the second pass will
+correctly add target \fBlibother\fP as link dependency.
+.UNINDENT
+.UNINDENT
+.TP
+.B \fB$<DEVICE_LINK:list>\fP
+Returns the list if it is the device link step, an empty list otherwise.
+The device link step is controlled by \fBCUDA_SEPARABLE_COMPILATION\fP
+and \fBCUDA_RESOLVE_DEVICE_SYMBOLS\fP properties and
+policy \fBCMP0105\fP\&. This expression can only be used to specify link
+options.
+.TP
+.B \fB$<HOST_LINK:list>\fP
+Returns the list if it is the normal link step, an empty list otherwise.
+This expression is mainly useful when a device link step is also involved
+(see \fB$<DEVICE_LINK:list>\fP generator expression). This expression can only
+be used to specify link options.
 .UNINDENT
 .SH STRING-VALUED GENERATOR EXPRESSIONS
 .sp
@@ -516,6 +670,14 @@ See also the \fBCMAKE_<LANG>_COMPILER_ID\fP variable.
 The CMake’s compiler id of the CUDA compiler used.
 See also the \fBCMAKE_<LANG>_COMPILER_ID\fP variable.
 .TP
+.B \fB$<OBJC_COMPILER_ID>\fP
+The CMake’s compiler id of the OBJC compiler used.
+See also the \fBCMAKE_<LANG>_COMPILER_ID\fP variable.
+.TP
+.B \fB$<OBJCXX_COMPILER_ID>\fP
+The CMake’s compiler id of the OBJCXX compiler used.
+See also the \fBCMAKE_<LANG>_COMPILER_ID\fP variable.
+.TP
 .B \fB$<Fortran_COMPILER_ID>\fP
 The CMake’s compiler id of the Fortran compiler used.
 See also the \fBCMAKE_<LANG>_COMPILER_ID\fP variable.
@@ -532,6 +694,14 @@ See also the \fBCMAKE_<LANG>_COMPILER_VERSION\fP variable.
 The version of the CUDA compiler used.
 See also the \fBCMAKE_<LANG>_COMPILER_VERSION\fP variable.
 .TP
+.B \fB$<OBJC_COMPILER_VERSION>\fP
+The version of the OBJC compiler used.
+See also the \fBCMAKE_<LANG>_COMPILER_VERSION\fP variable.
+.TP
+.B \fB$<OBJCXX_COMPILER_VERSION>\fP
+The version of the OBJCXX compiler used.
+See also the \fBCMAKE_<LANG>_COMPILER_VERSION\fP variable.
+.TP
 .B \fB$<Fortran_COMPILER_VERSION>\fP
 The version of the Fortran compiler used.
 See also the \fBCMAKE_<LANG>_COMPILER_VERSION\fP variable.
@@ -541,24 +711,50 @@ The compile language of source files when evaluating compile options.
 See \fI\%the related boolean expression\fP
 \fB$<COMPILE_LANGUAGE:language>\fP
 for notes about the portability of this generator expression.
+.TP
+.B \fB$<LINK_LANGUAGE>\fP
+The link language of target when evaluating link options.
+See \fI\%the related boolean expression\fP \fB$<LINK_LANGUAGE:language>\fP
+for notes about the portability of this generator expression.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+This generator expression is not supported by the link libraries
+properties to avoid side\-effects due to the double evaluation of
+these properties.
+.UNINDENT
+.UNINDENT
 .UNINDENT
 .SS Target\-Dependent Queries
+.sp
+These queries refer to a target \fBtgt\fP\&. This can be any runtime artifact,
+namely:
+.INDENT 0.0
+.IP \(bu 2
+an executable target created by \fBadd_executable()\fP
+.IP \(bu 2
+a shared library target (\fB\&.so\fP, \fB\&.dll\fP but not their \fB\&.lib\fP import library)
+created by \fBadd_library()\fP
+.IP \(bu 2
+a static library target created by \fBadd_library()\fP
+.UNINDENT
+.sp
+In the following, “the \fBtgt\fP filename” means the name of the \fBtgt\fP
+binary file. This has to be distinguished from “the target name”,
+which is just the string \fBtgt\fP\&.
 .INDENT 0.0
 .TP
 .B \fB$<TARGET_NAME_IF_EXISTS:tgt>\fP
-Expands to the \fBtgt\fP if the given target exists, an empty string
-otherwise.
+The target name \fBtgt\fP if the target exists, an empty string otherwise.
 .TP
 .B \fB$<TARGET_FILE:tgt>\fP
-Full path to main file (.exe, .so.1.2, .a) where \fBtgt\fP is the name of a
-target.
+Full path to the \fBtgt\fP binary file.
 .TP
 .B \fB$<TARGET_FILE_BASE_NAME:tgt>\fP
-Base name of main file where \fBtgt\fP is the name of a target.
-.sp
-The base name corresponds to the target file name (see
-\fB$<TARGET_FILE_NAME:tgt>\fP) without prefix and suffix. For example, if
-target file name is \fBlibbase.so\fP, the base name is \fBbase\fP\&.
+Base name of \fBtgt\fP, i.e. \fB$<TARGET_FILE_NAME:tgt>\fP without prefix and
+suffix.
+For example, if the \fBtgt\fP filename is \fBlibbase.so\fP, the base name is \fBbase\fP\&.
 .sp
 See also the \fBOUTPUT_NAME\fP, \fBARCHIVE_OUTPUT_NAME\fP,
 \fBLIBRARY_OUTPUT_NAME\fP and \fBRUNTIME_OUTPUT_NAME\fP
@@ -574,7 +770,7 @@ Note that \fBtgt\fP is not added as a dependency of the target this
 expression is evaluated on.
 .TP
 .B \fB$<TARGET_FILE_PREFIX:tgt>\fP
-Prefix of main file where \fBtgt\fP is the name of a target.
+Prefix of the \fBtgt\fP filename (such as \fBlib\fP).
 .sp
 See also the \fBPREFIX\fP target property.
 .sp
@@ -582,9 +778,7 @@ Note that \fBtgt\fP is not added as a dependency of the target this
 expression is evaluated on.
 .TP
 .B \fB$<TARGET_FILE_SUFFIX:tgt>\fP
-Suffix of main file where \fBtgt\fP is the name of a target.
-.sp
-The suffix corresponds to the file extension (such as “.so” or “.exe”).
+Suffix of the \fBtgt\fP filename (extension such as \fB\&.so\fP or \fB\&.exe\fP).
 .sp
 See also the \fBSUFFIX\fP target property.
 .sp
@@ -592,19 +786,20 @@ Note that \fBtgt\fP is not added as a dependency of the target this
 expression is evaluated on.
 .TP
 .B \fB$<TARGET_FILE_NAME:tgt>\fP
-Name of main file (.exe, .so.1.2, .a).
+The \fBtgt\fP filename.
 .TP
 .B \fB$<TARGET_FILE_DIR:tgt>\fP
-Directory of main file (.exe, .so.1.2, .a).
+Directory of the \fBtgt\fP binary file.
 .TP
 .B \fB$<TARGET_LINKER_FILE:tgt>\fP
-File used to link (.a, .lib, .so) where \fBtgt\fP is the name of a target.
+File used when linking to the \fBtgt\fP target.  This will usually
+be the library that \fBtgt\fP represents (\fB\&.a\fP, \fB\&.lib\fP, \fB\&.so\fP),
+but for a shared library on DLL platforms, it would be the \fB\&.lib\fP
+import library associated with the DLL.
 .TP
 .B \fB$<TARGET_LINKER_FILE_BASE_NAME:tgt>\fP
-Base name of file used to link where \fBtgt\fP is the name of a target.
-.sp
-The base name corresponds to the target linker file name (see
-\fB$<TARGET_LINKER_FILE_NAME:tgt>\fP) without prefix and suffix. For example,
+Base name of file used to link the target \fBtgt\fP, i.e.
+\fB$<TARGET_LINKER_FILE_NAME:tgt>\fP without prefix and suffix. For example,
 if target file name is \fBlibbase.a\fP, the base name is \fBbase\fP\&.
 .sp
 See also the \fBOUTPUT_NAME\fP, \fBARCHIVE_OUTPUT_NAME\fP,
@@ -620,7 +815,7 @@ Note that \fBtgt\fP is not added as a dependency of the target this
 expression is evaluated on.
 .TP
 .B \fB$<TARGET_LINKER_FILE_PREFIX:tgt>\fP
-Prefix of file used to link where \fBtgt\fP is the name of a target.
+Prefix of file used to link target \fBtgt\fP\&.
 .sp
 See also the \fBPREFIX\fP and \fBIMPORT_PREFIX\fP target
 properties.
@@ -640,19 +835,19 @@ Note that \fBtgt\fP is not added as a dependency of the target this
 expression is evaluated on.
 .TP
 .B \fB$<TARGET_LINKER_FILE_NAME:tgt>\fP
-Name of file used to link (.a, .lib, .so).
+Name of file used to link target \fBtgt\fP\&.
 .TP
 .B \fB$<TARGET_LINKER_FILE_DIR:tgt>\fP
-Directory of file used to link (.a, .lib, .so).
+Directory of file used to link target \fBtgt\fP\&.
 .TP
 .B \fB$<TARGET_SONAME_FILE:tgt>\fP
-File with soname (.so.3) where \fBtgt\fP is the name of a target.
+File with soname (\fB\&.so.3\fP) where \fBtgt\fP is the name of a target.
 .TP
 .B \fB$<TARGET_SONAME_FILE_NAME:tgt>\fP
-Name of file with soname (.so.3).
+Name of file with soname (\fB\&.so.3\fP).
 .TP
 .B \fB$<TARGET_SONAME_FILE_DIR:tgt>\fP
-Directory of with soname (.so.3).
+Directory of with soname (\fB\&.so.3\fP).
 .TP
 .B \fB$<TARGET_PDB_FILE:tgt>\fP
 Full path to the linker generated program database file (.pdb)
@@ -703,15 +898,15 @@ Note that \fBtgt\fP is not added as a dependency of the target this
 expression is evaluated on.
 .TP
 .B \fB$<TARGET_PROPERTY:prop>\fP
-Value of the property \fBprop\fP on the target on which the generator
-expression is evaluated. Note that for generator expressions in
-Target Usage Requirements this is the value of the property
-on the consuming target rather than the target specifying the
-requirement.
+Value of the property \fBprop\fP on the target for which the expression
+is being evaluated. Note that for generator expressions in
+Target Usage Requirements this is the consuming target rather
+than the target specifying the requirement.
 .TP
 .B \fB$<INSTALL_PREFIX>\fP
 Content of the install prefix when the target is exported via
-\fBinstall(EXPORT)\fP and empty otherwise.
+\fBinstall(EXPORT)\fP, or when evaluated in
+\fBINSTALL_NAME_DIR\fP, and empty otherwise.
 .UNINDENT
 .SS Output\-Related Expressions
 .INDENT 0.0
@@ -788,6 +983,6 @@ file(GENERATE OUTPUT filename CONTENT "$<...>")
 .UNINDENT
 .UNINDENT
 .SH COPYRIGHT
-2000-2019 Kitware, Inc. and Contributors
+2000-2020 Kitware, Inc. and Contributors
 .\" Generated by docutils manpage writer.
 .
