@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-GENERATORS" "7" "Sep 30, 2019" "3.15.4" "CMake"
+.TH "CMAKE-GENERATORS" "7" "Oct 06, 2020" "3.18.4" "CMake"
 .SH NAME
 cmake-generators \- CMake Generators Reference
 .
@@ -88,20 +88,45 @@ Generates JOM makefiles.
 .sp
 Generates standard UNIX makefiles.
 .sp
-A hierarchy of UNIX makefiles is generated into the build tree.  Any
-standard UNIX\-style make program can build the project through the
-default \fBall\fP target.  An \fBinstall\fP target is also provided.
+A hierarchy of UNIX makefiles is generated into the build tree.  Use
+any standard UNIX\-style make program to build the project through
+the \fBall\fP target and install the project through the \fBinstall\fP
+(or \fBinstall/strip\fP) target.
+.sp
+For each subdirectory \fBsub/dir\fP of the project a UNIX makefile will
+be created, containing the following targets:
+.INDENT 0.0
+.TP
+.B \fBall\fP
+Depends on all targets required by the subdirectory.
+.TP
+.B \fBinstall\fP
+Runs the install step in the subdirectory, if any.
+.TP
+.B \fBinstall/strip\fP
+Runs the install step in the subdirectory followed by a \fBCMAKE_STRIP\fP command,
+if any.
+.sp
+The \fBCMAKE_STRIP\fP variable will contain the platform’s \fBstrip\fP utility, which
+removes symbols information from generated binaries.
+.TP
+.B \fBtest\fP
+Runs the test step in the subdirectory, if any.
+.TP
+.B \fBpackage\fP
+Runs the package step in the subdirectory, if any.
+.UNINDENT
 .SS Watcom WMake
 .sp
 Generates Watcom WMake makefiles.
-.SS Ninja Generator
+.SS Ninja Generators
 .SS Ninja
 .sp
-Generates build.ninja files.
+Generates \fBbuild.ninja\fP files.
 .sp
-A build.ninja file is generated into the build tree.  Recent versions
-of the ninja program can build the project through the \fBall\fP target.
-An \fBinstall\fP target is also provided.
+A \fBbuild.ninja\fP file is generated into the build tree.  Use the ninja
+program to build the project through the \fBall\fP target and install the
+project through the \fBinstall\fP (or \fBinstall/strip\fP) target.
 .sp
 For each subdirectory \fBsub/dir\fP of the project, additional targets
 are generated:
@@ -113,6 +138,13 @@ Depends on all targets required by the subdirectory.
 .B \fBsub/dir/install\fP
 Runs the install step in the subdirectory, if any.
 .TP
+.B \fBsub/dir/install/strip\fP
+Runs the install step in the subdirectory followed by a \fBCMAKE_STRIP\fP command,
+if any.
+.sp
+The \fBCMAKE_STRIP\fP variable will contain the platform’s \fBstrip\fP utility, which
+removes symbols information from generated binaries.
+.TP
 .B \fBsub/dir/test\fP
 Runs the test step in the subdirectory, if any.
 .TP
@@ -122,9 +154,117 @@ Runs the package step in the subdirectory, if any.
 .SS Fortran Support
 .sp
 The \fBNinja\fP generator conditionally supports Fortran when the \fBninja\fP
-tool has the required features.  As of this version of CMake the needed
-features have not been integrated into upstream Ninja.  Kitware maintains
-a branch of Ninja with the required features on \fI\%github.com/Kitware/ninja\fP\&.
+tool is at least version 1.10 (which has the required features).
+.SS See Also
+.sp
+The \fBNinja Multi\-Config\fP generator is similar to the \fBNinja\fP
+generator, but generates multiple configurations at once.
+.SS Ninja Multi\-Config
+.sp
+Generates multiple \fBbuild\-<Config>.ninja\fP files.
+.sp
+This generator is very much like the \fBNinja\fP generator, but with
+some key differences. Only these differences will be discussed in this
+document.
+.sp
+Unlike the \fBNinja\fP generator, \fBNinja Multi\-Config\fP generates
+multiple configurations at once with \fBCMAKE_CONFIGURATION_TYPES\fP
+instead of only one configuration with \fBCMAKE_BUILD_TYPE\fP\&. One
+\fBbuild\-<Config>.ninja\fP file will be generated for each of these
+configurations (with \fB<Config>\fP being the configuration name.) These files
+are intended to be run with \fBninja \-f build\-<Config>.ninja\fP\&. A
+\fBbuild.ninja\fP file is also generated, using the configuration from either
+\fBCMAKE_DEFAULT_BUILD_TYPE\fP or the first item from
+\fBCMAKE_CONFIGURATION_TYPES\fP\&.
+.sp
+\fBcmake \-\-build . \-\-config <Config>\fP will always use \fBbuild\-<Config>.ninja\fP
+to build. If no \fB\-\-config\fP argument is specified, \fBcmake \-\-build .\fP will
+default to \fBbuild\-Debug.ninja\fP, unless a \fBbuild.ninja\fP is generated (see
+below), in which case that will be used instead.
+.sp
+Each \fBbuild\-<Config>.ninja\fP file contains \fB<target>\fP targets as well as
+\fB<target>:<Config>\fP targets, where \fB<Config>\fP is the same as the
+configuration specified in \fBbuild\-<Config>.ninja\fP Additionally, if
+cross\-config mode is enabled, \fBbuild\-<Config>.ninja\fP may contain
+\fB<target>:<OtherConfig>\fP targets, where \fB<OtherConfig>\fP is a cross\-config,
+as well as \fB<target>:all\fP, which builds the target in all cross\-configs. See
+below for how to enable cross\-config mode.
+.sp
+The \fBNinja Multi\-Config\fP generator recognizes the following variables:
+.INDENT 0.0
+.TP
+.B \fBCMAKE_CONFIGURATION_TYPES\fP
+Specifies the total set of configurations to build.
+.TP
+.B \fBCMAKE_CROSS_CONFIGS\fP
+Specifies a semicolon\-separated list of
+configurations available from all \fBbuild\-<Config>.ninja\fP files.
+.TP
+.B \fBCMAKE_DEFAULT_BUILD_TYPE\fP
+Specifies the configuration to use by default in a \fBbuild.ninja\fP file.
+.TP
+.B \fBCMAKE_DEFAULT_CONFIGS\fP
+Specifies a semicolon\-separated list of
+configurations to build for a target in \fBbuild.ninja\fP
+if no \fB:<Config>\fP suffix is specified.
+.UNINDENT
+.sp
+Consider the following example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+cmake_minimum_required(VERSION 3.16)
+project(MultiConfigNinja C)
+
+add_executable(generator generator.c)
+add_custom_command(OUTPUT generated.c COMMAND generator generated.c)
+add_library(generated ${CMAKE_BINARY_DIR}/generated.c)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Now assume you configure the project with \fBNinja Multi\-Config\fP and run one of
+the following commands:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+ninja \-f build\-Debug.ninja generated
+# OR
+cmake \-\-build . \-\-config Debug \-\-target generated
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This would build the \fBDebug\fP configuration of \fBgenerator\fP, which would be
+used to generate \fBgenerated.c\fP, which would be used to build the \fBDebug\fP
+configuration of \fBgenerated\fP\&.
+.sp
+But if \fBCMAKE_CROSS_CONFIGS\fP is set to \fBall\fP, and you run the
+following instead:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+ninja \-f build\-Release.ninja generated:Debug
+# OR
+cmake \-\-build . \-\-config Release \-\-target generated:Debug
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This would build the \fBRelease\fP configuration of \fBgenerator\fP, which would be
+used to generate \fBgenerated.c\fP, which would be used to build the \fBDebug\fP
+configuration of \fBgenerated\fP\&. This is useful for running a release\-optimized
+version of a generator utility while still building the debug version of the
+targets built with the generated code.
 .SS IDE Build Tool Generators
 .sp
 These generators support Integrated Development Environment (IDE)
@@ -578,7 +718,7 @@ The following properties are available:
 \fBNOTE:\fP
 .INDENT 0.0
 .INDENT 3.5
-This generator is deemed experimental as of CMake 3.15.4
+This generator is deemed experimental as of CMake 3.18.4
 and is still a work in progress.  Future versions of CMake
 may make breaking changes as the generator matures.
 .UNINDENT
@@ -742,6 +882,6 @@ Generate with \fBNinja\fP\&.
 Generate with \fBUnix Makefiles\fP\&.
 .UNINDENT
 .SH COPYRIGHT
-2000-2019 Kitware, Inc. and Contributors
+2000-2020 Kitware, Inc. and Contributors
 .\" Generated by docutils manpage writer.
 .

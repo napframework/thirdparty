@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-VARIABLES" "7" "Sep 30, 2019" "3.15.4" "CMake"
+.TH "CMAKE-VARIABLES" "7" "Oct 06, 2020" "3.18.4" "CMake"
 .SH NAME
 cmake-variables \- CMake Variables Reference
 .
@@ -37,6 +37,21 @@ or have meaning to CMake when set by project code.
 For general information on variables, see the
 Variables
 section in the cmake\-language manual.
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+CMake reserves identifiers that:
+.INDENT 0.0
+.IP \(bu 2
+begin with \fBCMAKE_\fP (upper\-, lower\-, or mixed\-case), or
+.IP \(bu 2
+begin with \fB_CMAKE_\fP (upper\-, lower\-, or mixed\-case), or
+.IP \(bu 2
+begin with \fB_\fP followed by the name of any \fBCMake Command\fP\&.
+.UNINDENT
+.UNINDENT
+.UNINDENT
 .SH VARIABLES THAT PROVIDE INFORMATION
 .SS CMAKE_AR
 .sp
@@ -122,10 +137,17 @@ $(ConfigurationName) = Visual Studio 9
 $(Configuration)     = Visual Studio 10
 $(CONFIGURATION)     = Xcode
 \&.                    = Make\-based tools
+\&.                    = Ninja
+${CONFIGURATION}     = Ninja Multi\-Config
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
+.sp
+Note that this variable only has limited support on
+\fBNinja Multi\-Config\fP\&. It is recommended that you use the
+\fB$<CONFIG>\fP \fBgenerator expression\fP
+instead.
 .sp
 Since these values are evaluated by the native build system, this
 variable is suitable only for use in command lines that will be
@@ -234,6 +256,84 @@ When run in \-P script mode, CMake sets the variables
 \fBCMAKE_BINARY_DIR\fP, \fBCMAKE_SOURCE_DIR\fP,
 \fI\%CMAKE_CURRENT_BINARY_DIR\fP and
 \fBCMAKE_CURRENT_SOURCE_DIR\fP to the current working directory.
+.SS CMAKE_CURRENT_FUNCTION
+.sp
+When executing code inside a \fBfunction()\fP, this variable
+contains the name of the current function.  It can be useful for
+diagnostic or debug messages.
+.sp
+See also \fBCMAKE_CURRENT_FUNCTION_LIST_DIR\fP,
+\fBCMAKE_CURRENT_FUNCTION_LIST_FILE\fP and
+\fBCMAKE_CURRENT_FUNCTION_LIST_LINE\fP\&.
+.SS CMAKE_CURRENT_FUNCTION_LIST_DIR
+.sp
+When executing code inside a \fBfunction()\fP, this variable
+contains the full directory of the listfile that defined the current function.
+.sp
+It is quite common practice in CMake for modules to use some additional files,
+such as templates to be copied in after substituting CMake variables.
+In such cases, a function needs to know where to locate those files in a way
+that doesn’t depend on where the function is called.  Without
+\fBCMAKE_CURRENT_FUNCTION_LIST_DIR\fP, the code to do that would typically use
+the following pattern:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+set(_THIS_MODULE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
+function(foo)
+  configure_file(
+    "${_THIS_MODULE_BASE_DIR}/some.template.in"
+    some.output
+  )
+endfunction()
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Using \fBCMAKE_CURRENT_FUNCTION_LIST_DIR\fP inside the function instead
+eliminates the need for the extra variable which would otherwise be visible
+outside the function’s scope.
+The above example can be written in the more concise and more robust form:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+function(foo)
+  configure_file(
+    "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/some.template.in"
+    some.output
+  )
+endfunction()
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+See also \fBCMAKE_CURRENT_FUNCTION\fP,
+\fBCMAKE_CURRENT_FUNCTION_LIST_FILE\fP and
+\fBCMAKE_CURRENT_FUNCTION_LIST_LINE\fP\&.
+.SS CMAKE_CURRENT_FUNCTION_LIST_FILE
+.sp
+When executing code inside a \fBfunction()\fP, this variable
+contains the full path to the listfile that defined the current function.
+.sp
+See also \fBCMAKE_CURRENT_FUNCTION\fP,
+\fBCMAKE_CURRENT_FUNCTION_LIST_DIR\fP and
+\fBCMAKE_CURRENT_FUNCTION_LIST_LINE\fP\&.
+.SS CMAKE_CURRENT_FUNCTION_LIST_LINE
+.sp
+When executing code inside a \fBfunction()\fP, this variable
+contains the line number in the listfile where the current function
+was defined.
+.sp
+See also \fBCMAKE_CURRENT_FUNCTION\fP,
+\fBCMAKE_CURRENT_FUNCTION_LIST_DIR\fP and
+\fBCMAKE_CURRENT_FUNCTION_LIST_FILE\fP\&.
 .SS CMAKE_CURRENT_LIST_DIR
 .sp
 Full directory of the listfile currently being processed.
@@ -281,6 +381,38 @@ When run in \-P script mode, CMake sets the variables
 \fBCMAKE_BINARY_DIR\fP, \fBCMAKE_SOURCE_DIR\fP,
 \fBCMAKE_CURRENT_BINARY_DIR\fP and
 \fI\%CMAKE_CURRENT_SOURCE_DIR\fP to the current working directory.
+.SS CMAKE_DEBUG_TARGET_PROPERTIES
+.sp
+Enables tracing output for target properties.
+.sp
+This variable can be populated with a list of properties to generate
+debug output for when evaluating target properties.  Currently it can
+only be used when evaluating:
+.INDENT 0.0
+.IP \(bu 2
+\fBAUTOUIC_OPTIONS\fP
+.IP \(bu 2
+\fBCOMPILE_DEFINITIONS\fP
+.IP \(bu 2
+\fBCOMPILE_FEATURES\fP
+.IP \(bu 2
+\fBCOMPILE_OPTIONS\fP
+.IP \(bu 2
+\fBINCLUDE_DIRECTORIES\fP
+.IP \(bu 2
+\fBLINK_DIRECTORIES\fP
+.IP \(bu 2
+\fBLINK_OPTIONS\fP
+.IP \(bu 2
+\fBPOSITION_INDEPENDENT_CODE\fP
+.IP \(bu 2
+\fBSOURCES\fP
+.UNINDENT
+.sp
+target properties and any other property listed in
+\fBCOMPATIBLE_INTERFACE_STRING\fP and other
+\fBCOMPATIBLE_INTERFACE_\fP properties.  It outputs an origin for each entry
+in the target property.  Default is unset.
 .SS CMAKE_DIRECTORY_LABELS
 .sp
 Specify labels for the current directory.
@@ -292,6 +424,21 @@ Name of library containing \fBdlopen\fP and \fBdlclose\fP\&.
 .sp
 The name of the library that has \fBdlopen\fP and \fBdlclose\fP in it, usually
 \fB\-ldl\fP on most UNIX machines.
+.SS CMAKE_DOTNET_TARGET_FRAMEWORK
+.sp
+Default value for \fBDOTNET_TARGET_FRAMEWORK\fP property  of
+targets.
+.sp
+This variable is used to initialize the
+\fBDOTNET_TARGET_FRAMEWORK\fP property on all targets. See that
+target property for additional information.
+.sp
+Setting \fBCMAKE_DOTNET_TARGET_FRAMEWORK\fP may be necessary
+when working with \fBC#\fP and newer .NET framework versions to
+avoid referencing errors with the \fBALL_BUILD\fP CMake target.
+.sp
+This variable is only evaluated for Visual Studio Generators
+VS 2010 and above.
 .SS CMAKE_DOTNET_TARGET_FRAMEWORK_VERSION
 .sp
 Default value for \fBDOTNET_TARGET_FRAMEWORK_VERSION\fP
@@ -299,7 +446,10 @@ property of targets.
 .sp
 This variable is used to initialize the
 \fBDOTNET_TARGET_FRAMEWORK_VERSION\fP property on all
-targets. See that target property for additional information.
+targets. See that target property for additional information. When set,
+\fBCMAKE_DOTNET_TARGET_FRAMEWORK\fP takes precednece over this
+variable. See that variable or the associated target property
+\fBDOTNET_TARGET_FRAMEWORK\fP for additional information.
 .sp
 Setting \fBCMAKE_DOTNET_TARGET_FRAMEWORK_VERSION\fP may be necessary
 when working with \fBC#\fP and newer .NET framework versions to
@@ -339,6 +489,40 @@ Extensions for shared libraries other than that specified by
 \fBCMAKE_SHARED_LIBRARY_SUFFIX\fP, if any.  CMake uses this to recognize
 external shared library files during analysis of libraries linked by a
 target.
+.SS CMAKE_FIND_DEBUG_MODE
+.sp
+Print extra find call information for the following commands to standard
+error:
+.INDENT 0.0
+.IP \(bu 2
+\fBfind_program()\fP
+.IP \(bu 2
+\fBfind_library()\fP
+.IP \(bu 2
+\fBfind_file()\fP
+.IP \(bu 2
+\fBfind_path()\fP
+.IP \(bu 2
+\fBfind_package()\fP
+.UNINDENT
+.sp
+Output is designed for human consumption and not for parsing.
+Enabling this variable is equivalent to using \fBcmake\fP \fB\-\-debug\-find\fP
+with the added ability to enable debugging for a subset of find calls.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+set(CMAKE_FIND_DEBUG_MODE TRUE)
+find_program(...)
+set(CMAKE_FIND_DEBUG_MODE FALSE)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Default is unset.
 .SS CMAKE_FIND_PACKAGE_NAME
 .sp
 Defined by the \fBfind_package()\fP command while loading
@@ -523,10 +707,13 @@ specify generator\-specific details of the toolset selection.
 Supported pairs are:
 .INDENT 0.0
 .TP
-.B \fBcuda=<version>\fP
-Specify the CUDA toolkit version to use.  Supported by VS 2010
-and above with the CUDA toolkit VS integration installed.
-See the \fBCMAKE_VS_PLATFORM_TOOLSET_CUDA\fP variable.
+.B \fBcuda=<version>|<path>\fP
+Specify the CUDA toolkit version to use or the path to a
+standalone CUDA toolkit directory.  Supported by VS 2010
+and above. The version can only be used with the CUDA
+toolkit VS integration globally installed.
+See the \fBCMAKE_VS_PLATFORM_TOOLSET_CUDA\fP and
+\fBCMAKE_VS_PLATFORM_TOOLSET_CUDA_CUSTOM_DIR\fP variables.
 .TP
 .B \fBhost=<arch>\fP
 Specify the host tools architecture as \fBx64\fP or \fBx86\fP\&.
@@ -538,6 +725,11 @@ variable.
 Specify the toolset version to use.  Supported by VS 2017
 and above with the specified toolset installed.
 See the \fBCMAKE_VS_PLATFORM_TOOLSET_VERSION\fP variable.
+.TP
+.B \fBVCTargetsPath=<path>\fP
+Specify an alternative \fBVCTargetsPath\fP value for Visual Studio
+project files.  This allows use of VS platform extension configuration
+files (\fB\&.props\fP and \fB\&.targets\fP) that are not installed with VS.
 .UNINDENT
 .SS CMAKE_IMPORT_LIBRARY_PREFIX
 .sp
@@ -565,6 +757,11 @@ for additional information.
 This variable is used to initialize the \fBJOB_POOL_LINK\fP
 property on all the targets. See \fBJOB_POOL_LINK\fP
 for additional information.
+.SS CMAKE_JOB_POOL_PRECOMPILE_HEADER
+.sp
+This variable is used to initialize the \fBJOB_POOL_PRECOMPILE_HEADER\fP
+property on all the targets. See \fBJOB_POOL_PRECOMPILE_HEADER\fP
+for additional information.
 .SS CMAKE_JOB_POOLS
 .sp
 If the \fBJOB_POOLS\fP global property is not set, the value
@@ -582,6 +779,11 @@ A wrapper around \fBranlib\fP adding the appropriate \fB\-\-plugin\fP option for
 compiler.
 .sp
 See also \fBCMAKE_RANLIB\fP\&.
+.SS CMAKE_<LANG>_LINK_LIBRARY_SUFFIX
+.sp
+Language\-specific suffix for libraries that you link to.
+.sp
+The suffix to use for the end of a library filename, \fB\&.lib\fP on Windows.
 .SS CMAKE_LINK_LIBRARY_SUFFIX
 .sp
 The suffix for libraries that you link to.
@@ -1285,10 +1487,27 @@ NVIDIA CUDA Toolkit version whose Visual Studio toolset to use.
 The Visual Studio Generators for VS 2010 and above support using
 a CUDA toolset provided by a CUDA Toolkit.  The toolset version number
 may be specified by a field in \fBCMAKE_GENERATOR_TOOLSET\fP of
-the form \fBcuda=8.0\fP\&.  If none is specified CMake will choose a default
-version.  CMake provides the selected CUDA toolset version in this variable.
+the form \fBcuda=8.0\fP\&. Or it is automatically detected if a path to
+a standalone CUDA directory is specified in the form \fBcuda=C:\epath\eto\ecuda\fP\&.
+If none is specified CMake will choose a default version.
+CMake provides the selected CUDA toolset version in this variable.
 The value may be empty if no CUDA Toolkit with Visual Studio integration
 is installed.
+.SS CMAKE_VS_PLATFORM_TOOLSET_CUDA_CUSTOM_DIR
+.sp
+Path to standalone NVIDIA CUDA Toolkit (eg. extracted from installer).
+.sp
+The Visual Studio Generators for VS 2010 and above support using
+a standalone (non\-installed) NVIDIA CUDA toolkit.  The path
+may be specified by a field in \fBCMAKE_GENERATOR_TOOLSET\fP of
+the form \fBcuda=C:\epath\eto\ecuda\fP\&.  The given directory must at least
+contain a folder \fB\&.\envcc\fP and must provide Visual Studio integration
+files in path \fB\&.\eCUDAVisualStudioIntegration\eextras\e
+visual_studio_integration\eMSBuildExtensions\e\fP\&. One can create a standalone
+CUDA toolkit directory by either opening a installer with 7zip or
+copying the files that are extracted by the running installer.
+The value may be empty if no path to a standalone CUDA Toolkit was
+specified.
 .SS CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE
 .sp
 Visual Studio preferred tool architecture.
@@ -1419,9 +1638,11 @@ command in the current directory scope or above.  To obtain the name of
 the top level project, see the \fBCMAKE_PROJECT_NAME\fP variable.
 .SS PROJECT_SOURCE_DIR
 .sp
-Top level source directory for the current project.
-.sp
-This is the source directory of the most recent \fBproject()\fP command.
+This is the source directory of the last call to the
+\fBproject()\fP command made in the current directory scope or one
+of its parents. Note, it is not affected by calls to
+\fBproject()\fP made within a child directory scope (i.e. from
+within a call to \fBadd_subdirectory()\fP from the current scope).
 .SS PROJECT_VERSION
 .sp
 Value given to the \fBVERSION\fP option of the most recent call to the
@@ -1548,38 +1769,6 @@ such as \fBDebug\fP, \fBRelease\fP, \fBRelWithDebInfo\fP etc.  This has reasonab
 defaults on most platforms, but can be extended to provide other build
 types.  See also \fBCMAKE_BUILD_TYPE\fP for details of managing
 configuration data, and \fBCMAKE_CFG_INTDIR\fP\&.
-.SS CMAKE_DEBUG_TARGET_PROPERTIES
-.sp
-Enables tracing output for target properties.
-.sp
-This variable can be populated with a list of properties to generate
-debug output for when evaluating target properties.  Currently it can
-only be used when evaluating:
-.INDENT 0.0
-.IP \(bu 2
-\fBAUTOUIC_OPTIONS\fP
-.IP \(bu 2
-\fBCOMPILE_DEFINITIONS\fP
-.IP \(bu 2
-\fBCOMPILE_FEATURES\fP
-.IP \(bu 2
-\fBCOMPILE_OPTIONS\fP
-.IP \(bu 2
-\fBINCLUDE_DIRECTORIES\fP
-.IP \(bu 2
-\fBLINK_DIRECTORIES\fP
-.IP \(bu 2
-\fBLINK_OPTIONS\fP
-.IP \(bu 2
-\fBPOSITION_INDEPENDENT_CODE\fP
-.IP \(bu 2
-\fBSOURCES\fP
-.UNINDENT
-.sp
-target properties and any other property listed in
-\fBCOMPATIBLE_INTERFACE_STRING\fP and other
-\fBCOMPATIBLE_INTERFACE_\fP properties.  It outputs an origin for each entry
-in the target property.  Default is unset.
 .SS CMAKE_DEPENDS_IN_PROJECT_ONLY
 .sp
 When set to \fBTRUE\fP in a directory, the build system produced by the
@@ -1631,6 +1820,11 @@ This cache variable is used by the Eclipse project generator.  See
 This variable holds arguments which are used when Eclipse invokes the make
 tool. By default it is initialized to hold flags to enable parallel builds
 (using \-j typically).
+.SS CMAKE_ECLIPSE_RESOURCE_ENCODING
+.sp
+This cache variable tells the \fBEclipse CDT4\fP project generator
+to set the resource encoding to the given value in generated project files.
+If no value is given, no encoding will be set.
 .SS CMAKE_ECLIPSE_VERSION
 .sp
 This cache variable is used by the Eclipse project generator.  See
@@ -1692,11 +1886,18 @@ form.  The format of the JSON file looks like:
 .UNINDENT
 .UNINDENT
 .sp
+This is initialized by the \fBCMAKE_EXPORT_COMPILE_COMMANDS\fP environment
+variable.
+.sp
 \fBNOTE:\fP
 .INDENT 0.0
 .INDENT 3.5
 This option is implemented only by Makefile Generators
 and the \fBNinja\fP\&.  It is ignored on other generators.
+.sp
+This option currently does not work well in combination with
+the \fBUNITY_BUILD\fP target property or the
+\fBCMAKE_UNITY_BUILD\fP variable.
 .UNINDENT
 .UNINDENT
 .SS CMAKE_EXPORT_PACKAGE_REGISTRY
@@ -1825,24 +2026,44 @@ the same prefix as the CMake installation, or for being a built\-in system
 prefix.
 .SS CMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY
 .sp
-Skip User Package Registry in \fBfind_package()\fP calls.
+Deprecated since version 3.16: Use the \fBCMAKE_FIND_USE_PACKAGE_REGISTRY\fP variable instead.
+
+.sp
+By default this variable is not set. If neither
+\fBCMAKE_FIND_USE_PACKAGE_REGISTRY\fP nor
+\fBCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY\fP is set, then
+\fBfind_package()\fP will use the User Package Registry
+unless the \fBNO_CMAKE_PACKAGE_REGISTRY\fP option is provided.
+.sp
+\fBCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY\fP is ignored if
+\fBCMAKE_FIND_USE_PACKAGE_REGISTRY\fP is set.
 .sp
 In some cases, for example to locate only system wide installations, it
 is not desirable to use the User Package Registry when searching
 for packages. If the \fI\%CMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY\fP
-variable is enabled, all the \fBfind_package()\fP commands will skip
+variable is \fBTRUE\fP, all the \fBfind_package()\fP commands will skip
 the User Package Registry as if they were called with the
 \fBNO_CMAKE_PACKAGE_REGISTRY\fP argument.
 .sp
 See also Disabling the Package Registry\&.
 .SS CMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY
 .sp
-Skip System Package Registry in \fBfind_package()\fP calls.
+Deprecated since version 3.16: Use the \fBCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY\fP variable instead.
+
+.sp
+By default this variable is not set. If neither
+\fBCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY\fP nor
+\fBCMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY\fP is set, then
+\fBfind_package()\fP will use the System Package Registry
+unless the \fBNO_CMAKE_SYSTEM_PACKAGE_REGISTRY\fP option is provided.
+.sp
+\fBCMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY\fP is ignored if
+\fBCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY\fP is set.
 .sp
 In some cases, it is not desirable to use the
 System Package Registry when searching for packages. If the
 \fI\%CMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY\fP variable is
-enabled, all the \fBfind_package()\fP commands will skip
+\fBTRUE\fP, all the \fBfind_package()\fP commands will skip
 the System Package Registry as if they were called with the
 \fBNO_CMAKE_SYSTEM_PACKAGE_REGISTRY\fP argument.
 .sp
@@ -1950,6 +2171,208 @@ will be searched. If set to \fBNEVER\fP, then the roots in
 \fBCMAKE_FIND_ROOT_PATH\fP will be ignored and only the host system
 root will be used. If set to \fBBOTH\fP, then the host system paths and the
 paths in \fBCMAKE_FIND_ROOT_PATH\fP will be searched.
+.SS CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH
+.sp
+Controls the default behavior of the following commands for whether or not to
+search paths provided by cmake\-specific environment variables:
+.INDENT 0.0
+.IP \(bu 2
+\fBfind_program()\fP
+.IP \(bu 2
+\fBfind_library()\fP
+.IP \(bu 2
+\fBfind_file()\fP
+.IP \(bu 2
+\fBfind_path()\fP
+.IP \(bu 2
+\fBfind_package()\fP
+.UNINDENT
+.sp
+This is useful in cross\-compiling environments.
+.sp
+By default this variable is not set, which is equivalent to it having
+a value of \fBTRUE\fP\&.  Explicit options given to the above commands
+take precedence over this variable.
+.sp
+See also the \fBCMAKE_FIND_USE_CMAKE_PATH\fP,
+\fBCMAKE_FIND_USE_CMAKE_SYSTEM_PATH\fP,
+\fBCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH\fP,
+\fBCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY\fP,
+\fBCMAKE_FIND_USE_PACKAGE_REGISTRY\fP,
+and \fBCMAKE_FIND_USE_PACKAGE_ROOT_PATH\fP variables.
+.SS CMAKE_FIND_USE_CMAKE_PATH
+.sp
+Controls the default behavior of the following commands for whether or not to
+search paths provided by cmake\-specific cache variables:
+.INDENT 0.0
+.IP \(bu 2
+\fBfind_program()\fP
+.IP \(bu 2
+\fBfind_library()\fP
+.IP \(bu 2
+\fBfind_file()\fP
+.IP \(bu 2
+\fBfind_path()\fP
+.IP \(bu 2
+\fBfind_package()\fP
+.UNINDENT
+.sp
+This is useful in cross\-compiling environments.
+.sp
+By default this variable is not set, which is equivalent to it having
+a value of \fBTRUE\fP\&.  Explicit options given to the above commands
+take precedence over this variable.
+.sp
+See also the \fBCMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH\fP,
+\fBCMAKE_FIND_USE_CMAKE_SYSTEM_PATH\fP,
+\fBCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH\fP,
+\fBCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY\fP,
+\fBCMAKE_FIND_USE_PACKAGE_REGISTRY\fP,
+and \fBCMAKE_FIND_USE_PACKAGE_ROOT_PATH\fP variables.
+.SS CMAKE_FIND_USE_CMAKE_SYSTEM_PATH
+.sp
+Controls the default behavior of the following commands for whether or not to
+search paths provided by platform\-specific cmake variables:
+.INDENT 0.0
+.IP \(bu 2
+\fBfind_program()\fP
+.IP \(bu 2
+\fBfind_library()\fP
+.IP \(bu 2
+\fBfind_file()\fP
+.IP \(bu 2
+\fBfind_path()\fP
+.IP \(bu 2
+\fBfind_package()\fP
+.UNINDENT
+.sp
+This is useful in cross\-compiling environments.
+.sp
+By default this variable is not set, which is equivalent to it having
+a value of \fBTRUE\fP\&.  Explicit options given to the above commands
+take precedence over this variable.
+.sp
+See also the \fBCMAKE_FIND_USE_CMAKE_PATH\fP,
+\fBCMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH\fP,
+\fBCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH\fP,
+\fBCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY\fP,
+\fBCMAKE_FIND_USE_PACKAGE_REGISTRY\fP,
+and \fBCMAKE_FIND_USE_PACKAGE_ROOT_PATH\fP variables.
+.SS CMAKE_FIND_USE_PACKAGE_REGISTRY
+.sp
+Controls the default behavior of the \fBfind_package()\fP command for
+whether or not to search paths provided by the User Package Registry\&.
+.sp
+By default this variable is not set and the behavior will fall back
+to that determined by the deprecated
+\fBCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY\fP variable.  If that is
+also not set, then \fBfind_package()\fP will use the
+User Package Registry unless the \fBNO_CMAKE_PACKAGE_REGISTRY\fP option
+is provided.
+.sp
+This variable takes precedence over
+\fBCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY\fP when both are set.
+.sp
+In some cases, for example to locate only system wide installations, it
+is not desirable to use the User Package Registry when searching
+for packages.  If the \fI\%CMAKE_FIND_USE_PACKAGE_REGISTRY\fP
+variable is \fBFALSE\fP, all the \fBfind_package()\fP commands will skip
+the User Package Registry as if they were called with the
+\fBNO_CMAKE_PACKAGE_REGISTRY\fP argument.
+.sp
+See also Disabling the Package Registry and the
+\fBCMAKE_FIND_USE_CMAKE_PATH\fP,
+\fBCMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH\fP,
+\fBCMAKE_FIND_USE_CMAKE_SYSTEM_PATH\fP,
+\fBCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH\fP,
+\fBCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY\fP,
+and \fBCMAKE_FIND_USE_PACKAGE_ROOT_PATH\fP variables.
+.SS CMAKE_FIND_USE_PACKAGE_ROOT_PATH
+.sp
+Controls the default behavior of the following commands for whether or not to
+search paths provided by \fB<PackageName>_ROOT\fP variables:
+.INDENT 0.0
+.IP \(bu 2
+\fBfind_program()\fP
+.IP \(bu 2
+\fBfind_library()\fP
+.IP \(bu 2
+\fBfind_file()\fP
+.IP \(bu 2
+\fBfind_path()\fP
+.IP \(bu 2
+\fBfind_package()\fP
+.UNINDENT
+.sp
+By default this variable is not set, which is equivalent to it having
+a value of \fBTRUE\fP\&.  Explicit options given to the above commands
+take precedence over this variable.
+.sp
+See also the \fBCMAKE_FIND_USE_CMAKE_PATH\fP,
+\fBCMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH\fP,
+\fBCMAKE_FIND_USE_CMAKE_SYSTEM_PATH\fP,
+\fBCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH\fP,
+\fBCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY\fP,
+and \fBCMAKE_FIND_USE_PACKAGE_REGISTRY\fP variables.
+.SS CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH
+.sp
+Controls the default behavior of the following commands for whether or not to
+search paths provided by standard system environment variables:
+.INDENT 0.0
+.IP \(bu 2
+\fBfind_program()\fP
+.IP \(bu 2
+\fBfind_library()\fP
+.IP \(bu 2
+\fBfind_file()\fP
+.IP \(bu 2
+\fBfind_path()\fP
+.IP \(bu 2
+\fBfind_package()\fP
+.UNINDENT
+.sp
+This is useful in cross\-compiling environments.
+.sp
+By default this variable is not set, which is equivalent to it having
+a value of \fBTRUE\fP\&.  Explicit options given to the above commands
+take precedence over this variable.
+.sp
+See also the \fBCMAKE_FIND_USE_CMAKE_PATH\fP,
+\fBCMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH\fP,
+\fBCMAKE_FIND_USE_CMAKE_SYSTEM_PATH\fP,
+\fBCMAKE_FIND_USE_PACKAGE_REGISTRY\fP,
+\fBCMAKE_FIND_USE_PACKAGE_ROOT_PATH\fP,
+and \fBCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY\fP variables.
+.SS CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY
+.sp
+Controls searching the System Package Registry by the
+\fBfind_package()\fP command.
+.sp
+By default this variable is not set and the behavior will fall back
+to that determined by the deprecated
+\fBCMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY\fP variable.
+If that is also not set, then \fBfind_package()\fP will use the
+System Package Registry unless the \fBNO_CMAKE_SYSTEM_PACKAGE_REGISTRY\fP
+option is provided.
+.sp
+This variable takes precedence over
+\fBCMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY\fP when both are set.
+.sp
+In some cases, for example to locate only user specific installations, it
+is not desirable to use the System Package Registry when searching
+for packages. If the \fBCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY\fP
+variable is \fBFALSE\fP, all the \fBfind_package()\fP commands will skip
+the System Package Registry as if they were called with the
+\fBNO_CMAKE_SYSTEM_PACKAGE_REGISTRY\fP argument.
+.sp
+See also Disabling the Package Registry\&.
+.sp
+See also the \fBCMAKE_FIND_USE_CMAKE_PATH\fP,
+\fBCMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH\fP,
+\fBCMAKE_FIND_USE_CMAKE_SYSTEM_PATH\fP,
+\fBCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH\fP,
+\fBCMAKE_FIND_USE_PACKAGE_REGISTRY\fP,
+and \fBCMAKE_FIND_USE_PACKAGE_ROOT_PATH\fP variables.
 .SS CMAKE_FRAMEWORK_PATH
 .sp
 Semicolon\-separated list of directories specifying a search path
@@ -2210,6 +2633,152 @@ depth)
 Reading or writing variables that are being watched by a
 \fBvariable_watch()\fP
 .UNINDENT
+.SS CMAKE_MESSAGE_CONTEXT
+.sp
+When enabled by the \fBcmake\fP \fB\-\-log\-context\fP command line
+option or the \fBCMAKE_MESSAGE_CONTEXT_SHOW\fP variable, the
+\fBmessage()\fP command converts the \fBCMAKE_MESSAGE_CONTEXT\fP list into a
+dot\-separated string surrounded by square brackets and prepends it to each line
+for messages of log levels \fBNOTICE\fP and below.
+.sp
+For logging contexts to work effectively, projects should generally
+\fBAPPEND\fP and \fBPOP_BACK\fP an item to the current value of
+\fBCMAKE_MESSAGE_CONTEXT\fP rather than replace it.
+Projects should not assume the message context at the top of the source tree
+is empty, as there are scenarios where the context might have already been set
+(e.g. hierarchical projects).
+.sp
+\fBWARNING:\fP
+.INDENT 0.0
+.INDENT 3.5
+Valid context names are restricted to anything that could be used
+as a CMake variable name.  All names that begin with an underscore
+or the string \fBcmake_\fP are also reserved for use by CMake and
+should not be used by projects.
+.UNINDENT
+.UNINDENT
+.sp
+Example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+function(bar)
+  list(APPEND CMAKE_MESSAGE_CONTEXT "bar")
+  message(VERBOSE "bar VERBOSE message")
+endfunction()
+
+function(baz)
+  list(APPEND CMAKE_MESSAGE_CONTEXT "baz")
+  message(DEBUG "baz DEBUG message")
+endfunction()
+
+function(foo)
+  list(APPEND CMAKE_MESSAGE_CONTEXT "foo")
+  bar()
+  message(TRACE "foo TRACE message")
+  baz()
+endfunction()
+
+list(APPEND CMAKE_MESSAGE_CONTEXT "top")
+
+message(VERBOSE "Before \(gafoo\(ga")
+foo()
+message(VERBOSE "After \(gafoo\(ga")
+
+list(POP_BACK CMAKE_MESSAGE_CONTEXT)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Which results in the following output:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+\-\- [top] Before \(gafoo\(ga
+\-\- [top.foo.bar] bar VERBOSE message
+\-\- [top.foo] foo TRACE message
+\-\- [top.foo.baz] baz DEBUG message
+\-\- [top] After \(gafoo\(ga
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SS CMAKE_MESSAGE_CONTEXT_SHOW
+.sp
+Setting this variable to true enables showing a context with each line
+logged by the \fBmessage()\fP command (see \fBCMAKE_MESSAGE_CONTEXT\fP
+for how the context itself is specified).
+.sp
+This variable is an alternative to providing the \fB\-\-log\-context\fP option
+on the \fBcmake\fP command line.  Whereas the command line
+option will apply only to that one CMake run, setting
+\fBCMAKE_MESSAGE_CONTEXT_SHOW\fP to true as a cache variable will ensure that
+subsequent CMake runs will continue to show the message context.
+.sp
+Projects should not set \fBCMAKE_MESSAGE_CONTEXT_SHOW\fP\&.  It is intended for
+users so that they may control whether or not to include context with messages.
+.SS CMAKE_MESSAGE_INDENT
+.sp
+The \fBmessage()\fP command joins the strings from this list and for
+log levels of \fBNOTICE\fP and below, it prepends the resultant string to
+each line of the message.
+.sp
+Example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+list(APPEND listVar one two three)
+
+message(VERBOSE [[Collected items in the "listVar":]])
+list(APPEND CMAKE_MESSAGE_INDENT "  ")
+
+foreach(item IN LISTS listVar)
+  message(VERBOSE ${item})
+endforeach()
+
+list(POP_BACK CMAKE_MESSAGE_INDENT)
+message(VERBOSE "No more indent")
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Which results in the following output:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+\-\- Collected items in the "listVar":
+\-\-   one
+\-\-   two
+\-\-   three
+\-\- No more indent
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SS CMAKE_MESSAGE_LOG_LEVEL
+.sp
+When set, this variable specifies the logging level used by the
+\fBmessage()\fP command.  Valid values are the same as those for the
+\fB\-\-log\-level\fP command line option of the \fBcmake(1)\fP program.
+If this variable is set and the \fB\-\-log\-level\fP command line option is
+given, the command line option takes precedence.
+.sp
+The main advantage to using this variable is to make a log level persist
+between CMake runs.  Setting it as a cache variable will ensure that
+subsequent CMake runs will continue to use the chosen log level.
+.sp
+Projects should not set this variable, it is intended for users so that
+they may control the log level according to their own needs.
 .SS CMAKE_MODULE_PATH
 .sp
 Semicolon\-separated list of directories specifying a search path
@@ -2265,6 +2834,9 @@ policy \fBCMP0082\fP\&.
 .IP \(bu 2
 \fBCMAKE_POLICY_WARNING_CMP0089\fP controls the warning for
 policy \fBCMP0089\fP\&.
+.IP \(bu 2
+\fBCMAKE_POLICY_WARNING_CMP0102\fP controls the warning for
+policy \fBCMP0102\fP\&.
 .UNINDENT
 .sp
 This variable should not be set by a project in CMake code.  Project
@@ -2298,7 +2870,8 @@ A CMake language file or module to be included as the last step of all
 \fBproject()\fP command calls.  This is intended for injecting custom code
 into project builds without modifying their source.
 .sp
-See also the \fBCMAKE_PROJECT_<PROJECT\-NAME>_INCLUDE\fP and
+See also the \fBCMAKE_PROJECT_<PROJECT\-NAME>_INCLUDE\fP,
+\fBCMAKE_PROJECT_<PROJECT\-NAME>_INCLUDE_BEFORE\fP and
 \fBCMAKE_PROJECT_INCLUDE_BEFORE\fP variables.
 .SS CMAKE_PROJECT_INCLUDE_BEFORE
 .sp
@@ -2306,7 +2879,8 @@ A CMake language file or module to be included as the first step of all
 \fBproject()\fP command calls.  This is intended for injecting custom code
 into project builds without modifying their source.
 .sp
-See also the \fBCMAKE_PROJECT_<PROJECT\-NAME>_INCLUDE\fP and
+See also the \fBCMAKE_PROJECT_<PROJECT\-NAME>_INCLUDE\fP,
+\fBCMAKE_PROJECT_<PROJECT\-NAME>_INCLUDE_BEFORE\fP and
 \fBCMAKE_PROJECT_INCLUDE\fP variables.
 .SS CMAKE_PROJECT_<PROJECT\-NAME>_INCLUDE
 .sp
@@ -2315,7 +2889,18 @@ A CMake language file or module to be included as the last step of any
 name.  This is intended for injecting custom code into project builds without
 modifying their source.
 .sp
-See also the \fBCMAKE_PROJECT_INCLUDE\fP and
+See also the \fBCMAKE_PROJECT_<PROJECT\-NAME>_INCLUDE_BEFORE\fP,
+\fBCMAKE_PROJECT_INCLUDE\fP and
+\fBCMAKE_PROJECT_INCLUDE_BEFORE\fP variables.
+.SS CMAKE_PROJECT_<PROJECT\-NAME>_INCLUDE_BEFORE
+.sp
+A CMake language file or module to be included as the first step of any
+\fBproject()\fP command calls that specify \fB<PROJECT\-NAME>\fP as the project
+name.  This is intended for injecting custom code into project builds without
+modifying their source.
+.sp
+See also the \fBCMAKE_PROJECT_<PROJECT\-NAME>_INCLUDE\fP,
+\fBCMAKE_PROJECT_INCLUDE\fP and
 \fBCMAKE_PROJECT_INCLUDE_BEFORE\fP variables.
 .SS CMAKE_SKIP_INSTALL_ALL_DEPENDENCY
 .sp
@@ -2475,10 +3060,63 @@ Semicolon\-separated list of directories specifying installation
 subdirectories (like \fBbin\fP, \fBlib\fP, or \fBinclude\fP) as specified in its own
 documentation.
 .sp
-By default this contains the standard directories for the current system, the
+By default this contains the system directories for the current system, the
 \fBCMAKE_INSTALL_PREFIX\fP, and the \fBCMAKE_STAGING_PREFIX\fP\&.
 The installation and staging prefixes may be excluded by setting
 the \fBCMAKE_FIND_NO_INSTALL_PREFIX\fP variable.
+.sp
+The system directories that are contained in \fBCMAKE_SYSTEM_PREFIX_PATH\fP are
+locations that typically include installed software. An example being
+\fB/usr/local\fP for UNIX based platforms. In addition to standard platform
+locations, CMake will also add values to \fBCMAKE_SYSTEM_PREFIX_PATH\fP based on
+environment variables. The environment variables and search locations that
+CMake uses may evolve over time, as platforms and their conventions also
+evolve. The following provides an indicative list of environment variables
+and locations that CMake searches, but they are subject to change:
+.INDENT 0.0
+.TP
+.B CrayLinuxEnvironment:
+.INDENT 7.0
+.IP \(bu 2
+\fBENV{SYSROOT_DIR}/\fP
+.IP \(bu 2
+\fBENV{SYSROOT_DIR}/usr\fP
+.IP \(bu 2
+\fBENV{SYSROOT_DIR}/usr/local\fP
+.UNINDENT
+.TP
+.B Darwin:
+.INDENT 7.0
+.IP \(bu 2
+\fBENV{SDKROOT}/usr\fP When \fBCMAKE_OSX_SYSROOT\fP is not explicitly specified.
+.UNINDENT
+.TP
+.B OpenBSD:
+.INDENT 7.0
+.IP \(bu 2
+\fBENV{LOCALBASE}\fP
+.UNINDENT
+.TP
+.B Unix:
+.INDENT 7.0
+.IP \(bu 2
+\fBENV{CONDA_PREFIX}\fP when using a conda compiler
+.UNINDENT
+.TP
+.B Windows:
+.INDENT 7.0
+.IP \(bu 2
+\fBENV{ProgramW6432}\fP
+.IP \(bu 2
+\fBENV{ProgramFiles}\fP
+.IP \(bu 2
+\fBENV{ProgramFiles(x86)}\fP
+.IP \(bu 2
+\fBENV{SystemDrive}/Program Files\fP
+.IP \(bu 2
+\fBENV{SystemDrive}/Program Files (x86)\fP
+.UNINDENT
+.UNINDENT
 .sp
 \fBCMAKE_SYSTEM_PREFIX_PATH\fP is \fInot\fP intended to be modified by the project;
 use \fBCMAKE_PREFIX_PATH\fP for this.
@@ -2564,6 +3202,18 @@ property on all targets.
 .sp
 Please refer to the \fBXCODE_GENERATE_SCHEME\fP target property
 documentation to see all Xcode schema related properties.
+.SS CMAKE_XCODE_SCHEME_DEBUG_DOCUMENT_VERSIONING
+.sp
+Whether to enable
+\fBAllow debugging when using document Versions Browser\fP
+in the Options section of the generated Xcode scheme.
+.sp
+This variable initializes the
+\fBXCODE_SCHEME_DEBUG_DOCUMENT_VERSIONING\fP
+property on all targets.
+.sp
+Please refer to the \fBXCODE_GENERATE_SCHEME\fP target property
+documentation to see all Xcode schema related properties.
 .SS CMAKE_XCODE_SCHEME_DISABLE_MAIN_THREAD_CHECKER
 .sp
 Whether to disable the \fBMain Thread Checker\fP
@@ -2593,6 +3243,20 @@ in the Diagnostics section of the generated Xcode scheme.
 .sp
 This variable initializes the
 \fBXCODE_SCHEME_DYNAMIC_LINKER_API_USAGE\fP
+property on all targets.
+.sp
+Please refer to the \fBXCODE_GENERATE_SCHEME\fP target property
+documentation to see all Xcode schema related properties.
+.SS CMAKE_XCODE_SCHEME_ENVIRONMENT
+.sp
+Specify environment variables that should be added to the Arguments
+section of the generated Xcode scheme.
+.sp
+If set to a list of environment variables and values of the form
+\fBMYVAR=value\fP those environment variables will be added to the
+scheme.
+.sp
+This variable initializes the \fBXCODE_SCHEME_ENVIRONMENT\fP
 property on all targets.
 .sp
 Please refer to the \fBXCODE_GENERATE_SCHEME\fP target property
@@ -2698,6 +3362,17 @@ property on all targets.
 .sp
 Please refer to the \fBXCODE_GENERATE_SCHEME\fP target property
 documentation to see all Xcode schema related properties.
+.SS CMAKE_XCODE_SCHEME_WORKING_DIRECTORY
+.sp
+Specify the \fBWorking Directory\fP of the \fIRun\fP and \fIProfile\fP
+actions in the generated Xcode scheme.
+.sp
+This variable initializes the
+\fBXCODE_SCHEME_WORKING_DIRECTORY\fP
+property on all targets.
+.sp
+Please refer to the \fBXCODE_GENERATE_SCHEME\fP target property
+documentation to see all Xcode schema related properties.
 .SS CMAKE_XCODE_SCHEME_ZOMBIE_OBJECTS
 .sp
 Whether to enable \fBZombie Objects\fP
@@ -2777,9 +3452,23 @@ are the values found on the big three operating systems.
 .sp
 The name of the CPU CMake is running on.
 .sp
-On systems that support \fBuname\fP, this variable is set to the output of
-\fBuname \-p\fP\&.  On Windows it is set to the value of the environment variable
-\fBPROCESSOR_ARCHITECTURE\fP\&.
+On Windows, this variable is set to the value of the environment variable
+\fBPROCESSOR_ARCHITECTURE\fP\&. On systems that support \fBuname\fP, this variable is
+set to the output of:
+.INDENT 0.0
+.IP \(bu 2
+\fBuname \-m\fP on GNU, Linux, Cygwin, Darwin, Android, or
+.IP \(bu 2
+\fBarch\fP on OpenBSD, or
+.IP \(bu 2
+on other systems,
+.INDENT 2.0
+.IP \(bu 2
+\fBuname \-p\fP if its exit code is nonzero, or
+.IP \(bu 2
+\fBuname \-m\fP otherwise.
+.UNINDENT
+.UNINDENT
 .SS CMAKE_HOST_SYSTEM_VERSION
 .sp
 The OS version CMake is running on.
@@ -3062,6 +3751,11 @@ Version of Xcode (\fBXcode\fP generator only).
 Under the \fBXcode\fP generator, this is the version of Xcode
 as specified in \fBXcode.app/Contents/version.plist\fP (such as \fB3.1.2\fP).
 .SH VARIABLES THAT CONTROL THE BUILD
+.SS CMAKE_AIX_EXPORT_ALL_SYMBOLS
+.sp
+Default value for \fBAIX_EXPORT_ALL_SYMBOLS\fP target property.
+This variable is used to initialize the property on each target as it is
+created.
 .SS CMAKE_ANDROID_ANT_ADDITIONAL_OPTIONS
 .sp
 Default value for the \fBANDROID_ANT_ADDITIONAL_OPTIONS\fP target property.
@@ -3192,7 +3886,11 @@ toolchains that run on the host.
 .sp
 When Cross Compiling for Android with the NDK, this variable
 may be set to specify the version of the toolchain to be used
-as the compiler.  The variable must be set to one of these forms:
+as the compiler.
+.sp
+On NDK r19 or above, this variable must be unset or set to \fBclang\fP\&.
+.sp
+On NDK r18 or below, this variable must be set to one of these forms:
 .INDENT 0.0
 .IP \(bu 2
 \fB<major>.<minor>\fP: GCC of specified version
@@ -3382,6 +4080,16 @@ Additional options for \fBmoc\fP when using \fBCMAKE_AUTOMOC\fP\&.
 .sp
 This variable is used to initialize the \fBAUTOMOC_MOC_OPTIONS\fP property
 on all the targets.  See that target property for additional information.
+.SS CMAKE_AUTOMOC_PATH_PREFIX
+.sp
+Whether to generate the \fB\-p\fP path prefix option for \fBmoc\fP on
+\fBAUTOMOC\fP enabled Qt targets.
+.sp
+This variable is used to initialize the \fBAUTOMOC_PATH_PREFIX\fP
+property on all the targets.  See that target property for additional
+information.
+.sp
+The default value is \fBOFF\fP\&.
 .SS CMAKE_AUTORCC
 .sp
 Whether to handle \fBrcc\fP automatically for Qt targets.
@@ -3496,38 +4204,121 @@ Default filename postfix for libraries under configuration \fB<CONFIG>\fP\&.
 .sp
 When a non\-executable target is created its \fB<CONFIG>_POSTFIX\fP
 target property is initialized with the value of this variable if it is set.
+.SS CMAKE_CROSS_CONFIGS
+.sp
+Specifies a semicolon\-separated list of
+configurations available from all \fBbuild\-<Config>.ninja\fP files in the
+\fBNinja Multi\-Config\fP generator.  This variable activates
+cross\-config mode. Targets from each config specified in this variable can be
+built from any \fBbuild\-<Config>.ninja\fP file. Custom commands will use the
+configuration native to \fBbuild\-<Config>.ninja\fP\&. If it is set to \fBall\fP, all
+configurations from \fBCMAKE_CONFIGURATION_TYPES\fP are cross\-configs. If
+it is not specified, or empty, each \fBbuild\-<Config>.ninja\fP file will only
+contain build rules for its own configuration.
+.sp
+The value of this variable must be a subset of
+\fBCMAKE_CONFIGURATION_TYPES\fP\&.
+.SS CMAKE_CTEST_ARGUMENTS
+.sp
+Set this to a semicolon\-separated list of
+command\-line arguments to pass to \fBctest(1)\fP when running tests
+through the \fBtest\fP (or \fBRUN_TESTS\fP) target of the generated build system.
 .SS CMAKE_CUDA_SEPARABLE_COMPILATION
 .sp
 Default value for \fBCUDA_SEPARABLE_COMPILATION\fP target property.
 This variable is used to initialize the property on each target as it is
 created.
+.SS CMAKE_CUDA_RESOLVE_DEVICE_SYMBOLS
+.sp
+Default value for \fBCUDA_RESOLVE_DEVICE_SYMBOLS\fP target
+property. This variable is used to initialize the property on each target as
+it is created.
+.SS CMAKE_CUDA_RUNTIME_LIBRARY
+.sp
+Select the CUDA runtime library for use when compiling and linking CUDA.
+This variable is used to initialize the \fBCUDA_RUNTIME_LIBRARY\fP
+property on all targets as they are created.
+.sp
+The allowed case insensitive values are:
+.INDENT 0.0
+.TP
+.B \fBNone\fP
+Link with \fB\-cudart=none\fP or equivalent flag(s) to use no CUDA
+runtime library.
+.TP
+.B \fBShared\fP
+Link with \fB\-cudart=shared\fP or equivalent flag(s) to use a
+dynamically\-linked CUDA runtime library.
+.TP
+.B \fBStatic\fP
+Link with \fB\-cudart=static\fP or equivalent flag(s) to use a
+statically\-linked CUDA runtime library.
+.UNINDENT
+.sp
+Contents of \fBCMAKE_CUDA_RUNTIME_LIBRARY\fP may use
+\fBgenerator expressions\fP\&.
+.sp
+If this variable is not set then the \fBCUDA_RUNTIME_LIBRARY\fP target
+property will not be set automatically.  If that property is not set then
+CMake uses an appropriate default value based on the compiler to select the
+CUDA runtime library.
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+This property has effect only when the \fBCUDA\fP language is enabled. To
+control the CUDA runtime linking when only using the CUDA SDK with the
+\fBC\fP or \fBC++\fP language we recommend using the \fBFindCUDAToolkit\fP
+module.
+.UNINDENT
+.UNINDENT
 .SS CMAKE_DEBUG_POSTFIX
 .sp
 See variable \fBCMAKE_<CONFIG>_POSTFIX\fP\&.
 .sp
 This variable is a special case of the more\-general
 \fBCMAKE_<CONFIG>_POSTFIX\fP variable for the \fIDEBUG\fP configuration.
+.SS CMAKE_DEFAULT_BUILD_TYPE
+.sp
+Specifies the configuration to use by default in a \fBbuild.ninja\fP file in the
+\fBNinja Multi\-Config\fP generator. If this variable is specified,
+\fBbuild.ninja\fP uses build rules from \fBbuild\-<Config>.ninja\fP by default. All
+custom commands are executed with this configuration. If the variable is not
+specified, the first item from \fBCMAKE_CONFIGURATION_TYPES\fP is used
+instead.
+.sp
+The value of this variable must be one of the items from
+\fBCMAKE_CONFIGURATION_TYPES\fP\&.
+.SS CMAKE_DEFAULT_CONFIGS
+.sp
+Specifies a semicolon\-separated list of configurations
+to build for a target in \fBbuild.ninja\fP if no \fB:<Config>\fP suffix is specified in
+the \fBNinja Multi\-Config\fP generator. If it is set to \fBall\fP, all
+configurations from \fBCMAKE_CROSS_CONFIGS\fP are used. If it is not
+specified, it defaults to \fBCMAKE_DEFAULT_BUILD_TYPE\fP\&.
+.sp
+For example, if you set \fBCMAKE_DEFAULT_BUILD_TYPE\fP to \fBRelease\fP,
+but set \fI\%CMAKE_DEFAULT_CONFIGS\fP to \fBDebug\fP or \fBall\fP, all
+\fB<target>\fP aliases in \fBbuild.ninja\fP will resolve to \fB<target>:Debug\fP or
+\fB<target>:all\fP, but custom commands will still use the \fBRelease\fP
+configuration.
+.sp
+The value of this variable must be a subset of \fBCMAKE_CROSS_CONFIGS\fP
+or be the same as \fBCMAKE_DEFAULT_BUILD_TYPE\fP\&. It must not be
+specified if \fBCMAKE_DEFAULT_BUILD_TYPE\fP or
+\fBCMAKE_CROSS_CONFIGS\fP is not used.
+.SS CMAKE_DISABLE_PRECOMPILE_HEADERS
+.sp
+Default value for \fBDISABLE_PRECOMPILE_HEADERS\fP of targets.
+.sp
+By default \fBCMAKE_DISABLE_PRECOMPILE_HEADERS\fP is \fBOFF\fP\&.
 .SS CMAKE_ENABLE_EXPORTS
 .sp
-Specify whether an executable exports symbols for loadable modules.
+Specify whether executables export symbols for loadable modules.
 .sp
-Normally an executable does not export any symbols because it is the
-final program.  It is possible for an executable to export symbols to
-be used by loadable modules.  When this property is set to true CMake
-will allow other targets to \fBlink\fP to the executable with the
-\fBTARGET_LINK_LIBRARIES()\fP command.  On all platforms a target\-level
-dependency on the executable is created for targets that link to it.
-For DLL platforms an import library will be created for the exported
-symbols and then used for linking.  All Windows\-based systems
-including Cygwin are DLL platforms.  For non\-DLL platforms that
-require all symbols to be resolved at link time, such as macOS, the
-module will \fBlink\fP to the executable using a flag like
-\fB\-bundle_loader\fP\&.  For other non\-DLL platforms the link rule is simply
-ignored since the dynamic loader will automatically bind symbols when
-the module is loaded.
-.sp
-This variable is used to initialize the target property
-\fBENABLE_EXPORTS\fP for executable targets.
+This variable is used to initialize the \fBENABLE_EXPORTS\fP target
+property for executable targets when they are created by calls to the
+\fBadd_executable()\fP command.  See the property documentation for details.
 .SS CMAKE_EXE_LINKER_FLAGS
 .sp
 Linker flags to be used to create executables.
@@ -3568,6 +4359,13 @@ Default value for \fBFRAMEWORK\fP of targets.
 .sp
 This variable is used to initialize the \fBFRAMEWORK\fP property on
 all the targets.  See that target property for additional information.
+.SS CMAKE_FRAMEWORK_MULTI_CONFIG_POSTFIX_<CONFIG>
+.sp
+Default framework filename postfix under configuration \fB<CONFIG>\fP when
+using a multi\-config generator.
+.sp
+When a framework target is created its \fBFRAMEWORK_MULTI_CONFIG_POSTFIX_<CONFIG>\fP
+target property is initialized with the value of this variable if it is set.
 .SS CMAKE_Fortran_FORMAT
 .sp
 Set to \fBFIXED\fP or \fBFREE\fP to indicate the Fortran source layout.
@@ -3581,6 +4379,13 @@ Fortran module output directory.
 This variable is used to initialize the \fBFortran_MODULE_DIRECTORY\fP
 property on all the targets.  See that target property for additional
 information.
+.SS CMAKE_Fortran_PREPROCESS
+.sp
+Default value for \fBFortran_PREPROCESS\fP of targets.
+.sp
+This variable is used to initialize the \fBFortran_PREPROCESS\fP
+property on all the targets.  See that target property for additional
+information.
 .SS CMAKE_GHS_NO_SOURCE_GROUP_FILE
 .sp
 \fBON\fP / \fBOFF\fP boolean to control if the project file for a target should
@@ -3590,7 +4395,7 @@ be one single file or multiple files.  Refer to
 .sp
 Switch to enable generation of a global \fBautogen\fP target.
 .sp
-When \fBCMAKE_GLOBAL_AUTORCC_TARGET\fP is enabled, a custom target
+When \fI\%CMAKE_GLOBAL_AUTOGEN_TARGET\fP is enabled, a custom target
 \fBautogen\fP is generated.  This target depends on all \fBAUTOMOC\fP and
 \fBAUTOUIC\fP generated \fB<ORIGIN>_autogen\fP targets in the project.
 By building the global \fBautogen\fP target, all \fBAUTOMOC\fP and
@@ -3687,6 +4492,14 @@ macOS directory name for installed targets.
 \fBCMAKE_INSTALL_NAME_DIR\fP is used to initialize the
 \fBINSTALL_NAME_DIR\fP property on all targets.  See that target
 property for more information.
+.SS CMAKE_INSTALL_REMOVE_ENVIRONMENT_RPATH
+.sp
+Sets the default for whether toolchain\-defined rpaths should be removed during
+installation.
+.sp
+\fBCMAKE_INSTALL_REMOVE_ENVIRONMENT_RPATH\fP is a boolean that provides the
+default value for the \fBINSTALL_REMOVE_ENVIRONMENT_RPATH\fP property
+of all subsequently created targets.
 .SS CMAKE_INSTALL_RPATH
 .sp
 The rpath to use for installed targets.
@@ -3698,10 +4511,14 @@ the target property \fBINSTALL_RPATH\fP for all targets.
 .sp
 Add paths to linker search and installed rpath.
 .sp
-\fBCMAKE_INSTALL_RPATH_USE_LINK_PATH\fP is a boolean that if set to \fBtrue\fP
-will append directories in the linker search path and outside the
-project to the \fBINSTALL_RPATH\fP\&.  This is used to initialize the
-target property \fBINSTALL_RPATH_USE_LINK_PATH\fP for all targets.
+\fBCMAKE_INSTALL_RPATH_USE_LINK_PATH\fP is a boolean that if set to \fBTrue\fP
+will append to the runtime search path (rpath) of installed binaries
+any directories outside the project that are in the linker search path or
+contain linked library files.  The directories are appended after the
+value of the \fBINSTALL_RPATH\fP target property.
+.sp
+This variable is used to initialize the target property
+\fBINSTALL_RPATH_USE_LINK_PATH\fP for all targets.
 .SS CMAKE_INTERPROCEDURAL_OPTIMIZATION
 .sp
 Default value for \fBINTERPROCEDURAL_OPTIMIZATION\fP of targets.
@@ -3746,7 +4563,10 @@ add_executable(foo foo.cxx)
 Default value for \fB<LANG>_COMPILER_LAUNCHER\fP target property.
 This variable is used to initialize the property on each target as it is
 created.  This is done only when \fB<LANG>\fP is \fBC\fP, \fBCXX\fP, \fBFortran\fP,
-or \fBCUDA\fP\&.
+\fBOBJC\fP, \fBOBJCXX\fP, or \fBCUDA\fP\&.
+.sp
+This variable is initialized to the \fBCMAKE_<LANG>_COMPILER_LAUNCHER\fP
+environment variable if it is set.
 .SS CMAKE_<LANG>_CPPCHECK
 .sp
 Default value for \fB<LANG>_CPPCHECK\fP target property. This variable
@@ -3762,6 +4582,19 @@ is done only when \fB<LANG>\fP is \fBC\fP or \fBCXX\fP\&.
 Default value for \fB<LANG>_INCLUDE_WHAT_YOU_USE\fP target property.
 This variable is used to initialize the property on each target as it is
 created.  This is done only when \fB<LANG>\fP is \fBC\fP or \fBCXX\fP\&.
+.SS CMAKE_<LANG>_LINK_LIBRARY_FILE_FLAG
+.sp
+Language\-specific flag to be used to link a library specified by
+a path to its file.
+.sp
+The flag will be used before a library file path is given to the
+linker.  This is needed only on very few platforms.
+.SS CMAKE_<LANG>_LINK_LIBRARY_FLAG
+.sp
+Flag to be used to link a library into a shared library or executable.
+.sp
+This flag will be used to specify a library to link to a shared library or an
+executable for the specific language.  On most compilers this is \fB\-l\fP\&.
 .SS CMAKE_<LANG>_VISIBILITY_PRESET
 .sp
 Default value for the \fB<LANG>_VISIBILITY_PRESET\fP target
@@ -4074,6 +4907,10 @@ Despite the \fBOSX\fP part in the variable name(s) they apply also to
 other SDKs than macOS like iOS, tvOS, or watchOS.
 .sp
 This variable is ignored on platforms other than Apple.
+.SS CMAKE_PCH_WARN_INVALID
+.sp
+This variable is used to initialize the \fBPCH_WARN_INVALID\fP
+property of targets when they are created.
 .SS CMAKE_PDB_OUTPUT_DIRECTORY
 .sp
 Output directory for MS debug symbol \fB\&.pdb\fP files generated by the
@@ -4168,15 +5005,35 @@ To omit RPATH in both the build and install steps, use
 \fBCMAKE_SKIP_RPATH\fP instead.
 .SS CMAKE_STATIC_LINKER_FLAGS
 .sp
-Linker flags to be used to create static libraries.
+Flags to be used to create static libraries.  These flags will be passed
+to the archiver when creating a static library.
 .sp
-These flags will be used by the linker when creating a static library.
+See also \fBCMAKE_STATIC_LINKER_FLAGS_<CONFIG>\fP\&.
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+Static libraries do not actually link.  They are essentially archives
+of object files.  The use of the name “linker” in the name of this
+variable is kept for compatibility.
+.UNINDENT
+.UNINDENT
 .SS CMAKE_STATIC_LINKER_FLAGS_<CONFIG>
 .sp
-Flags to be used when linking a static library.
+Flags to be used to create static libraries.  These flags will be passed
+to the archiver when creating a static library in the \fB<CONFIG>\fP
+configuration.
 .sp
-Same as \fBCMAKE_C_FLAGS_*\fP but used by the linker when creating static
-libraries.
+See also \fBCMAKE_STATIC_LINKER_FLAGS\fP\&.
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+Static libraries do not actually link.  They are essentially archives
+of object files.  The use of the name “linker” in the name of this
+variable is kept for compatibility.
+.UNINDENT
+.UNINDENT
 .SS CMAKE_STATIC_LINKER_FLAGS_<CONFIG>_INIT
 .sp
 Value used to initialize the \fBCMAKE_STATIC_LINKER_FLAGS_<CONFIG>\fP
@@ -4250,6 +5107,35 @@ source file in the generated project.  This avoids running the
 linker and is intended for use with cross\-compiling toolchains
 that cannot link without custom flags or linker scripts.
 .UNINDENT
+.SS CMAKE_UNITY_BUILD
+.sp
+This variable is used to initialize the \fBUNITY_BUILD\fP
+property of targets when they are created.  Setting it to true
+enables batch compilation of multiple sources within each target.
+This feature is known as a \fIUnity\fP or \fIJumbo\fP build.
+.sp
+Projects should not set this variable, it is intended as a developer
+control to be set on the \fBcmake(1)\fP command line or other
+equivalent methods.  The developer must have the ability to enable or
+disable unity builds according to the capabilities of their own machine
+and compiler.
+.sp
+By default, this variable is not set, which will result in unity builds
+being disabled.
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+This option currently does not work well in combination with
+the \fBCMAKE_EXPORT_COMPILE_COMMANDS\fP variable.
+.UNINDENT
+.UNINDENT
+.SS CMAKE_UNITY_BUILD_BATCH_SIZE
+.sp
+This variable is used to initialize the \fBUNITY_BUILD_BATCH_SIZE\fP
+property of targets when they are created.  It specifies the default upper
+limit on the number of source files that may be combined in any one unity
+source file when unity builds are enabled for a target.
 .SS CMAKE_USE_RELATIVE_PATHS
 .sp
 This variable has no effect.  The partially implemented effect it
@@ -4329,8 +5215,18 @@ This variable allows to override Visual Studio default Reference Directories.
 This variable allows to override Visual Studio default Source Directories.
 .SS CMAKE_VS_WINRT_BY_DEFAULT
 .sp
-Tell Visual Studio Generators for VS 2010 and above that the
-target platform compiles as WinRT by default (compiles with \fB/ZW\fP).
+Inform Visual Studio Generators for VS 2010 and above that the
+target platform enables WinRT compilation by default and it needs to
+be explicitly disabled if \fB/ZW\fP or \fBVS_WINRT_COMPONENT\fP is
+omitted (as opposed to enabling it when either of those options is
+present)
+.sp
+This makes cmake configuration consistent in terms of WinRT among
+platforms \- if you did not enable the WinRT compilation explicitly, it
+will be disabled (by either not enabling it or explicitly disabling it)
+.sp
+Note: WinRT compilation is always explicitly disabled for C language
+source files, even if it is expliclty enabled for a project
 .sp
 This variable is meant to be set by a
 \fBtoolchain file\fP for such platforms.
@@ -4388,12 +5284,41 @@ Use \fBCMAKE_CXX_COMPILER_ID\fP instead.
 .sp
 True if the \fBFortran\fP compiler is GNU.
 Use \fBCMAKE_Fortran_COMPILER_ID\fP instead.
+.SS CMAKE_CUDA_ARCHITECTURES
+.sp
+Default value for \fBCUDA_ARCHITECTURES\fP property of targets.
+.sp
+This is initialized as follows depending on \fBCMAKE_CUDA_COMPILER_ID\fP:
+.INDENT 0.0
+.IP \(bu 2
+For \fBClang\fP: the oldest architecture that works.
+.IP \(bu 2
+For \fBNVIDIA\fP: the default architecture chosen by the compiler.
+See policy \fBCMP0104\fP\&.
+.UNINDENT
+.sp
+Users are encouraged to override this, as the default varies across compilers
+and compiler versions.
+.sp
+This variable is used to initialize the \fBCUDA_ARCHITECTURES\fP property
+on all targets. See the target property for additional information.
+.SS CMAKE_CUDA_COMPILE_FEATURES
+.sp
+List of features known to the CUDA compiler
+.sp
+These features are known to be available for use with the CUDA compiler. This
+list is a subset of the features listed in the
+\fBCMAKE_CUDA_KNOWN_FEATURES\fP global property.
+.sp
+See the \fBcmake\-compile\-features(7)\fP manual for information on
+compile features and a list of supported compilers.
 .SS CMAKE_CUDA_HOST_COMPILER
 .sp
 Executable to use when compiling host code when compiling \fBCUDA\fP language
 files. Maps to the \fBnvcc \-ccbin\fP option.  Will only be used by CMake on the first
 configuration to determine a valid host compiler for \fBCUDA\fP\&. After a valid
-host compiler has been found, this value is read\-only.
+host compiler has been found, this value is read\-only.  This variable takes
+priority over the \fBCUDAHOSTCXX\fP environment variable.
 .SS CMAKE_CUDA_EXTENSIONS
 .sp
 Default value for \fBCUDA_EXTENSIONS\fP property of targets.
@@ -4759,7 +5684,11 @@ This variable is the \fBDebug\fP variant of the
 Value used to initialize the \fBCMAKE_<LANG>_FLAGS\fP cache entry
 the first time a build tree is configured for language \fB<LANG>\fP\&.
 This variable is meant to be set by a \fBtoolchain file\fP\&.  CMake may prepend or append content to
-the value based on the environment and target platform.
+the value based on the environment and target platform.  For example,
+the contents of a \fBxxxFLAGS\fP environment variable will be prepended,
+where \fBxxx\fP will be language\-specific but not necessarily the same as
+\fB<LANG>\fP (e.g. \fBCXXFLAGS\fP for \fBCXX\fP, \fBFFLAGS\fP for
+\fBFortran\fP, and so on).
 .sp
 See also the configuration\-specific
 \fBCMAKE_<LANG>_FLAGS_<CONFIG>_INIT\fP variable.
@@ -4992,6 +5921,66 @@ CMake’s platform information modules for the current toolchain, or by a
 toolchain file when used with \fBCMAKE_TOOLCHAIN_FILE\fP\&.
 .sp
 See also \fBCMAKE_<LANG>_STANDARD_INCLUDE_DIRECTORIES\fP\&.
+.SS CMAKE_OBJC_EXTENSIONS
+.sp
+Default value for \fBOBJC_EXTENSIONS\fP property of targets.
+.sp
+This variable is used to initialize the \fBOBJC_EXTENSIONS\fP
+property on all targets.  See that target property for additional
+information.
+.sp
+See the \fBcmake\-compile\-features(7)\fP manual for information on
+compile features and a list of supported compilers.
+.SS CMAKE_OBJC_STANDARD
+.sp
+Default value for \fBOBJC_STANDARD\fP property of targets.
+.sp
+This variable is used to initialize the \fBOBJC_STANDARD\fP
+property on all targets.  See that target property for additional
+information.
+.sp
+See the \fBcmake\-compile\-features(7)\fP manual for information on
+compile features and a list of supported compilers.
+.SS CMAKE_OBJC_STANDARD_REQUIRED
+.sp
+Default value for \fBOBJC_STANDARD_REQUIRED\fP property of targets.
+.sp
+This variable is used to initialize the \fBOBJC_STANDARD_REQUIRED\fP
+property on all targets.  See that target property for additional
+information.
+.sp
+See the \fBcmake\-compile\-features(7)\fP manual for information on
+compile features and a list of supported compilers.
+.SS CMAKE_OBJCXX_EXTENSIONS
+.sp
+Default value for \fBOBJCXX_EXTENSIONS\fP property of targets.
+.sp
+This variable is used to initialize the \fBOBJCXX_EXTENSIONS\fP
+property on all targets.  See that target property for additional
+information.
+.sp
+See the \fBcmake\-compile\-features(7)\fP manual for information on
+compile features and a list of supported compilers.
+.SS CMAKE_OBJCXX_STANDARD
+.sp
+Default value for \fBOBJCXX_STANDARD\fP property of targets.
+.sp
+This variable is used to initialize the \fBOBJCXX_STANDARD\fP
+property on all targets.  See that target property for additional
+information.
+.sp
+See the \fBcmake\-compile\-features(7)\fP manual for information on
+compile features and a list of supported compilers.
+.SS CMAKE_OBJCXX_STANDARD_REQUIRED
+.sp
+Default value for \fBOBJCXX_STANDARD_REQUIRED\fP property of targets.
+.sp
+This variable is used to initialize the \fBOBJCXX_STANDARD_REQUIRED\fP
+property on all targets.  See that target property for additional
+information.
+.sp
+See the \fBcmake\-compile\-features(7)\fP manual for information on
+compile features and a list of supported compilers.
 .SS CMAKE_Swift_LANGUAGE_VERSION
 .sp
 Set to the Swift language version number.  If not set, the oldest legacy
@@ -5048,6 +6037,9 @@ the source directory in a \fBctest(1)\fP dashboard client script.
 .sp
 Specify the CTest \fBDefaultCTestConfigurationType\fP setting
 in a \fBctest(1)\fP dashboard client script.
+.sp
+If the configuration type is set via \fB\-C <cfg>\fP from the command line
+then this variable is populated accordingly.
 .SS CTEST_CONFIGURE_COMMAND
 .sp
 Specify the CTest \fBConfigureCommand\fP setting
@@ -5339,13 +6331,17 @@ in a \fBctest(1)\fP dashboard client script.
 .sp
 Specify the CTest \fBMemoryCheckType\fP setting
 in a \fBctest(1)\fP dashboard client script.
-Valid values are \fBValgrind\fP, \fBPurify\fP, \fBBoundsChecker\fP, and
+Valid values are \fBValgrind\fP, \fBPurify\fP, \fBBoundsChecker\fP, \fBDrMemory\fP and
 \fBThreadSanitizer\fP, \fBAddressSanitizer\fP, \fBLeakSanitizer\fP, \fBMemorySanitizer\fP, and
 \fBUndefinedBehaviorSanitizer\fP\&.
 .SS CTEST_NIGHTLY_START_TIME
 .sp
-Specify the CTest \fBNightlyStartTime\fP setting
-in a \fBctest(1)\fP dashboard client script.
+Specify the CTest \fBNightlyStartTime\fP setting in a \fBctest(1)\fP
+dashboard client script.
+.sp
+Note that this variable must always be set for a nightly build in a
+dashboard script. It is needed so that nightly builds can be properly grouped
+together in CDash.
 .SS CTEST_P4_CLIENT
 .sp
 Specify the CTest \fBP4Client\fP setting
@@ -5362,6 +6358,15 @@ in a \fBctest(1)\fP dashboard client script.
 .sp
 Specify the CTest \fBP4UpdateOptions\fP setting
 in a \fBctest(1)\fP dashboard client script.
+.SS CTEST_RESOURCE_SPEC_FILE
+.sp
+Specify the CTest \fBResourceSpecFile\fP setting in a \fBctest(1)\fP
+dashboard client script.
+.sp
+This can also be used to specify the resource spec file from a CMake build. If
+no \fBRESOURCE_SPEC_FILE\fP is passed to \fBctest_test()\fP, and
+\fBCTEST_RESOURCE_SPEC_FILE\fP is not specified in the dashboard script, the
+value of this variable from the build is used.
 .SS CTEST_RUN_CURRENT_SCRIPT
 .sp
 Setting this to 0 prevents \fBctest(1)\fP from being run again when it
@@ -5482,13 +6487,6 @@ serves during installation (e.g. \fBmake install\fP).
 .sp
 If \fIinclude(CPack)\fP is used then by default this variable is set to the content
 of \fBCMAKE_INSTALL_DEFAULT_DIRECTORY_PERMISSIONS\fP\&.
-.SS CPACK_INSTALL_SCRIPT
-.sp
-Extra CMake script provided by the user.
-.sp
-If set this CMake script will be executed by CPack during its local
-[CPack\-private] installation which is done right before packaging the
-files.  The script is not called by e.g.: \fBmake install\fP\&.
 .SS CPACK_PACKAGING_INSTALL_PREFIX
 .sp
 The prefix used in the built package.
@@ -5638,6 +6636,6 @@ Fortran plugin installed, this specifies the \fB\&.vfproj\fP project file format
 version.  This is intended for internal use by CMake and should not be
 used by project code.
 .SH COPYRIGHT
-2000-2019 Kitware, Inc. and Contributors
+2000-2020 Kitware, Inc. and Contributors
 .\" Generated by docutils manpage writer.
 .
