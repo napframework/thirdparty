@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CTEST" "1" "Sep 30, 2019" "3.15.4" "CMake"
+.TH "CTEST" "1" "Oct 06, 2020" "3.18.4" "CMake"
 .SH NAME
 ctest \- CTest Command-Line Reference
 .
@@ -80,6 +80,16 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .IP \(bu 2
 \fI\%Show as JSON Object Model\fP
 .IP \(bu 2
+\fI\%Resource Allocation\fP
+.INDENT 2.0
+.IP \(bu 2
+\fI\%Resource Specification File\fP
+.IP \(bu 2
+\fI\%RESOURCE_GROUPS Property\fP
+.IP \(bu 2
+\fI\%Environment Variables\fP
+.UNINDENT
+.IP \(bu 2
 \fI\%See Also\fP
 .UNINDENT
 .UNINDENT
@@ -152,6 +162,9 @@ Output anything outputted by the test program if the test should fail.
 This option can also be enabled by setting the
 \fBCTEST_OUTPUT_ON_FAILURE\fP environment variable
 .TP
+.B \fB\-\-stop\-on\-failure\fP
+Stop running the tests when the first failure happens.
+.TP
 .B \fB\-F\fP
 Enable failover.
 .sp
@@ -169,6 +182,15 @@ number of jobs. This option can also be set by setting the
 This option can be used with the \fBPROCESSORS\fP test property.
 .sp
 See \fI\%Label and Subproject Summary\fP\&.
+.TP
+.B \fB\-\-resource\-spec\-file <file>\fP
+Run CTest with \fI\%resource allocation\fP enabled,
+using the
+\fI\%resource specification file\fP
+specified in \fB<file>\fP\&.
+.sp
+When \fBctest\fP is run as a \fI\%Dashboard Client\fP this sets the
+\fBResourceSpecFile\fP option of the \fI\%CTest Test Step\fP\&.
 .TP
 .B \fB\-\-test\-load <level>\fP
 While running tests in parallel (e.g. with \fB\-j\fP), try not to start
@@ -338,10 +360,29 @@ other options intended to modify the list of tests to run (\fB\-L\fP, \fB\-R\fP,
 fail, subsequent calls to CTest with the \fB\-\-rerun\-failed\fP option will run
 the set of tests that most recently failed (if any).
 .TP
-.B \fB\-\-repeat\-until\-fail <n>\fP
+.B \fB\-\-repeat <mode>:<n>\fP
+Run tests repeatedly based on the given \fB<mode>\fP up to \fB<n>\fP times.
+The modes are:
+.INDENT 7.0
+.TP
+.B \fBuntil\-fail\fP
 Require each test to run \fB<n>\fP times without failing in order to pass.
-.sp
 This is useful in finding sporadic failures in test cases.
+.TP
+.B \fBuntil\-pass\fP
+Allow each test to run up to \fB<n>\fP times in order to pass.
+Repeats tests if they fail for any reason.
+This is useful in tolerating sporadic failures in test cases.
+.TP
+.B \fBafter\-timeout\fP
+Allow each test to run up to \fB<n>\fP times in order to pass.
+Repeats tests only if they timeout.
+This is useful in tolerating sporadic timeouts in test cases
+on busy machines.
+.UNINDENT
+.TP
+.B \fB\-\-repeat\-until\-fail <n>\fP
+Equivalent to \fB\-\-repeat until\-fail:<n>\fP\&.
 .TP
 .B \fB\-\-max\-width <width>\fP
 Set the max width for a test name to output.
@@ -431,6 +472,14 @@ Print all available test labels.
 .sp
 This option will not run any tests, it will simply print the list of
 all labels associated with the test set.
+.TP
+.B \fB\-\-no\-tests=<[error|ignore]>\fP
+Regard no tests found either as error or ignore it.
+.sp
+If no tests were found, the default behavior of CTest is to always log an
+error message but to return an error code in script mode only.  This option
+unifies the behavior of CTest by either returning an error code if no tests
+were found or by ignoring it.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -681,7 +730,8 @@ Specify the generator\-specific toolset.
 Specify the name of the project to build.
 .TP
 .B \fB\-\-build\-makeprogram\fP
-Override the make program chosen by CTest with a given one.
+Specify the explicit make program to be used by CMake when configuring and
+building the project. Only applicable for Make and Ninja based generators.
 .TP
 .B \fB\-\-build\-noclean\fP
 Skip the make clean step.
@@ -725,13 +775,16 @@ ctest (\-D <dashboard> | \-M <model> \-T <action> | \-S <script> | \-SP <script>
 Options for Dashboard Client include:
 .INDENT 0.0
 .TP
-.B \fB\-\-track <track>\fP
-Specify the track to submit dashboard to
+.B \fB\-\-group <group>\fP
+Specify what group you’d like to submit results to
 .sp
-Submit dashboard to specified track instead of default one.  By
+Submit dashboard to specified group instead of default one.  By
 default, the dashboard is submitted to Nightly, Experimental, or
-Continuous track, but by specifying this option, the track can be
+Continuous group, but by specifying this option, the group can be
 arbitrary.
+.sp
+This replaces the deprecated option \fB\-\-track\fP\&.
+Despite the name change its behavior is unchanged.
 .TP
 .B \fB\-A <file>, \-\-add\-notes <file>\fP
 Add a notes file with submission.
@@ -1300,6 +1353,18 @@ Arguments to the command may specify some of the step settings.
 Configuration settings include:
 .INDENT 0.0
 .TP
+.B \fBResourceSpecFile\fP
+Specify a
+\fI\%resource specification file\fP\&.
+.INDENT 7.0
+.IP \(bu 2
+\fI\%CTest Script\fP variable: \fBCTEST_RESOURCE_SPEC_FILE\fP
+.IP \(bu 2
+\fBCTest\fP module variable: \fBCTEST_RESOURCE_SPEC_FILE\fP
+.UNINDENT
+.sp
+See \fI\%Resource Allocation\fP for more information.
+.TP
 .B \fBLabelsForSubprojects\fP
 Specify a semicolon\-separated list of labels that will be treated as
 subprojects. This mapping will be passed on to CDash when configure, test or
@@ -1462,6 +1527,26 @@ They will be placed prior to the test command line.
 \fI\%CTest Script\fP variable: none
 .IP \(bu 2
 \fBCTest\fP module variable: \fBVALGRIND_COMMAND_OPTIONS\fP
+.UNINDENT
+.TP
+.B \fBDrMemoryCommand\fP
+Specify a \fBMemoryCheckCommand\fP that is known to be a command\-line
+compatible with DrMemory.
+.INDENT 7.0
+.IP \(bu 2
+\fI\%CTest Script\fP variable: none
+.IP \(bu 2
+\fBCTest\fP module variable: \fBDRMEMORY_COMMAND\fP
+.UNINDENT
+.TP
+.B \fBDrMemoryCommandOptions\fP
+Specify command\-line options to the \fBDrMemoryCommand\fP tool.
+They will be placed prior to the test command line.
+.INDENT 7.0
+.IP \(bu 2
+\fI\%CTest Script\fP variable: none
+.IP \(bu 2
+\fBCTest\fP module variable: \fBDRMEMORY_COMMAND_OPTIONS\fP
 .UNINDENT
 .UNINDENT
 .SS CTest Submit Step
@@ -1708,6 +1793,277 @@ Test properties.
 Can contain keys for each of the supported test properties.
 .UNINDENT
 .UNINDENT
+.SH RESOURCE ALLOCATION
+.sp
+CTest provides a mechanism for tests to specify the resources that they need
+in a fine\-grained way, and for users to specify the resources availiable on
+the running machine. This allows CTest to internally keep track of which
+resources are in use and which are free, scheduling tests in a way that
+prevents them from trying to claim resources that are not available.
+.sp
+When the resource allocation feature is used, CTest will not oversubscribe
+resources. For example, if a resource has 8 slots, CTest will not run tests
+that collectively use more than 8 slots at a time. This has the effect of
+limiting how many tests can run at any given time, even if a high \fB\-j\fP
+argument is used, if those tests all use some slots from the same resource.
+In addition, it means that a single test that uses more of a resource than is
+available on a machine will not run at all (and will be reported as
+\fBNot Run\fP).
+.sp
+A common use case for this feature is for tests that require the use of a GPU.
+Multiple tests can simultaneously allocate memory from a GPU, but if too many
+tests try to do this at once, some of them will fail to allocate, resulting in
+a failed test, even though the test would have succeeded if it had the memory
+it needed. By using the resource allocation feature, each test can specify how
+much memory it requires from a GPU, allowing CTest to schedule tests in a way
+that running several of these tests at once does not exhaust the GPU’s memory
+pool.
+.sp
+Please note that CTest has no concept of what a GPU is or how much memory it
+has, nor does it have any way of communicating with a GPU to retrieve this
+information or perform any memory management. CTest simply keeps track of a
+list of abstract resource types, each of which has a certain number of slots
+available for tests to use. Each test specifies the number of slots that it
+requires from a certain resource, and CTest then schedules them in a way that
+prevents the total number of slots in use from exceeding the listed capacity.
+When a test is executed, and slots from a resource are allocated to that test,
+tests may assume that they have exclusive use of those slots for the duration
+of the test’s process.
+.sp
+The CTest resource allocation feature consists of two inputs:
+.INDENT 0.0
+.IP \(bu 2
+The \fI\%resource specification file\fP,
+described below, which describes the resources available on the system.
+.IP \(bu 2
+The \fBRESOURCE_GROUPS\fP property of tests, which describes the
+resources required by the test.
+.UNINDENT
+.sp
+When CTest runs a test, the resources allocated to that test are passed in the
+form of a set of
+\fI\%environment variables\fP as
+described below. Using this information to decide which resource to connect to
+is left to the test writer.
+.sp
+The \fBRESOURCE_GROUPS\fP property tells CTest what resources a test expects
+to use grouped in a way meaningful to the test.  The test itself must read
+the \fI\%environment variables\fP to
+determine which resources have been allocated to each group.  For example,
+each group may correspond to a process the test will spawn when executed.
+.sp
+Note that even if a test specifies a \fBRESOURCE_GROUPS\fP property, it is still
+possible for that to test to run without any resource allocation (and without
+the corresponding
+\fI\%environment variables\fP)
+if the user does not pass a resource specification file. Passing this file,
+either through the \fB\-\-resource\-spec\-file\fP command\-line argument or the
+\fBRESOURCE_SPEC_FILE\fP argument to \fBctest_test()\fP, is what activates the
+resource allocation feature. Tests should check the
+\fBCTEST_RESOURCE_GROUP_COUNT\fP environment variable to find out whether or not
+resource allocation is activated. This variable will always (and only) be
+defined if resource allocation is activated. If resource allocation is not
+activated, then the \fBCTEST_RESOURCE_GROUP_COUNT\fP variable will not exist,
+even if it exists for the parent \fBctest\fP process. If a test absolutely must
+have resource allocation, then it can return a failing exit code or use the
+\fBSKIP_RETURN_CODE\fP or \fBSKIP_REGULAR_EXPRESSION\fP
+properties to indicate a skipped test.
+.SS Resource Specification File
+.sp
+The resource specification file is a JSON file which is passed to CTest, either
+on the \fI\%ctest(1)\fP command line as \fB\-\-resource\-spec\-file\fP, or as the
+\fBRESOURCE_SPEC_FILE\fP argument of \fBctest_test()\fP\&. If a dashboard script
+is used and \fBRESOURCE_SPEC_FILE\fP is not specified, the value of
+\fBCTEST_RESOURCE_SPEC_FILE\fP in the dashboard script is used instead.
+If \fB\-\-resource\-spec\-file\fP, \fBRESOURCE_SPEC_FILE\fP, and
+\fBCTEST_RESOURCE_SPEC_FILE\fP in the dashboard script are not specified,
+the value of \fBCTEST_RESOURCE_SPEC_FILE\fP in the CMake build is used
+instead. If none of these are specified, no resource spec file is used.
+.sp
+The resource specification file must be a JSON object. All examples in this
+document assume the following resource specification file:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+{
+  "version": {
+    "major": 1,
+    "minor": 0
+  },
+  "local": [
+    {
+      "gpus": [
+        {
+          "id": "0",
+          "slots": 2
+        },
+        {
+          "id": "1",
+          "slots": 4
+        },
+        {
+          "id": "2",
+          "slots": 2
+        },
+        {
+          "id": "3"
+        }
+      ],
+      "crypto_chips": [
+        {
+          "id": "card0",
+          "slots": 4
+        }
+      ]
+    }
+  ]
+}
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The members are:
+.INDENT 0.0
+.TP
+.B \fBversion\fP
+An object containing a \fBmajor\fP integer field and a \fBminor\fP integer field.
+Currently, the only supported version is major \fB1\fP, minor \fB0\fP\&. Any other
+value is an error.
+.TP
+.B \fBlocal\fP
+A JSON array of resource sets present on the system.  Currently, this array
+is restricted to being of size 1.
+.sp
+Each array element is a JSON object with members whose names are equal to the
+desired resource types, such as \fBgpus\fP\&. These names must start with a
+lowercase letter or an underscore, and subsequent characters can be a
+lowercase letter, a digit, or an underscore. Uppercase letters are not
+allowed, because certain platforms have case\-insensitive environment
+variables. See the \fI\%Environment Variables\fP section below for
+more information. It is recommended that the resource type name be the plural
+of a noun, such as \fBgpus\fP or \fBcrypto_chips\fP (and not \fBgpu\fP or
+\fBcrypto_chip\fP\&.)
+.sp
+Please note that the names \fBgpus\fP and \fBcrypto_chips\fP are just examples,
+and CTest does not interpret them in any way. You are free to make up any
+resource type you want to meet your own requirements.
+.sp
+The value for each resource type is a JSON array consisting of JSON objects,
+each of which describe a specific instance of the specified resource. These
+objects have the following members:
+.INDENT 7.0
+.TP
+.B \fBid\fP
+A string consisting of an identifier for the resource. Each character in
+the identifier can be a lowercase letter, a digit, or an underscore.
+Uppercase letters are not allowed.
+.sp
+Identifiers must be unique within a resource type. However, they do not
+have to be unique across resource types. For example, it is valid to have a
+\fBgpus\fP resource named \fB0\fP and a \fBcrypto_chips\fP resource named \fB0\fP,
+but not two \fBgpus\fP resources both named \fB0\fP\&.
+.sp
+Please note that the IDs \fB0\fP, \fB1\fP, \fB2\fP, \fB3\fP, and \fBcard0\fP are just
+examples, and CTest does not interpret them in any way. You are free to
+make up any IDs you want to meet your own requirements.
+.TP
+.B \fBslots\fP
+An optional unsigned number specifying the number of slots available on the
+resource. For example, this could be megabytes of RAM on a GPU, or
+cryptography units available on a cryptography chip. If \fBslots\fP is not
+specified, a default value of \fB1\fP is assumed.
+.UNINDENT
+.UNINDENT
+.sp
+In the example file above, there are four GPUs with ID’s 0 through 3. GPU 0 has
+2 slots, GPU 1 has 4, GPU 2 has 2, and GPU 3 has a default of 1 slot. There is
+also one cryptography chip with 4 slots.
+.SS \fBRESOURCE_GROUPS\fP Property
+.sp
+See \fBRESOURCE_GROUPS\fP for a description of this property.
+.SS Environment Variables
+.sp
+Once CTest has decided which resources to allocate to a test, it passes this
+information to the test executable as a series of environment variables. For
+each example below, we will assume that the test in question has a
+\fBRESOURCE_GROUPS\fP property of
+\fB2,gpus:2;gpus:4,gpus:1,crypto_chips:2\fP\&.
+.sp
+The following variables are passed to the test process:
+.INDENT 0.0
+.TP
+.B CTEST_RESOURCE_GROUP_COUNT
+The total number of groups specified by the \fBRESOURCE_GROUPS\fP
+property. For example:
+.INDENT 7.0
+.IP \(bu 2
+\fBCTEST_RESOURCE_GROUP_COUNT=3\fP
+.UNINDENT
+.sp
+This variable will only be defined if \fI\%ctest(1)\fP has been given a
+\fB\-\-resource\-spec\-file\fP, or if \fBctest_test()\fP has been given a
+\fBRESOURCE_SPEC_FILE\fP\&. If no resource specification file has been given,
+this variable will not be defined.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B CTEST_RESOURCE_GROUP_<num>
+The list of resource types allocated to each group, with each item
+separated by a comma. \fB<num>\fP is a number from zero to
+\fBCTEST_RESOURCE_GROUP_COUNT\fP minus one. \fBCTEST_RESOURCE_GROUP_<num>\fP
+is defined for each \fB<num>\fP in this range. For example:
+.INDENT 7.0
+.IP \(bu 2
+\fBCTEST_RESOURCE_GROUP_0=gpus\fP
+.IP \(bu 2
+\fBCTEST_RESOURCE_GROUP_1=gpus\fP
+.IP \(bu 2
+\fBCTEST_RESOURCE_GROUP_2=crypto_chips,gpus\fP
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B CTEST_RESOURCE_GROUP_<num>_<resource\-type>
+The list of resource IDs and number of slots from each ID allocated to each
+group for a given resource type. This variable consists of a series of
+pairs, each pair separated by a semicolon, and with the two items in the pair
+separated by a comma. The first item in each pair is \fBid:\fP followed by the
+ID of a resource of type \fB<resource\-type>\fP, and the second item is
+\fBslots:\fP followed by the number of slots from that resource allocated to
+the given group. For example:
+.INDENT 7.0
+.IP \(bu 2
+\fBCTEST_RESOURCE_GROUP_0_GPUS=id:0,slots:2\fP
+.IP \(bu 2
+\fBCTEST_RESOURCE_GROUP_1_GPUS=id:2,slots:2\fP
+.IP \(bu 2
+\fBCTEST_RESOURCE_GROUP_2_GPUS=id:1,slots:4;id:3,slots:1\fP
+.IP \(bu 2
+\fBCTEST_RESOURCE_GROUP_2_CRYPTO_CHIPS=id:card0,slots:2\fP
+.UNINDENT
+.sp
+In this example, group 0 gets 2 slots from GPU \fB0\fP, group 1 gets 2 slots
+from GPU \fB2\fP, and group 2 gets 4 slots from GPU \fB1\fP, 1 slot from GPU
+\fB3\fP, and 2 slots from cryptography chip \fBcard0\fP\&.
+.sp
+\fB<num>\fP is a number from zero to \fBCTEST_RESOURCE_GROUP_COUNT\fP minus one.
+\fB<resource\-type>\fP is the name of a resource type, converted to uppercase.
+\fBCTEST_RESOURCE_GROUP_<num>_<resource\-type>\fP is defined for the product
+of each \fB<num>\fP in the range listed above and each resource type listed in
+\fBCTEST_RESOURCE_GROUP_<num>\fP\&.
+.sp
+Because some platforms have case\-insensitive names for environment variables,
+the names of resource types may not clash in a case\-insensitive environment.
+Because of this, for the sake of simplicity, all resource types must be
+listed in all lowercase in the
+\fI\%resource specification file\fP and
+in the \fBRESOURCE_GROUPS\fP property, and they are converted to all
+uppercase in the \fBCTEST_RESOURCE_GROUP_<num>_<resource\-type>\fP environment
+variable.
+.UNINDENT
 .SH SEE ALSO
 .sp
 The following resources are available to get help using CMake:
@@ -1724,16 +2080,12 @@ The primary starting point for learning about CMake.
 Links to available documentation and community resources may be
 found on this web page.
 .TP
-.B Mailing List
-\fI\%https://cmake.org/mailing\-lists\fP
+.B Discourse Forum
+\fI\%https://discourse.cmake.org\fP
 .sp
-For help and discussion about using CMake, a mailing list is
-provided at \fI\%cmake@cmake.org\fP\&.  The list is member\-post\-only but one
-may sign up on the CMake web page.  Please first read the full
-documentation at \fI\%https://cmake.org\fP before posting questions to
-the list.
+The Discourse Forum hosts discussion and questions about CMake.
 .UNINDENT
 .SH COPYRIGHT
-2000-2019 Kitware, Inc. and Contributors
+2000-2020 Kitware, Inc. and Contributors
 .\" Generated by docutils manpage writer.
 .
