@@ -621,52 +621,30 @@ char ifbuf[1024];
 
 int main(int argc, char *argv[])
 {
-   ec_adaptert* it_adapter = NULL;
-   ec_adaptert* se_adapter = NULL;
+   ec_adaptert * adapter = NULL;
+   printf("SOEM (Simple Open EtherCAT Master)\nSlaveinfo\n");
 
-   printf("SOEM (Simple Open EtherCAT Master)\nSlaveinfo\n\n");
-   
-   // Set slave gather vars
-   for (int i = 1; i < argc; i++)
+   if (argc > 1)
    {
-	   if ((strncmp(argv[i], "-sdo", sizeof("-sdo")) == 0)) printSDO = TRUE;
-	   if ((strncmp(argv[i], "-map", sizeof("-map")) == 0)) printMAP = TRUE;
+      if ((argc > 2) && (strncmp(argv[2], "-sdo", sizeof("-sdo")) == 0)) printSDO = TRUE;
+      if ((argc > 2) && (strncmp(argv[2], "-map", sizeof("-map")) == 0)) printMAP = TRUE;
+      /* start slaveinfo */
+      strcpy(ifbuf, argv[1]);
+      slaveinfo(ifbuf);
+   }
+   else
+   {
+      printf("Usage: slaveinfo ifname [options]\nifname = eth0 for example\nOptions :\n -sdo : print SDO info\n -map : print mapping\n");
+
+      printf ("Available adapters\n");
+      adapter = ec_find_adapters ();
+      while (adapter != NULL)
+      {
+         printf ("Description : %s, Device to use for wpcap: %s\n", adapter->desc,adapter->name);
+         adapter = adapter->next;
+      }
    }
 
-   // Scan for adapters
-   it_adapter = ec_find_adapters();
-   se_adapter = it_adapter;
-   int id = -1;
-
-   // Print to screen
-   while (it_adapter != NULL)
-   {
-	   // Print adapter info
-	   id++;
-	   printf("%d: Description : %s, Device to use for wpcap: %s\n", id, it_adapter->desc, it_adapter->name);
-	   it_adapter = it_adapter->next;
-   }
-
-   // Select the one to use
-   int s = -1;
-   while (s < 0 || s > id)
-   {
-	   printf("\nSelect ethernet adapter: ");
-	   scanf("%d", &s);
-	   getchar();
-   }
-
-   // Iterate to the selected adapter
-   for(int i = 0; i < s; i++)
-	   se_adapter = se_adapter->next;
-   
-   // Print adapter info
-   printf("\nSelected Adapter : %s\n\n", se_adapter->desc);
-   
-   // Get all network slave information
-   slaveinfo(se_adapter->name);
-
-   printf("Press any key to quit program");
-   getchar();
+   printf("End program\n");
    return (0);
 }
