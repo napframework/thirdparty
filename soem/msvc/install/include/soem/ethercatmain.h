@@ -426,6 +426,8 @@ struct ecx_context
    int            (*EOEhook)(ecx_contextt * context, uint16 slave, void * eoembx);
    /** flag to control legacy automatic state change or manual state change */
    int            manualstatechange;
+   /** additional misc handle */
+   void*		  misc;
 };
 
 #ifdef EC_VER1
