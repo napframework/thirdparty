@@ -11,7 +11,7 @@ This repository contains all cross-platform third party dependencies to build [N
 Linkage should be dynamic and not violate the MPL2.0 license policy. Static linkage is discouraged unless recommended by the third-party library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using:
 ```
 Clang targeting OSX 10.14 (MacOS)		
-MSVC, Platform Toolset v142 (Windows10)
+MSVC, Platform Toolset v140 (Windows10)
 GCC 9.3.0 x86-64 (Ubuntu LTS Linux)		
 ```
 
