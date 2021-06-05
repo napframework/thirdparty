@@ -1,24 +1,23 @@
-cmake_minimum_required(VERSION 2.8.4)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
+cmake_minimum_required(VERSION 2.8.12)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/Modules")
 project(SOEM C)
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   # Default to installing in SOEM source directory
-  set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install)
+  set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/install)
 endif()
 
 set(SOEM_INCLUDE_INSTALL_DIR include/soem)
 set(SOEM_LIB_INSTALL_DIR lib)
-set(BUILD_TESTS FALSE)
+set(BUILD_TESTS TRUE)
 
 if(WIN32)
   set(OS "win32")
   include_directories(oshw/win32/wpcap/Include)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    link_directories(${CMAKE_SOURCE_DIR}/oshw/win32/wpcap/Lib/x64)
+    link_directories(${CMAKE_CURRENT_LIST_DIR}/oshw/win32/wpcap/Lib/x64)
   elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    link_directories(${CMAKE_SOURCE_DIR}/oshw/win32/wpcap/Lib)
+    link_directories(${CMAKE_CURRENT_LIST_DIR}/oshw/win32/wpcap/Lib)
   endif()
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /D _CRT_SECURE_NO_WARNINGS")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  /WX")
@@ -61,22 +60,36 @@ file(GLOB SOEM_HEADERS soem/*.h)
 file(GLOB OSAL_HEADERS osal/osal.h osal/${OS}/*.h)
 file(GLOB OSHW_HEADERS oshw/${OS}/*.h)
 
-include_directories(soem)
-include_directories(osal)
-include_directories(osal/${OS})
-include_directories(oshw/${OS})
-
 add_library(soem STATIC
   ${SOEM_SOURCES}
   ${OSAL_SOURCES}
   ${OSHW_SOURCES}
   ${OSHW_EXTRA_SOURCES})
-set_property(TARGET soem PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(soem ${OS_LIBS})
+
+target_include_directories(soem PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/soem>
+  $<INSTALL_INTERFACE:include/soem>)
+
+target_include_directories(soem PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/osal>
+  $<INSTALL_INTERFACE:include/soem>)
+
+target_include_directories(soem PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/osal/${OS}>
+  $<INSTALL_INTERFACE:include/soem>)
+
+target_include_directories(soem
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/oshw/${OS}>
+  $<INSTALL_INTERFACE:include/soem>
+  )
 
 message("LIB_DIR: ${SOEM_LIB_INSTALL_DIR}")
 
-install(TARGETS soem DESTINATION ${SOEM_LIB_INSTALL_DIR})
+install(TARGETS soem EXPORT soemConfig DESTINATION ${SOEM_LIB_INSTALL_DIR})
+
+install(EXPORT soemConfig DESTINATION share/soem/cmake)
+
 install(FILES
   ${SOEM_HEADERS}
   ${OSAL_HEADERS}
