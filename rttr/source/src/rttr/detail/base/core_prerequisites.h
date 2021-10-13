@@ -83,7 +83,8 @@ namespace rttr
 // Architecture
 /////////////////////////////////////////////////////////////////////////////////////////
 #if defined(__x86_64__) || defined(_M_X64) || defined(__powerpc64__) || defined(__alpha__) ||\
-    defined(__ia64__) || defined(__s390__) || defined(__s390x__)
+    defined(__ia64__) || defined(__s390__) || defined(__s390x__) || defined(_M_ARM64) ||\
+    defined(__aarch64__) || defined(__ARM64__)
 #   define RTTR_ARCH_TYPE RTTR_ARCH_64
 #else
 #   define RTTR_ARCH_TYPE RTTR_ARCH_32
