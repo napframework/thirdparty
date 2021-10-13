@@ -51,3 +51,18 @@ endif()
 
 ## Include headers
 include_directories(include)
+
+## Install executable
+install(TARGETS ${PROJECT_NAME}
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+)
+
+## Install headers
+install(FILES include/serial/serial.h include/serial/v8stdint.h
+  DESTINATION include/serial)
+
+## Tests
+if(CATKIN_ENABLE_TESTING)
+    add_subdirectory(tests)
+endif()
