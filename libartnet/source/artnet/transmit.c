@@ -163,7 +163,8 @@ int artnet_tx_tod_data(node n, int id) {
   bloc = 0;
 
   while (remaining > 0) {
-    memset(&tod.data.toddata.tod,0x00, ARTNET_MAX_UID_COUNT);
+    // NAP-local compile fix, from https://github.com/OpenLightingProject/libartnet/issues/13 
+    memset(&tod.data.toddata.tod,0x00, ARTNET_MAX_UID_COUNT * ARTNET_RDM_UID_WIDTH);
     lim = min(ARTNET_MAX_UID_COUNT, remaining);
     tod.data.toddata.blockCount = bloc++;
     tod.data.toddata.uidCount = lim;
