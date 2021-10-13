@@ -10,16 +10,16 @@ def update_ffmpeg_pkgconfig_paths(ffmpeg_linux_dir):
         update_single_ffmpeg_pkgconfig_file(os.path.join(ffmpeg_pkgconfig_dir, filename), new_header)
 
 def update_single_ffmpeg_pkgconfig_file(in_file, new_header):
-        with open(in_file, 'r+') as f:
-            filedata = f.read()
-            index = filedata.find('\nName')
-            if index == -1:
-                return
-            new_contents = new_header + filedata[index:]
-            print(new_contents)
-            f.seek(0)
-            f.truncate(0)
-            f.write(new_contents)
+    with open(in_file, 'r+') as f:
+        filedata = f.read()
+        index = filedata.find('\nName')
+        if index == -1:
+            return
+        new_contents = new_header + filedata[index:]
+        print(new_contents)
+        f.seek(0)
+        f.truncate(0)
+        f.write(new_contents)
 
 def work():
     script_path = os.path.realpath(__file__)
