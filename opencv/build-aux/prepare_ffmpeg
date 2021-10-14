@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+import argparse
+from subprocess import call
+import os
+
+DOCKER_FFMPEG_PREFIX = '/input/ffmpeg'
+
+def update_ffmpeg_pkgconfig_paths(ffmpeg_linux_dir, new_prefix):
+    new_header = "prefix={}\nexec_prefix=${{prefix}}\nlibdir=${{prefix}}/lib\nincludedir=${{prefix}}/include\n\n".format(new_prefix)
+    ffmpeg_pkgconfig_dir = os.path.join(ffmpeg_linux_dir, 'lib/pkgconfig')
+
+    for filename in os.listdir(ffmpeg_pkgconfig_dir):
+        update_single_ffmpeg_pkgconfig_file(os.path.join(ffmpeg_pkgconfig_dir, filename), new_header)
+
+def update_single_ffmpeg_pkgconfig_file(in_file, new_header):
+    with open(in_file, 'r+') as f:
+        filedata = f.read()
+        index = filedata.find('\nName')
+        if index == -1:
+            return
+        new_contents = new_header + filedata[index:]
+        print(new_contents)
+        f.seek(0)
+        f.truncate(0)
+        f.write(new_contents)
+
+def work(arch, native_filesystem):
+    script_path = os.path.realpath(__file__)
+    opencv_path = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir))
+    third_party_root = os.path.abspath(os.path.join(opencv_path, os.pardir))
+    ffmpeg_linux_dir = os.path.join(third_party_root, 'ffmpeg/linux/{}'.format(arch))
+    ffmpeg_dest_dir = os.path.join(opencv_path, 'ffmpeg')
+    ffmpeg_pkgconfig_dir = os.path.join(ffmpeg_linux_dir, 'lib/pkgconfig')
+
+    cmd = 'rm -rf {}'.format(ffmpeg_dest_dir)
+    call(cmd, shell=True)
+    cmd = 'cp -a {} {}'.format(ffmpeg_linux_dir, ffmpeg_dest_dir)
+    call(cmd, shell=True)
+
+    prefix = ffmpeg_dest_dir if native_filesystem else DOCKER_FFMPEG_PREFIX
+    update_ffmpeg_pkgconfig_paths(ffmpeg_dest_dir, prefix)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('architecture', choices=['x86_64', 'arm64', 'armhf'])
+    parser.add_argument('--native', action='store_true', help="Native, non-Docker build")
+    args = parser.parse_args()
+    work(args.architecture, args.native)
