@@ -1,4 +1,4 @@
-Built from SDL2-2.0.9.tar.gz
+Built from SDL2-2.0.12.tar.gz
  
 Configure flags:
 ./configure --prefix=`pwd`/osx/install --without-x --enable-static=no
