@@ -41,7 +41,7 @@ NAMESPACE_BEGIN(CryptoPP)
 struct ChaCha_Info : public VariableKeyLength<32, 16, 32, 16, SimpleKeyingInterface::UNIQUE_IV, 8>
 {
     /// \brief The algorithm name
-    /// \return the algorithm name
+    /// \returns the algorithm name
     /// \details StaticAlgorithmName returns the algorithm's name as a static
     ///   member function.
     /// \details Bernstein named the cipher variants ChaCha8, ChaCha12 and
@@ -72,7 +72,7 @@ protected:
     std::string AlgorithmName() const;
     std::string AlgorithmProvider() const;
 
-    CRYPTOPP_CONSTANT(ROUNDS = 20);  // Default rounds
+    CRYPTOPP_CONSTANT(ROUNDS = 20)  // Default rounds
     FixedSizeAlignedSecBlock<word32, 16> m_state;
     unsigned int m_rounds;
 };
@@ -98,7 +98,7 @@ struct ChaCha : public ChaCha_Info, public SymmetricCipherDocumentation
 struct ChaChaTLS_Info : public FixedKeyLength<32, SimpleKeyingInterface::UNIQUE_IV, 12>, FixedRounds<20>
 {
     /// \brief The algorithm name
-    /// \return the algorithm name
+    /// \returns the algorithm name
     /// \details StaticAlgorithmName returns the algorithm's name as a static
     ///   member function.
     /// \details This is the IETF's variant of Bernstein's ChaCha from RFC
@@ -131,9 +131,9 @@ protected:
 
     FixedSizeAlignedSecBlock<word32, 16+8> m_state;
     unsigned int m_counter;
-    CRYPTOPP_CONSTANT(ROUNDS = ChaChaTLS_Info::ROUNDS);
-    CRYPTOPP_CONSTANT(KEY = 16);  // Index into m_state
-    CRYPTOPP_CONSTANT(CTR = 24);  // Index into m_state
+    CRYPTOPP_CONSTANT(ROUNDS = ChaChaTLS_Info::ROUNDS)
+    CRYPTOPP_CONSTANT(KEY = 16)  // Index into m_state
+    CRYPTOPP_CONSTANT(CTR = 24)  // Index into m_state
 };
 
 /// \brief ChaCha-TLS stream cipher
@@ -166,7 +166,7 @@ struct ChaChaTLS : public ChaChaTLS_Info, public SymmetricCipherDocumentation
 struct XChaCha20_Info : public FixedKeyLength<32, SimpleKeyingInterface::UNIQUE_IV, 24>
 {
     /// \brief The algorithm name
-    /// \return the algorithm name
+    /// \returns the algorithm name
     /// \details StaticAlgorithmName returns the algorithm's name as a static
     ///   member function.
     /// \details This is the IETF's XChaCha from draft-arciszewski-xchacha.
@@ -197,8 +197,8 @@ protected:
 
     FixedSizeAlignedSecBlock<word32, 16+8> m_state;
     unsigned int m_counter, m_rounds;
-    CRYPTOPP_CONSTANT(ROUNDS = 20);  // Default rounds
-    CRYPTOPP_CONSTANT(KEY = 16);  // Index into m_state
+    CRYPTOPP_CONSTANT(ROUNDS = 20)  // Default rounds
+    CRYPTOPP_CONSTANT(KEY = 16)  // Index into m_state
 };
 
 /// \brief XChaCha stream cipher

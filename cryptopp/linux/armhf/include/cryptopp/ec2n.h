@@ -3,6 +3,7 @@
 /// \file ec2n.h
 /// \brief Classes for Elliptic Curves over binary fields
 
+
 #ifndef CRYPTOPP_EC2N_H
 #define CRYPTOPP_EC2N_H
 
@@ -119,7 +120,7 @@ public:
 	void SetCurve(const EC2N &ec) {m_ec = ec;}
 
 	/// \brief Get the elliptic curve
-	/// \return EC2N curve
+	/// \returns EC2N curve
 	/// \details GetCurve() is not inherited
 	const EC2N & GetCurve() const {return m_ec;}
 

@@ -3,7 +3,7 @@ ARG image_name
 FROM nap-${image_name} AS builder
 ARG inst_dir
 
-ENV package_version="1.29.0"
+ENV package_version="1.25.6"
 ENV package_dir="mpg123-${package_version}"
 ENV package_archive="${package_dir}.tar.bz2"
 

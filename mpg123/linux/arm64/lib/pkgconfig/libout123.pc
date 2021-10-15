@@ -6,7 +6,6 @@ includedir=${prefix}/include
 Name: libout123
 Description: A streaming audio output API derived from mpg123
 Requires: 
-Version: 1.29.0
+Version: 1.25.6
 Libs: -L${libdir} -lout123 
-Libs.private: -lm  -ldl
 Cflags: -I${includedir} 

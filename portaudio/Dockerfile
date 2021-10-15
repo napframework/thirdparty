@@ -3,7 +3,7 @@ ARG image_name
 FROM nap-${image_name} AS builder
 ARG inst_dir
 
-ENV package_file_version="v190700_20210406"
+ENV package_file_version="v190600_20161030"
 ENV package_dir="portaudio"
 ENV package_archive="pa_stable_${package_file_version}.tgz"
 

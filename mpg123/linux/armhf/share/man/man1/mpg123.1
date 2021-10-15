@@ -1,10 +1,10 @@
-.TH mpg123 1 "26 Apr 2020"
+.TH mpg123 1 "29 Feb 2016"
 .SH NAME
 mpg123 \- play audio MPEG 1.0/2.0/2.5 stream (layers 1, 2 and 3)
 .SH SYNOPSIS
 .B mpg123
 [
-.I options
+.B options
 ]
 .IR file-or-URL ...
 .SH DESCRIPTION
@@ -61,17 +61,6 @@ With this switch you can make it bail out on data errors
 (and perhaps spare your ears a bad time). Note that this switch has been renamed from \-\-resync.
 The old name still works, but is not advertised or recommened to use (subject to removal in future).
 .TP
-.BR \-F ", " \-\^\-no\-frankenstein
-Disable support for Frankenstein streams. Normally, mpg123 stays true to the concept of MPEG audio being
-just a concatenation of MPEG frames. It will continue decoding even if the type of MPEG frames varies
-wildly. With this switch, it will only decode the input as long as it does not change its character
-(from layer I to layer III, changing sampling rate, from mono to stereo), silently assuming end of
-stream on such occasion. The switch also stops decoding of compatible MPEG frames if there was an
-Info frame (Xing header, Lame tag) that contained a length of the track in MPEG frames.
-This comes a bit closer to the notion of a MP3 file as a defined collection
-of MPEG frames that belong together, but gets rid of the flexibility that can be fun at times but
-mostly is hell for the programmer of the parser and decoder ...
-.TP
 \fB\-\^-resync\-limit \fIbytes\fR
 Set number of bytes to search for valid MPEG data once lost in stream; <0 means search whole stream.
 If you know there are huge chunks of invalid data in your files... here is your hammer.
@@ -96,19 +85,6 @@ The format used is user:password.
 \fB\-\^\-ignore\-mime
 Ignore MIME types given by HTTP server. If you know better and want mpg123
 to decode something the server thinks is image/png, then just do it.
-.TP
-\fB\-\^\-no\-icy\-meta
-Do not accept ICY meta data.
-.TP
-\fB\-\^-streamdump \fIfilename\fR
-Dump a copy of the input data (as read by libmpg123) to the given file.
-This enables you to store a web stream to disk while playing, or just create
-a concatenation of the local files you play for ... why not?
-.TP
-\fB\-\^-icy\-interval \fIbytes\fR
-This setting enables you to play a stream dump containing ICY metadata at the given
-interval in bytes (the value of the icy-metaint HTTP response header). Without it,
-such a stream will play, but will cause regular decoding glitches with resync.
 .TP
 \fB\-\^\-no\-seekbuffer
 Disable the default micro-buffering of non-seekable streams that gives the
@@ -156,6 +132,9 @@ Continuous random play.  Keeps picking a random file from the command line
 or the play list.  Unlike shuffle play above, random play never ends, and
 plays individual songs more than once.
 .TP
+\fB\-\^\-no\-icy\-meta
+Do not accept ICY meta data.
+.TP
 \fB\-i, \-\^-index
 Index / scan through the track before playback.
 This fills the index table for seeking (if enabled in libmpg123) and may make the operating system cache the file contents for smoother operating on playback.
@@ -170,22 +149,17 @@ Note that for layer 3, a minimum of 1 is enforced (because of frame overlap), an
 
 .SH OUTPUT and PROCESSING OPTIONS
 .TP
-\fB\-o \fImodule\fR, \fB\-\^\-output \fImodule\fR
+\fB\-o \fImodule\fR, \-\^\-output \fImodule\fR
 Select audio output module. You can provide a comma-separated list to use the first one that works.
-Also see \fB\-a\fR.
 .TP
 \fB\-\^\-list\-modules
 List the available modules.
 .TP
-\fB\-\^\-list\-devices
-List the available output devices for given output module. If there is no functionality
-to list devices in the chosen module, an error will be printed and mpg123 will exit with
-a non-zero code.
-.TP
 \fB\-a \fIdev\fR, \fB\-\^\-audiodevice \fIdev
-Specify the audio device to use.  The default as well as the possible values
-depend on the active output. For the JACK output, a comma-separated list
-of ports to connect to (for each channel) can be specified.
+Specify the audio device to use.  The default is
+system-dependent (usually /dev/audio or /dev/dsp).
+Use this option if you have multiple audio devices and
+the default is not what you want.
 .TP
 .BR \-s ", " \-\^\-stdout
 The decoded audio samples are written to standard output,
@@ -270,25 +244,13 @@ change this if you need a constant bitrate independent of
 the mpeg stream rate. mpg123 automagically converts the
 rate. You should then combine this with \-\-stereo or \-\-mono.
 .TP
-\fB\-\^\-resample \fImethod
-Set resampling method to employ if forcing an output rate. Choices (case-insensitive) are NtoM,
-dirty, and fine. The fine resampler is the default. It employs libsyn123's low-latency fairly
-efficient resampler to postprocess the output from libmpg123 instead of the fast but very crude
-NtoM decoder (drop sample method) that mpg123 offers since decades. If you are really low on
-CPU time, choose NtoM, as the resampler usually needs more time than the MPEG decoder itself.
-The mpg123 program is smart enough to combine the 2to1 or 4to1 downsampling modes with the
-postprocessing for extreme downsampling.
-.TP
 .BR \-2 ", " \-\^\-2to1 "; " \-4 ", " \-\^\-4to1
-Performs a downsampling of ratio 2:1 (22 kHz from 44.1 kHz) or 4:1 (11 kHz) 
-on the output stream, respectively. Saves some CPU cycles, but of course throws away
-the high frequencies, as the decoder does not bother producing them.
+Performs a downsampling of ratio 2:1 (22 kHz) or 4:1 (11 kHz) 
+on the output stream, respectively. Saves some CPU cycles, but 
+at least the 4:1 ratio sounds ugly.
 .TP
 .BR \-\-pitch\ \fIvalue
-Set a pitch change (speedup/down, 0 is neutral; 0.05 is 5% speedup).  When not enforcing an
-output rate, this changes the output sampling rate, so it only works in the range your audio
-system/hardware supports. When you combine this with a fixed output rate, it modifies a
-software resampling ratio instead.
+Set hardware pitch (speedup/down, 0 is neutral; 0.05 is 5%). This changes the output sampling rate, so it only works in the range your audio system/hardware supports.
 .TP
 .BR \-\-8bit
 Forces 8bit output
@@ -582,29 +544,6 @@ audio output to be interrupted, then you should use
 the
 .B \-b
 option to use a buffer of reasonable size (at least 1000 Kbytes).
-.SH EXIT CODE
-.P
-Up to version 1.25.x, mpg123 always returned exit code 0 also for
-complete junk on the input side. Fatal errors were only considered
-for output. With version 1.26.0, this changed to the behaviour
-described below.
-.P
-When not using the remote control interface (which returns input
-errors as text messages), the process exit code is zero (success)
-only if all tracks in a playlist had at least one frame parsed,
-even if it did not decode cleanly, or
-are empty, MPEG-wise (perhaps only metadata, or really an empty file).
-When you decode nothing, nothing is the result and that is fine. When
-a track later aborts because of parser errors or breakdown of the
-network communication, this is treated as end of a track, but does
-not make the process as such fail. One really bad (or non-existing)
-stream in the playlist results in a non-zero error code, consistent
-with other UNIX tools.
-.P
-An error in audio output results in the process ending with a
-non-zero exit code immediately, regardless of how much data has
-been successfully played before. The forgiveness is only on the
-input side.
 .SH BUGS
 .P
 Mostly MPEG-1 layer 2 and 3 are tested in real life.

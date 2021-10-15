@@ -3,7 +3,7 @@ ARG image_name
 FROM nap-${image_name} AS builder
 ARG inst_dir
 
-ENV package_version_flat="830"
+ENV package_version_flat="820"
 ENV package_dir="cryptopp${package_version_flat}"
 ENV package_archive="${package_dir}.zip"
 
