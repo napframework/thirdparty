@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P
-mkdir xcode
-cmake -H. -Bxcode -DCMAKE_INSTALL_PATH=./xcode/install
+../cmake/macos/x86_64/bin/cmake -Hsource -Bxcode -G Xcode -DCMAKE_INSTALL_PREFIX=macos/x86_64
 cd xcode
-cmake --build . --target install --config Release -- -j 4
-cmake --build . --target install --config Debug -- -j 4
-install_name_tool -id @rpath/librttr_core_d.0.9.6.dylib install/bin/librttr_core_d.0.9.6.dylib
-install_name_tool -id @rpath/librttr_core.0.9.6.dylib install/bin/librttr_core.0.9.6.dylib
+xcodebuild -configuration Debug -target install
+xcodebuild -configuration Release -target install
+cd ..
+install_name_tool -id @rpath/librttr_core.0.9.6.dylib macos/x86_64/bin/librttr_core.0.9.6.dylib
+install_name_tool -id @rpath/librttr_core_d.0.9.6.dylib macos/x86_64/bin/librttr_core_d.0.9.6.dylib
