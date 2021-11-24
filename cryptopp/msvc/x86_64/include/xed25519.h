@@ -56,13 +56,13 @@ class x25519 : public SimpleKeyAgreementDomain, public CryptoParameters, public 
 public:
     /// \brief Size of the private key
     /// \details SECRET_KEYLENGTH is the size of the private key, in bytes.
-    CRYPTOPP_CONSTANT(SECRET_KEYLENGTH = 32)
+    CRYPTOPP_CONSTANT(SECRET_KEYLENGTH = 32);
     /// \brief Size of the public key
     /// \details PUBLIC_KEYLENGTH is the size of the public key, in bytes.
-    CRYPTOPP_CONSTANT(PUBLIC_KEYLENGTH = 32)
+    CRYPTOPP_CONSTANT(PUBLIC_KEYLENGTH = 32);
     /// \brief Size of the shared key
     /// \details SHARED_KEYLENGTH is the size of the shared key, in bytes.
-    CRYPTOPP_CONSTANT(SHARED_KEYLENGTH = 32)
+    CRYPTOPP_CONSTANT(SHARED_KEYLENGTH = 32);
 
     virtual ~x25519() {}
 
@@ -132,7 +132,7 @@ public:
     bool IsSmallOrder(const byte y[PUBLIC_KEYLENGTH]) const;
 
     /// \brief Get the Object Identifier
-    /// \returns the Object Identifier
+    /// \return the Object Identifier
     /// \details The default OID is from RFC 8410 using <tt>id-X25519</tt>.
     ///   The default private key format is RFC 5208.
     OID GetAlgorithmID() const {
@@ -277,8 +277,8 @@ protected:
 ///   message digest supplied by an attacker.
 struct ed25519_MessageAccumulator : public PK_MessageAccumulator
 {
-    CRYPTOPP_CONSTANT(RESERVE_SIZE=2048+64)
-    CRYPTOPP_CONSTANT(SIGNATURE_LENGTH=64)
+    CRYPTOPP_CONSTANT(RESERVE_SIZE=2048+64);
+    CRYPTOPP_CONSTANT(SIGNATURE_LENGTH=64);
 
     /// \brief Create a message accumulator
     ed25519_MessageAccumulator() {
@@ -307,25 +307,25 @@ struct ed25519_MessageAccumulator : public PK_MessageAccumulator
     }
 
     /// \brief Retrieve pointer to signature buffer
-    /// \returns pointer to signature buffer
+    /// \return pointer to signature buffer
     byte* signature() {
         return &m_msg[0];
     }
 
     /// \brief Retrieve pointer to signature buffer
-    /// \returns pointer to signature buffer
+    /// \return pointer to signature buffer
     const byte* signature() const {
         return &m_msg[0];
     }
 
     /// \brief Retrieve pointer to data buffer
-    /// \returns pointer to data buffer
+    /// \return pointer to data buffer
     const byte* data() const {
         return &m_msg[0]+SIGNATURE_LENGTH;
     }
 
     /// \brief Retrieve size of data buffer
-    /// \returns size of the data buffer, in bytes
+    /// \return size of the data buffer, in bytes
     size_t size() const {
         return m_msg.size()-SIGNATURE_LENGTH;
     }
@@ -356,15 +356,15 @@ struct ed25519PrivateKey : public PKCS8PrivateKey
 {
     /// \brief Size of the private key
     /// \details SECRET_KEYLENGTH is the size of the private key, in bytes.
-    CRYPTOPP_CONSTANT(SECRET_KEYLENGTH = 32)
+    CRYPTOPP_CONSTANT(SECRET_KEYLENGTH = 32);
     /// \brief Size of the public key
     /// \details PUBLIC_KEYLENGTH is the size of the public key, in bytes.
-    CRYPTOPP_CONSTANT(PUBLIC_KEYLENGTH = 32)
+    CRYPTOPP_CONSTANT(PUBLIC_KEYLENGTH = 32);
     /// \brief Size of the siganture
     /// \details SIGNATURE_LENGTH is the size of the signature, in bytes.
     ///   ed25519 is a DL-based signature scheme. The signature is the
     ///   concatenation of <tt>r || s</tt>.
-    CRYPTOPP_CONSTANT(SIGNATURE_LENGTH = 64)
+    CRYPTOPP_CONSTANT(SIGNATURE_LENGTH = 64);
 
     // CryptoMaterial
     bool Validate(RandomNumberGenerator &rng, unsigned int level) const;
@@ -467,14 +467,14 @@ struct ed25519PrivateKey : public PKCS8PrivateKey
     bool IsSmallOrder(const byte y[PUBLIC_KEYLENGTH]) const;
 
     /// \brief Retrieve private key byte array
-    /// \returns the private key byte array
+    /// \return the private key byte array
     /// \details GetPrivateKeyBytePtr() is used by signing code to call ed25519_sign.
     const byte* GetPrivateKeyBytePtr() const {
         return m_sk.begin();
     }
 
     /// \brief Retrieve public key byte array
-    /// \returns the public key byte array
+    /// \return the public key byte array
     /// \details GetPublicKeyBytePtr() is used by signing code to call ed25519_sign.
     const byte* GetPublicKeyBytePtr() const {
         return m_pk.begin();
@@ -497,15 +497,15 @@ struct ed25519Signer : public PK_Signer
 {
     /// \brief Size of the private key
     /// \details SECRET_KEYLENGTH is the size of the private key, in bytes.
-    CRYPTOPP_CONSTANT(SECRET_KEYLENGTH = 32)
+    CRYPTOPP_CONSTANT(SECRET_KEYLENGTH = 32);
     /// \brief Size of the public key
     /// \details PUBLIC_KEYLENGTH is the size of the public key, in bytes.
-    CRYPTOPP_CONSTANT(PUBLIC_KEYLENGTH = 32)
+    CRYPTOPP_CONSTANT(PUBLIC_KEYLENGTH = 32);
     /// \brief Size of the siganture
     /// \details SIGNATURE_LENGTH is the size of the signature, in bytes.
     ///   ed25519 is a DL-based signature scheme. The signature is the
     ///   concatenation of <tt>r || s</tt>.
-    CRYPTOPP_CONSTANT(SIGNATURE_LENGTH = 64)
+    CRYPTOPP_CONSTANT(SIGNATURE_LENGTH = 64);
     typedef Integer Element;
 
     virtual ~ed25519Signer() {}
@@ -626,7 +626,7 @@ struct ed25519PublicKey : public X509PublicKey
 {
     /// \brief Size of the public key
     /// \details PUBLIC_KEYLENGTH is the size of the public key, in bytes.
-    CRYPTOPP_CONSTANT(PUBLIC_KEYLENGTH = 32)
+    CRYPTOPP_CONSTANT(PUBLIC_KEYLENGTH = 32);
     typedef Integer Element;
 
     OID GetAlgorithmID() const {
@@ -643,7 +643,7 @@ struct ed25519PublicKey : public X509PublicKey
     ///   The old format provides the best interop, and keys will work
     ///   with OpenSSL.
     void Save(BufferedTransformation &bt) const {
-        BEREncode(bt);
+        DEREncode(bt);
     }
 
     /// \brief BER decode ASN.1 object
@@ -684,7 +684,7 @@ struct ed25519PublicKey : public X509PublicKey
     const Element& GetPublicElement() const;
 
     /// \brief Retrieve public key byte array
-    /// \returns the public key byte array
+    /// \return the public key byte array
     /// \details GetPublicKeyBytePtr() is used by signing code to call ed25519_sign.
     const byte* GetPublicKeyBytePtr() const {
         return m_pk.begin();
@@ -700,8 +700,8 @@ protected:
 /// \since Crypto++ 8.0
 struct ed25519Verifier : public PK_Verifier
 {
-    CRYPTOPP_CONSTANT(PUBLIC_KEYLENGTH = 32)
-    CRYPTOPP_CONSTANT(SIGNATURE_LENGTH = 64)
+    CRYPTOPP_CONSTANT(PUBLIC_KEYLENGTH = 32);
+    CRYPTOPP_CONSTANT(SIGNATURE_LENGTH = 64);
     typedef Integer Element;
 
     virtual ~ed25519Verifier() {}
