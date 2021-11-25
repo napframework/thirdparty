@@ -1,4 +1,7 @@
-prefix=/tmp/macos-sdk-build/SPIRV-Cross/build/install
+prefix=/usr/local
+# SPDX-License-Identifier: Apache-2.0
+
+prefix=/Users/lunarg/Dev/macos-sdk-build/SPIRV-Cross/build/install
 exec_prefix=${prefix}
 libdir=${prefix}/lib
 sharedlibdir=${prefix}/lib
@@ -6,7 +9,7 @@ includedir=${prefix}/include/spirv_cross
 
 Name: spirv-cross-c-shared
 Description: C API for SPIRV-Cross
-Version: 0.33.0
+Version: 0.48.0
 
 Requires:
 Libs: -L${libdir} -L${sharedlibdir} -lspirv-cross-c-shared
