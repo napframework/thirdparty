@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE" "1" "Oct 06, 2020" "3.18.4" "CMake"
+.TH "CMAKE" "1" "Sep 20, 2021" "3.21.3" "CMake"
 .SH NAME
 cmake \- CMake Command-Line Reference
 .
@@ -89,7 +89,7 @@ For more information on CMake at large, \fI\%see also\fP the links at the end
 of this manual.
 .SH INTRODUCTION TO CMAKE BUILDSYSTEMS
 .sp
-A \fIbuildsystem\fP describes how to build a project’s executables and libraries
+A \fIbuildsystem\fP describes how to build a project\(aqs executables and libraries
 from its source code using a \fIbuild tool\fP to automate the process.  For
 example, a buildsystem may be a \fBMakefile\fP for use with a command\-line
 \fBmake\fP tool or a project file for an Integrated Development Environment
@@ -226,7 +226,7 @@ Path to root directory of the CMake project to build.
 .B \fB\-B <path\-to\-build>\fP
 Path to directory which CMake will use as the root of build directory.
 .sp
-If the directory doesn’t already exist CMake will make it.
+If the directory doesn\(aqt already exist CMake will make it.
 .TP
 .B \fB\-C <initial\-cache>\fP
 Pre\-load a script to populate the cache.
@@ -234,9 +234,9 @@ Pre\-load a script to populate the cache.
 When CMake is first run in an empty build tree, it creates a
 \fBCMakeCache.txt\fP file and populates it with customizable settings for
 the project.  This option may be used to specify a file from which
-to load cache entries before the first pass through the project’s
+to load cache entries before the first pass through the project\(aqs
 CMake listfiles.  The loaded entries take priority over the
-project’s default values.  The given file should be a CMake script
+project\(aqs default values.  The given file should be a CMake script
 containing \fBset()\fP commands that use the \fBCACHE\fP option, not a
 cache\-format file.
 .sp
@@ -249,7 +249,7 @@ Create or update a CMake \fBCACHE\fP entry.
 When CMake is first run in an empty build tree, it creates a
 \fBCMakeCache.txt\fP file and populates it with customizable settings for
 the project.  This option may be used to specify a setting that
-takes priority over the project’s default value.  The option may be
+takes priority over the project\(aqs default value.  The option may be
 repeated for as many \fBCACHE\fP entries as desired.
 .sp
 If the \fB:<type>\fP portion is given it must be one of the types
@@ -297,6 +297,14 @@ Specify platform name if supported by generator.
 Some CMake generators support a platform name to be given to the
 native build system to choose a compiler or SDK.  See the
 \fBCMAKE_GENERATOR_PLATFORM\fP variable for details.
+.TP
+.B \fB\-\-toolchain <path\-to\-file>\fP
+Specify the cross compiling toolchain file, equivalent to setting
+\fBCMAKE_TOOLCHAIN_FILE\fP variable.
+.TP
+.B \fB\-\-install\-prefix <directory>\fP
+Specify the installation directory, used by the
+\fBCMAKE_INSTALL_PREFIX\fP variable. Must be an absolute path.
 .TP
 .B \fB\-Wno\-dev\fP
 Suppress developer warnings.
@@ -483,6 +491,11 @@ was called.
 .B \fBline\fP
 The line in \fBfile\fP of the function call.
 .TP
+.B \fBdefer\fP
+Optional member that is present when the function call was deferred
+by \fBcmake_language(DEFER)\fP\&.  If present, its value is a
+string containing the deferred call \fB<id>\fP\&.
+.TP
 .B \fBcmd\fP
 The name of the function that was called.
 .TP
@@ -508,7 +521,7 @@ JSON trace format:
 {
   "version": {
     "major": 1,
-    "minor": 0
+    "minor": 1
   }
 }
 .ft P
@@ -541,14 +554,14 @@ Warn about uninitialized values.
 Print a warning when an uninitialized variable is used.
 .TP
 .B \fB\-\-warn\-unused\-vars\fP
-Warn about unused variables.
-.sp
-Find variables that are declared or set, but not used.
+Does nothing.  In CMake versions 3.2 and below this enabled warnings about
+unused variables.  In CMake versions 3.3 through 3.18 the option was broken.
+In CMake 3.19 and above the option has been removed.
 .TP
 .B \fB\-\-no\-warn\-unused\-cli\fP
-Don’t warn about command line options.
+Don\(aqt warn about command line options.
 .sp
-Don’t find variables that are declared on the command line, but not
+Don\(aqt find variables that are declared on the command line, but not
 used.
 .TP
 .B \fB\-\-check\-system\-vars\fP
@@ -559,7 +572,7 @@ in \fBCMAKE_SOURCE_DIR\fP and \fBCMAKE_BINARY_DIR\fP\&.
 This flag tells CMake to warn about other files as well.
 .TP
 .B \fB\-\-profiling\-output=<path>\fP
-Used in conjuction with \fB\-\-profiling\-format\fP to output to a given path.
+Used in conjunction with \fB\-\-profiling\-format\fP to output to a given path.
 .TP
 .B \fB\-\-profiling\-format=<file>\fP
 Enable the output of profiling data of CMake script in the given format.
@@ -571,6 +584,26 @@ Currently supported values are:
 \fBgoogle\-trace\fP Outputs in Google Trace Format, which can be parsed by the
 \fI\%about:tracing\fP tab of Google Chrome or using a plugin for a tool like Trace
 Compass.
+.TP
+.B \fB\-\-preset <preset>\fP, \fB\-\-preset=<preset>\fP
+Reads a \fBpreset\fP from
+\fB<path\-to\-source>/CMakePresets.json\fP and
+\fB<path\-to\-source>/CMakeUserPresets.json\fP\&. The preset may specify the
+generator and the build directory, and a list of variables and other
+arguments to pass to CMake. The current working directory must contain
+CMake preset files. The \fBCMake GUI\fP can
+also recognize \fBCMakePresets.json\fP and \fBCMakeUserPresets.json\fP files. For
+full details on these files, see \fBcmake\-presets(7)\fP\&.
+.sp
+The presets are read before all other command line options. The options
+specified by the preset (variables, generator, etc.) can all be overridden by
+manually specifying them on the command line. For example, if the preset sets
+a variable called \fBMYVAR\fP to \fB1\fP, but the user sets it to \fB2\fP with a
+\fB\-D\fP argument, the value \fB2\fP is preferred.
+.TP
+.B \fB\-\-list\-presets, \-\-list\-presets=<[configure | build | test | all]>\fP
+Lists the available presets. If no option is specified only configure presets
+will be listed. The current working directory must contain CMake preset files.
 .UNINDENT
 .SH BUILD A PROJECT
 .sp
@@ -581,22 +614,34 @@ project binary tree:
 .sp
 .nf
 .ft C
-cmake \-\-build <dir> [<options>] [\-\- <build\-tool\-options>]
+cmake \-\-build <dir>             [<options>] [\-\- <build\-tool\-options>]
+cmake \-\-build \-\-preset <preset> [<options>] [\-\- <build\-tool\-options>]
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
 .sp
-This abstracts a native build tool’s command\-line interface with the
+This abstracts a native build tool\(aqs command\-line interface with the
 following options:
 .INDENT 0.0
 .TP
 .B \fB\-\-build <dir>\fP
-Project binary directory to be built.  This is required and must be first.
+Project binary directory to be built.  This is required (unless a preset
+is specified) and must be first.
+.TP
+.B \fB\-\-preset <preset>\fP, \fB\-\-preset=<preset>\fP
+Use a build preset to specify build options. The project binary directory
+is inferred from the \fBconfigurePreset\fP key. The current working directory
+must contain CMake preset files.
+See \fBpreset\fP for more details.
+.TP
+.B \fB\-\-list\-presets\fP
+Lists the available build presets. The current working directory must
+contain CMake preset files.
 .TP
 .B \fB\-\-parallel [<jobs>], \-j [<jobs>]\fP
 The maximum number of concurrent processes to use when building.
-If \fB<jobs>\fP is omitted the native build tool’s default number is used.
+If \fB<jobs>\fP is omitted the native build tool\(aqs default number is used.
 .sp
 The \fBCMAKE_BUILD_PARALLEL_LEVEL\fP environment variable, if set,
 specifies a default parallel level when this option is not given.
@@ -658,6 +703,9 @@ For multi\-configuration generators, choose configuration \fB<cfg>\fP\&.
 .TP
 .B \fB\-\-component <comp>\fP
 Component\-based install. Only install component \fB<comp>\fP\&.
+.TP
+.B \fB\-\-default\-directory\-permissions <permissions>\fP
+Default directory install permissions. Permissions in format \fB<u=rwx,g=rx,o=rx>\fP\&.
 .TP
 .B \fB\-\-prefix <prefix>\fP
 Override the installation prefix, \fBCMAKE_INSTALL_PREFIX\fP\&.
@@ -766,6 +814,14 @@ A string containing the name of the generator.
 .B \fBplatformSupport\fP
 \fBtrue\fP if the generator supports platforms and \fBfalse\fP otherwise.
 .TP
+.B \fBsupportedPlatforms\fP
+New in version 3.21.
+
+.sp
+Optional member that may be present when the generator supports
+platform specification via \fBCMAKE_GENERATOR_PLATFORM\fP
+(\fB\-A ...\fP).  The value is a list of platforms known to be supported.
+.TP
 .B \fBextraGenerators\fP
 A list of strings with all the extra generators compatible with
 the generator.
@@ -793,6 +849,7 @@ version components.
 .TP
 .B \fBserverMode\fP
 \fBtrue\fP if cmake supports server\-mode and \fBfalse\fP otherwise.
+Always false since CMake 3.20.
 .UNINDENT
 .TP
 .B \fBcat <files>...\fP
@@ -803,7 +860,8 @@ Change the current working directory and run a command.
 .TP
 .B \fBcompare_files [\-\-ignore\-eol] <file1> <file2>\fP
 Check if \fB<file1>\fP is same as \fB<file2>\fP\&. If files are the same,
-then returns \fB0\fP, if not it returns \fB1\fP\&.  The \fB\-\-ignore\-eol\fP option
+then returns \fB0\fP, if not it returns \fB1\fP\&.  In case of invalid
+arguments, it returns 2. The \fB\-\-ignore\-eol\fP option
 implies line\-wise comparison and ignores LF/CRLF differences.
 .TP
 .B \fBcopy <file>... <destination>\fP
@@ -832,6 +890,17 @@ Create a symbolic link \fB<new>\fP naming \fB<old>\fP\&.
 .INDENT 7.0
 .INDENT 3.5
 Path to where \fB<new>\fP symbolic link will be created has to exist beforehand.
+.UNINDENT
+.UNINDENT
+.TP
+.B \fBcreate_hardlink <old> <new>\fP
+Create a hard link \fB<new>\fP naming \fB<old>\fP\&.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+Path to where \fB<new>\fP hard link will be created has to exist beforehand.
+\fB<old>\fP has to exist beforehand.
 .UNINDENT
 .UNINDENT
 .TP
@@ -943,7 +1012,7 @@ Create SHA512 checksum of files in \fBsha512sum\fP compatible format:
 Deprecated since version 3.17.
 
 .sp
-Remove the file(s). The planned behaviour was that if any of the
+Remove the file(s). The planned behavior was that if any of the
 listed files already do not exist, the command returns a non\-zero exit code,
 but no message is logged. The \fB\-f\fP option changes the behavior to return a
 zero exit code (i.e. success) in such situations instead.
@@ -1245,6 +1314,18 @@ The \fBcmake\-variables(7)\fP manual is printed in a
 human\-readable text format.
 The help is printed to a named <f>ile if given.
 .UNINDENT
+.sp
+To view the presets available for a project, use
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+cmake <source\-dir> \-\-list\-presets
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .SH SEE ALSO
 .sp
 The following resources are available to get help using CMake:
@@ -1267,6 +1348,6 @@ found on this web page.
 The Discourse Forum hosts discussion and questions about CMake.
 .UNINDENT
 .SH COPYRIGHT
-2000-2020 Kitware, Inc. and Contributors
+2000-2021 Kitware, Inc. and Contributors
 .\" Generated by docutils manpage writer.
 .
