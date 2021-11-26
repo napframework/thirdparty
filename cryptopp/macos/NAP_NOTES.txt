@@ -1,7 +1,8 @@
-Built from CRYPTOPP_8_2_0.tar.gz with: 
+Built from CRYPTOPP_8_3_0 with: 
 
 mkdir install
-make static
+CXXFLAGS="-DNDEBUG -g2 -O3 -stdlib=libc++ -fPIC" make static -j 4
+CXXFLAGS="-DNDEBUG -g2 -O3 -stdlib=libc++ -fPIC" make dynamic -j 4
 make install PREFIX=./install
 
-Using static build as recommended by cryptopp for security in their README
+Use static build as recommended by cryptopp for security in their README

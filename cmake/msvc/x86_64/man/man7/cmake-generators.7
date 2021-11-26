@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-GENERATORS" "7" "Oct 06, 2020" "3.18.4" "CMake"
+.TH "CMAKE-GENERATORS" "7" "Sep 20, 2021" "3.21.3" "CMake"
 .SH NAME
 cmake-generators \- CMake Generators Reference
 .
@@ -84,6 +84,9 @@ Generates NMake makefiles.
 .SS NMake Makefiles JOM
 .sp
 Generates JOM makefiles.
+.sp
+New in version 3.8: \fBCodeBlocks\fP generator can be used as an extra generator.
+
 .SS Unix Makefiles
 .sp
 Generates standard UNIX makefiles.
@@ -107,7 +110,7 @@ Runs the install step in the subdirectory, if any.
 Runs the install step in the subdirectory followed by a \fBCMAKE_STRIP\fP command,
 if any.
 .sp
-The \fBCMAKE_STRIP\fP variable will contain the platform’s \fBstrip\fP utility, which
+The \fBCMAKE_STRIP\fP variable will contain the platform\(aqs \fBstrip\fP utility, which
 removes symbols information from generated binaries.
 .TP
 .B \fBtest\fP
@@ -130,36 +133,73 @@ project through the \fBinstall\fP (or \fBinstall/strip\fP) target.
 .sp
 For each subdirectory \fBsub/dir\fP of the project, additional targets
 are generated:
+.sp
+\fBsub/dir/all\fP
 .INDENT 0.0
-.TP
-.B \fBsub/dir/all\fP
-Depends on all targets required by the subdirectory.
-.TP
-.B \fBsub/dir/install\fP
-Runs the install step in the subdirectory, if any.
-.TP
-.B \fBsub/dir/install/strip\fP
-Runs the install step in the subdirectory followed by a \fBCMAKE_STRIP\fP command,
+.INDENT 3.5
+New in version 3.6: Depends on all targets required by the subdirectory.
+
+.UNINDENT
+.UNINDENT
+.sp
+\fBsub/dir/install\fP
+.INDENT 0.0
+.INDENT 3.5
+New in version 3.7: Runs the install step in the subdirectory, if any.
+
+.UNINDENT
+.UNINDENT
+.sp
+\fBsub/dir/install/strip\fP
+.INDENT 0.0
+.INDENT 3.5
+New in version 3.7: Runs the install step in the subdirectory followed by a \fBCMAKE_STRIP\fP command,
 if any.
 .sp
-The \fBCMAKE_STRIP\fP variable will contain the platform’s \fBstrip\fP utility, which
+The \fBCMAKE_STRIP\fP variable will contain the platform\(aqs \fBstrip\fP utility, which
 removes symbols information from generated binaries.
-.TP
-.B \fBsub/dir/test\fP
-Runs the test step in the subdirectory, if any.
-.TP
-.B \fBsub/dir/package\fP
-Runs the package step in the subdirectory, if any.
+
+.UNINDENT
+.UNINDENT
+.sp
+\fBsub/dir/test\fP
+.INDENT 0.0
+.INDENT 3.5
+New in version 3.7: Runs the test step in the subdirectory, if any.
+
+.UNINDENT
+.UNINDENT
+.sp
+\fBsub/dir/package\fP
+.INDENT 0.0
+.INDENT 3.5
+New in version 3.7: Runs the package step in the subdirectory, if any.
+
+.UNINDENT
 .UNINDENT
 .SS Fortran Support
 .sp
+New in version 3.7.
+
+.sp
 The \fBNinja\fP generator conditionally supports Fortran when the \fBninja\fP
 tool is at least version 1.10 (which has the required features).
+.SS Swift Support
+.sp
+New in version 3.15.
+
+.sp
+The Swift support is experimental, not considered stable, and may change
+in future releases of CMake.
 .SS See Also
 .sp
-The \fBNinja Multi\-Config\fP generator is similar to the \fBNinja\fP
+New in version 3.17: The \fBNinja Multi\-Config\fP generator is similar to the \fBNinja\fP
 generator, but generates multiple configurations at once.
+
 .SS Ninja Multi\-Config
+.sp
+New in version 3.17.
+
 .sp
 Generates multiple \fBbuild\-<Config>.ninja\fP files.
 .sp
@@ -179,8 +219,7 @@ are intended to be run with \fBninja \-f build\-<Config>.ninja\fP\&. A
 .sp
 \fBcmake \-\-build . \-\-config <Config>\fP will always use \fBbuild\-<Config>.ninja\fP
 to build. If no \fB\-\-config\fP argument is specified, \fBcmake \-\-build .\fP will
-default to \fBbuild\-Debug.ninja\fP, unless a \fBbuild.ninja\fP is generated (see
-below), in which case that will be used instead.
+use \fBbuild.ninja\fP\&.
 .sp
 Each \fBbuild\-<Config>.ninja\fP file contains \fB<target>\fP targets as well as
 \fB<target>:<Config>\fP targets, where \fB<Config>\fP is the same as the
@@ -194,7 +233,9 @@ The \fBNinja Multi\-Config\fP generator recognizes the following variables:
 .INDENT 0.0
 .TP
 .B \fBCMAKE_CONFIGURATION_TYPES\fP
-Specifies the total set of configurations to build.
+Specifies the total set of configurations to build. Unlike with other
+multi\-config generators, this variable has a value of
+\fBDebug;Release;RelWithDebInfo\fP by default.
 .TP
 .B \fBCMAKE_CROSS_CONFIGS\fP
 Specifies a semicolon\-separated list of
@@ -265,6 +306,92 @@ used to generate \fBgenerated.c\fP, which would be used to build the \fBDebug\fP
 configuration of \fBgenerated\fP\&. This is useful for running a release\-optimized
 version of a generator utility while still building the debug version of the
 targets built with the generated code.
+.SS Custom Commands
+.sp
+New in version 3.20.
+
+.sp
+The \fBNinja Multi\-Config\fP generator adds extra capabilities to
+\fBadd_custom_command()\fP and \fBadd_custom_target()\fP through its
+cross\-config mode. The \fBCOMMAND\fP, \fBDEPENDS\fP, and \fBWORKING_DIRECTORY\fP
+arguments can be evaluated in the context of either the "command config" (the
+"native" configuration of the \fBbuild\-<Config>.ninja\fP file in use) or the
+"output config" (the configuration used to evaluate the \fBOUTPUT\fP and
+\fBBYPRODUCTS\fP).
+.sp
+If either \fBOUTPUT\fP or \fBBYPRODUCTS\fP names a path that is common to
+more than one configuration (e.g. it does not use any generator expressions),
+all arguments are evaluated in the command config by default.
+If all \fBOUTPUT\fP and \fBBYPRODUCTS\fP paths are unique to each configuration
+(e.g. by using the \fB$<CONFIG>\fP generator expression), the first argument of
+\fBCOMMAND\fP is still evaluated in the command config by default, while all
+subsequent arguments, as well as the arguments to \fBDEPENDS\fP and
+\fBWORKING_DIRECTORY\fP, are evaluated in the output config. These defaults can
+be overridden with the \fB$<OUTPUT_CONFIG:...>\fP and \fB$<COMMAND_CONFIG:...>\fP
+generator\-expressions. Note that if a target is specified by its name in
+\fBDEPENDS\fP, or as the first argument of \fBCOMMAND\fP, it is always evaluated
+in the command config, even if it is wrapped in \fB$<OUTPUT_CONFIG:...>\fP
+(because its plain name is not a generator expression).
+.sp
+As an example, consider the following:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+add_custom_command(
+  OUTPUT "$<CONFIG>.txt"
+  COMMAND generator "$<CONFIG>.txt" "$<OUTPUT_CONFIG:$<CONFIG>>" "$<COMMAND_CONFIG:$<CONFIG>>"
+  DEPENDS tgt1 "$<TARGET_FILE:tgt2>" "$<OUTPUT_CONFIG:$<TARGET_FILE:tgt3>>" "$<COMMAND_CONFIG:$<TARGET_FILE:tgt4>>"
+  )
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Assume that \fBgenerator\fP, \fBtgt1\fP, \fBtgt2\fP, \fBtgt3\fP, and \fBtgt4\fP are all
+executable targets, and assume that \fB$<CONFIG>.txt\fP is built in the \fBDebug\fP
+output config using the \fBRelease\fP command config. The \fBRelease\fP build of
+the \fBgenerator\fP target is called with \fBDebug.txt Debug Release\fP as
+arguments. The command depends on the \fBRelease\fP builds of \fBtgt1\fP and
+\fBtgt4\fP, and the \fBDebug\fP builds of \fBtgt2\fP and \fBtgt3\fP\&.
+.sp
+\fBPRE_BUILD\fP, \fBPRE_LINK\fP, and \fBPOST_BUILD\fP custom commands for targets
+only get run in their "native" configuration (the \fBRelease\fP configuration in
+the \fBbuild\-Release.ninja\fP file) unless they have no \fBBYPRODUCTS\fP or their
+\fBBYPRODUCTS\fP are unique per config. Consider the following example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+add_executable(exe main.c)
+add_custom_command(
+  TARGET exe
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} \-E echo "Running no\-byproduct command"
+  )
+add_custom_command(
+  TARGET exe
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} \-E echo "Running separate\-byproduct command for $<CONFIG>"
+  BYPRODUCTS $<CONFIG>.txt
+  )
+add_custom_command(
+  TARGET exe
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} \-E echo "Running common\-byproduct command for $<CONFIG>"
+  BYPRODUCTS exe.txt
+  )
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+In this example, if you build \fBexe:Debug\fP in \fBbuild\-Release.ninja\fP, the
+first and second custom commands get run, since their byproducts are unique
+per\-config, but the last custom command does not. However, if you build
+\fBexe:Release\fP in \fBbuild\-Release.ninja\fP, all three custom commands get run.
 .SS IDE Build Tool Generators
 .sp
 These generators support Integrated Development Environment (IDE)
@@ -298,7 +425,7 @@ Generates Visual Studio 9 2008 project files.
 .sp
 The default target platform name (architecture) is \fBWin32\fP\&.
 .sp
-The \fBCMAKE_GENERATOR_PLATFORM\fP variable may be set, perhaps
+New in version 3.1: The \fBCMAKE_GENERATOR_PLATFORM\fP variable may be set, perhaps
 via the \fBcmake(1)\fP \fB\-A\fP option, to specify a target platform
 name (architecture).  For example:
 .INDENT 0.0
@@ -312,6 +439,7 @@ name (architecture).  For example:
 \fBcmake \-G "Visual Studio 9 2008" \-A <WinCE\-SDK>\fP
 (Specify a target platform matching a Windows CE SDK name.)
 .UNINDENT
+
 .sp
 For compatibility with CMake versions prior to 3.1, one may specify
 a target platform name optionally at the end of the generator name.
@@ -335,13 +463,14 @@ For compatibility with CMake versions prior to 3.0, one may specify this
 generator using the name \fBVisual Studio 10\fP without the year component.
 .SS Project Types
 .sp
-Only Visual C++ and C# projects may be generated.  Other types of
-projects (Database, Website, etc.) are not supported.
+Only Visual C++ and C# projects may be generated (and Fortran with
+Intel compiler integration).  Other types of projects (Database,
+Website, etc.) are not supported.
 .SS Platform Selection
 .sp
 The default target platform name (architecture) is \fBWin32\fP\&.
 .sp
-The \fBCMAKE_GENERATOR_PLATFORM\fP variable may be set, perhaps
+New in version 3.1: The \fBCMAKE_GENERATOR_PLATFORM\fP variable may be set, perhaps
 via the \fBcmake(1)\fP \fB\-A\fP option, to specify a target platform
 name (architecture).  For example:
 .INDENT 0.0
@@ -352,6 +481,7 @@ name (architecture).  For example:
 .IP \(bu 2
 \fBcmake \-G "Visual Studio 10 2010" \-A Itanium\fP
 .UNINDENT
+
 .sp
 For compatibility with CMake versions prior to 3.1, one may specify
 a target platform name optionally at the end of the generator name.
@@ -374,16 +504,17 @@ via the \fBcmake(1)\fP \fB\-T\fP option, to specify another toolset.
 Generates Visual Studio 11 (VS 2012) project files.
 .sp
 For compatibility with CMake versions prior to 3.0, one may specify this
-generator using the name “Visual Studio 11” without the year component.
+generator using the name "Visual Studio 11" without the year component.
 .SS Project Types
 .sp
-Only Visual C++ and C# projects may be generated.  Other types of
-projects (JavaScript, Database, Website, etc.) are not supported.
+Only Visual C++ and C# projects may be generated (and Fortran with
+Intel compiler integration).  Other types of projects (JavaScript,
+Database, Website, etc.) are not supported.
 .SS Platform Selection
 .sp
 The default target platform name (architecture) is \fBWin32\fP\&.
 .sp
-The \fBCMAKE_GENERATOR_PLATFORM\fP variable may be set, perhaps
+New in version 3.1: The \fBCMAKE_GENERATOR_PLATFORM\fP variable may be set, perhaps
 via the \fBcmake(1)\fP \fB\-A\fP option, to specify a target platform
 name (architecture).  For example:
 .INDENT 0.0
@@ -397,6 +528,7 @@ name (architecture).  For example:
 \fBcmake \-G "Visual Studio 11 2012" \-A <WinCE\-SDK>\fP
 (Specify a target platform matching a Windows CE SDK name.)
 .UNINDENT
+
 .sp
 For compatibility with CMake versions prior to 3.1, one may specify
 a target platform name optionally at the end of the generator name.
@@ -422,16 +554,17 @@ via the \fBcmake(1)\fP \fB\-T\fP option, to specify another toolset.
 Generates Visual Studio 12 (VS 2013) project files.
 .sp
 For compatibility with CMake versions prior to 3.0, one may specify this
-generator using the name “Visual Studio 12” without the year component.
+generator using the name "Visual Studio 12" without the year component.
 .SS Project Types
 .sp
-Only Visual C++ and C# projects may be generated.  Other types of
-projects (JavaScript, Powershell, Python, etc.) are not supported.
+Only Visual C++ and C# projects may be generated (and Fortran with
+Intel compiler integration).  Other types of projects (JavaScript,
+Powershell, Python, etc.) are not supported.
 .SS Platform Selection
 .sp
 The default target platform name (architecture) is \fBWin32\fP\&.
 .sp
-The \fBCMAKE_GENERATOR_PLATFORM\fP variable may be set, perhaps
+New in version 3.1: The \fBCMAKE_GENERATOR_PLATFORM\fP variable may be set, perhaps
 via the \fBcmake(1)\fP \fB\-A\fP option, to specify a target platform
 name (architecture).  For example:
 .INDENT 0.0
@@ -442,6 +575,7 @@ name (architecture).  For example:
 .IP \(bu 2
 \fBcmake \-G "Visual Studio 12 2013" \-A ARM\fP
 .UNINDENT
+
 .sp
 For compatibility with CMake versions prior to 3.1, one may specify
 a target platform name optionally at the end of the generator name.
@@ -460,20 +594,28 @@ The \fBv120\fP toolset that comes with Visual Studio 12 2013 is selected by
 default.  The \fBCMAKE_GENERATOR_TOOLSET\fP option may be set, perhaps
 via the \fBcmake(1)\fP \fB\-T\fP option, to specify another toolset.
 .sp
-For each toolset that comes with this version of Visual Studio, there are
+New in version 3.8: For each toolset that comes with this version of Visual Studio, there are
 variants that are themselves compiled for 32\-bit (\fBx86\fP) and
 64\-bit (\fBx64\fP) hosts (independent of the architecture they target).
 By default this generator uses the 32\-bit variant even on a 64\-bit host.
 One may explicitly request use of either the 32\-bit or 64\-bit host tools
 by adding either \fBhost=x86\fP or \fBhost=x64\fP to the toolset specification.
 See the \fBCMAKE_GENERATOR_TOOLSET\fP variable for details.
+
+.sp
+New in version 3.14: Added support for \fBhost=x86\fP option.
+
 .SS Visual Studio 14 2015
+.sp
+New in version 3.1.
+
 .sp
 Generates Visual Studio 14 (VS 2015) project files.
 .SS Project Types
 .sp
-Only Visual C++ and C# projects may be generated.  Other types of
-projects (JavaScript, Powershell, Python, etc.) are not supported.
+Only Visual C++ and C# projects may be generated (and Fortran with
+Intel compiler integration).  Other types of projects (JavaScript,
+Powershell, Python, etc.) are not supported.
 .SS Platform Selection
 .sp
 The default target platform name (architecture) is \fBWin32\fP\&.
@@ -507,34 +649,59 @@ The \fBv140\fP toolset that comes with Visual Studio 14 2015 is selected by
 default.  The \fBCMAKE_GENERATOR_TOOLSET\fP option may be set, perhaps
 via the \fBcmake(1)\fP \fB\-T\fP option, to specify another toolset.
 .sp
-For each toolset that comes with this version of Visual Studio, there are
+New in version 3.8: For each toolset that comes with this version of Visual Studio, there are
 variants that are themselves compiled for 32\-bit (\fBx86\fP) and
 64\-bit (\fBx64\fP) hosts (independent of the architecture they target).
 By default this generator uses the 32\-bit variant even on a 64\-bit host.
 One may explicitly request use of either the 32\-bit or 64\-bit host tools
 by adding either \fBhost=x86\fP or \fBhost=x64\fP to the toolset specification.
 See the \fBCMAKE_GENERATOR_TOOLSET\fP variable for details.
+
+.sp
+New in version 3.14: Added support for \fBhost=x86\fP option.
+
+.SS Windows 10 SDK Maximum Version for VS 2015
+.sp
+New in version 3.19.
+
+.sp
+Microsoft stated in a "Windows 10 October 2018 Update" blog post that Windows
+10 SDK versions (15063, 16299, 17134, 17763) are not supported by VS 2015 and
+are only supported by VS 2017 and later.  Therefore by default CMake
+automatically ignores Windows 10 SDKs beyond \fB10.0.14393.0\fP\&.
+.sp
+However, there are other recommendations for certain driver/Win32 builds that
+indicate otherwise.  A user can override this behavior by either setting the
+\fBCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION_MAXIMUM\fP to a false value
+or setting the \fBCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION_MAXIMUM\fP to
+the string value of the required maximum (e.g. \fB10.0.15063.0\fP).
 .SS Visual Studio 15 2017
+.sp
+New in version 3.7.1.
+
 .sp
 Generates Visual Studio 15 (VS 2017) project files.
 .SS Project Types
 .sp
-Only Visual C++ and C# projects may be generated.  Other types of
-projects (JavaScript, Powershell, Python, etc.) are not supported.
+Only Visual C++ and C# projects may be generated (and Fortran with
+Intel compiler integration).  Other types of projects (JavaScript,
+Powershell, Python, etc.) are not supported.
 .SS Instance Selection
 .sp
-VS 2017 supports multiple installations on the same machine.
+New in version 3.9: VS 2017 supports multiple installations on the same machine.
 The \fBCMAKE_GENERATOR_INSTANCE\fP variable may be set as a
 cache entry containing the absolute path to a Visual Studio instance.
 If the value is not specified explicitly by the user or a toolchain file,
 CMake queries the Visual Studio Installer to locate VS instances, chooses
 one, and sets the variable as a cache entry to hold the value persistently.
+
 .sp
-When CMake first chooses an instance, if the \fBVS150COMNTOOLS\fP environment
+New in version 3.11: When CMake first chooses an instance, if the \fBVS150COMNTOOLS\fP environment
 variable is set and points to the \fBCommon7/Tools\fP directory within
 one of the instances, that instance will be used.  Otherwise, if more
 than one instance is installed we do not define which one is chosen
 by default.
+
 .SS Platform Selection
 .sp
 The default target platform name (architecture) is \fBWin32\fP\&.
@@ -570,20 +737,28 @@ The \fBv141\fP toolset that comes with Visual Studio 15 2017 is selected by
 default.  The \fBCMAKE_GENERATOR_TOOLSET\fP option may be set, perhaps
 via the \fBcmake(1)\fP \fB\-T\fP option, to specify another toolset.
 .sp
-For each toolset that comes with this version of Visual Studio, there are
+New in version 3.8: For each toolset that comes with this version of Visual Studio, there are
 variants that are themselves compiled for 32\-bit (\fBx86\fP) and
 64\-bit (\fBx64\fP) hosts (independent of the architecture they target).
 By default this generator uses the 32\-bit variant even on a 64\-bit host.
 One may explicitly request use of either the 32\-bit or 64\-bit host tools
 by adding either \fBhost=x86\fP or \fBhost=x64\fP to the toolset specification.
 See the \fBCMAKE_GENERATOR_TOOLSET\fP variable for details.
+
+.sp
+New in version 3.14: Added support for \fBhost=x86\fP option.
+
 .SS Visual Studio 16 2019
+.sp
+New in version 3.14.
+
 .sp
 Generates Visual Studio 16 (VS 2019) project files.
 .SS Project Types
 .sp
-Only Visual C++ and C# projects may be generated.  Other types of
-projects (JavaScript, Powershell, Python, etc.) are not supported.
+Only Visual C++ and C# projects may be generated (and Fortran with
+Intel compiler integration).  Other types of projects (JavaScript,
+Powershell, Python, etc.) are not supported.
 .SS Instance Selection
 .sp
 VS 2019 supports multiple installations on the same machine.
@@ -630,25 +805,111 @@ the 32\-bit variant otherwise.
 One may explicitly request use of either the 32\-bit or 64\-bit host tools
 by adding either \fBhost=x86\fP or \fBhost=x64\fP to the toolset specification.
 See the \fBCMAKE_GENERATOR_TOOLSET\fP variable for details.
+.SS Visual Studio 17 2022
+.sp
+New in version 3.21.
+
+.sp
+Generates Visual Studio 17 (VS 2022) project files.
+.sp
+\fBWARNING:\fP
+.INDENT 0.0
+.INDENT 3.5
+This is experimental and based on "Visual Studio 2022 Preview 4".
+As of this version of CMake, VS 2022 has not been released.
+.UNINDENT
+.UNINDENT
+.SS Project Types
+.sp
+Only Visual C++ and C# projects may be generated (and Fortran with
+Intel compiler integration).  Other types of projects (JavaScript,
+Powershell, Python, etc.) are not supported.
+.SS Instance Selection
+.sp
+VS 2022 supports multiple installations on the same machine.
+The \fBCMAKE_GENERATOR_INSTANCE\fP variable may be set as a
+cache entry containing the absolute path to a Visual Studio instance.
+If the value is not specified explicitly by the user or a toolchain file,
+CMake queries the Visual Studio Installer to locate VS instances, chooses
+one, and sets the variable as a cache entry to hold the value persistently.
+.sp
+When CMake first chooses an instance, if the \fBVS170COMNTOOLS\fP environment
+variable is set and points to the \fBCommon7/Tools\fP directory within
+one of the instances, that instance will be used.  Otherwise, if more
+than one instance is installed we do not define which one is chosen
+by default.
+.SS Platform Selection
+.sp
+The default target platform name (architecture) is that of the host
+and is provided in the \fBCMAKE_VS_PLATFORM_NAME_DEFAULT\fP variable.
+.sp
+The \fBCMAKE_GENERATOR_PLATFORM\fP variable may be set, perhaps
+via the \fBcmake(1)\fP \fB\-A\fP option, to specify a target platform
+name (architecture).  For example:
+.INDENT 0.0
+.IP \(bu 2
+\fBcmake \-G "Visual Studio 17 2022" \-A Win32\fP
+.IP \(bu 2
+\fBcmake \-G "Visual Studio 17 2022" \-A x64\fP
+.IP \(bu 2
+\fBcmake \-G "Visual Studio 17 2022" \-A ARM\fP
+.IP \(bu 2
+\fBcmake \-G "Visual Studio 17 2022" \-A ARM64\fP
+.UNINDENT
+.SS Toolset Selection
+.sp
+The \fBv143\fP toolset that comes with VS 17 2022 Preview 4 is selected by
+default.  The \fBCMAKE_GENERATOR_TOOLSET\fP option may be set, perhaps
+via the \fBcmake(1)\fP \fB\-T\fP option, to specify another toolset.
+.sp
+For each toolset that comes with this version of Visual Studio, there are
+variants that are themselves compiled for 32\-bit (\fBx86\fP) and
+64\-bit (\fBx64\fP) hosts (independent of the architecture they target).
+By default this generator uses the 64\-bit variant on x64 hosts and
+the 32\-bit variant otherwise.
+One may explicitly request use of either the 32\-bit or 64\-bit host tools
+by adding either \fBhost=x86\fP or \fBhost=x64\fP to the toolset specification.
+See the \fBCMAKE_GENERATOR_TOOLSET\fP variable for details.
 .SS Other Generators
 .SS Green Hills MULTI
 .sp
+New in version 3.3.
+
+.sp
+New in version 3.15: Linux support.
+
+.sp
 Generates Green Hills MULTI project files (experimental, work\-in\-progress).
 .sp
-The buildsystem has predetermined build\-configuration settings that can be controlled
+Customizations are available through the following cache variables:
+.INDENT 0.0
+.IP \(bu 2
+\fBGHS_CUSTOMIZATION\fP
+.IP \(bu 2
+\fBGHS_GPJ_MACROS\fP
+.UNINDENT
+.sp
+New in version 3.14: The buildsystem has predetermined build\-configuration settings that can be controlled
 via the \fBCMAKE_BUILD_TYPE\fP variable.
+
+.SS Toolset and Platform Selection
+.sp
+New in version 3.13.
+
 .sp
 Customizations that are used to pick toolset and target system:
-.sp
+.INDENT 0.0
+.IP \(bu 2
 The \fB\-A <arch>\fP can be supplied for setting the target architecture.
 \fB<arch>\fP usually is one of \fBarm\fP, \fBppc\fP, \fB86\fP, etcetera.
 If the target architecture is not specified then
 the default architecture of \fBarm\fP will be used.
-.sp
+.IP \(bu 2
 The \fB\-T <toolset>\fP option can be used to set the directory location of the toolset.
 Both absolute and relative paths are valid. Relative paths use \fBGHS_TOOLSET_ROOT\fP
 as the root. If the toolset is not specified then the latest toolset found in
 \fBGHS_TOOLSET_ROOT\fP will be used.
+.UNINDENT
 .sp
 Cache variables that are used for toolset and target system customization:
 .INDENT 0.0
@@ -690,6 +951,9 @@ a specific RTOS is to be used.
 \fBGHS_OS_DIR_OPTION\fP default value is \fB\-os_dir\fP\&.
 .fi
 .sp
+.sp
+New in version 3.15: The \fBGHS_OS_DIR_OPTION\fP variable.
+
 .IP \(bu 2
 \fBGHS_BSP_NAME\fP
 .nf
@@ -698,14 +962,10 @@ Defaults to \fBsim<arch>\fP for \fBintegrity\fP platforms.
 .fi
 .sp
 .UNINDENT
+.SS Target Properties
 .sp
-Customizations are available through the following cache variables:
-.INDENT 0.0
-.IP \(bu 2
-\fBGHS_CUSTOMIZATION\fP
-.IP \(bu 2
-\fBGHS_GPJ_MACROS\fP
-.UNINDENT
+New in version 3.14.
+
 .sp
 The following properties are available:
 .INDENT 0.0
@@ -718,7 +978,7 @@ The following properties are available:
 \fBNOTE:\fP
 .INDENT 0.0
 .INDENT 3.5
-This generator is deemed experimental as of CMake 3.18.4
+This generator is deemed experimental as of CMake 3.21.3
 and is still a work in progress.  Future versions of CMake
 may make breaking changes as the generator matures.
 .UNINDENT
@@ -727,12 +987,48 @@ may make breaking changes as the generator matures.
 .sp
 Generate Xcode project files.
 .sp
-This supports Xcode 5.0 and above.
-.SS Toolset Selection
+Changed in version 3.15: This generator supports Xcode 5.0 and above.
+
+.SS Toolset and Build System Selection
 .sp
 By default Xcode is allowed to select its own default toolchain.
 The \fBCMAKE_GENERATOR_TOOLSET\fP option may be set, perhaps
 via the \fBcmake(1)\fP \fB\-T\fP option, to specify another toolset.
+.sp
+New in version 3.19: This generator supports toolset specification using one of these forms:
+
+.INDENT 0.0
+.IP \(bu 2
+\fBtoolset\fP
+.IP \(bu 2
+\fBtoolset[,key=value]*\fP
+.IP \(bu 2
+\fBkey=value[,key=value]*\fP
+.UNINDENT
+.sp
+The \fBtoolset\fP specifies the toolset name.  The selected toolset name
+is provided in the \fBCMAKE_XCODE_PLATFORM_TOOLSET\fP variable.
+.sp
+The \fBkey=value\fP pairs form a comma\-separated list of options to
+specify generator\-specific details of the toolset selection.
+Supported pairs are:
+.INDENT 0.0
+.TP
+.B \fBbuildsystem=<variant>\fP
+Specify the buildsystem variant to use.
+See the \fBCMAKE_XCODE_BUILD_SYSTEM\fP variable for allowed values.
+.sp
+For example, to select the original build system under Xcode 12,
+run \fBcmake(1)\fP with the option \fB\-T buildsystem=1\fP\&.
+.UNINDENT
+.SS Swift Support
+.sp
+New in version 3.4.
+
+.sp
+When using the \fI\%Xcode\fP generator with Xcode 6.1 or higher,
+one may enable the \fBSwift\fP language with the \fBenable_language()\fP
+command or the \fBproject()\fP\&.
 .SH EXTRA GENERATORS
 .sp
 Some of the \fI\%CMake Generators\fP listed in the \fBcmake(1)\fP
@@ -748,14 +1044,16 @@ Project files for CodeBlocks will be created in the top directory and
 in every subdirectory which features a \fBCMakeLists.txt\fP file containing
 a \fBproject()\fP call.  Additionally a hierarchy of makefiles is generated
 into the build tree.
-The \fBCMAKE_CODEBLOCKS_EXCLUDE_EXTERNAL_FILES\fP variable may
-be set to \fBON\fP to exclude any files which are located outside of
-the project root directory.
 The appropriate make program can build the
 project through the default \fBall\fP target.  An \fBinstall\fP target is
 also provided.
 .sp
-This “extra” generator may be specified as:
+New in version 3.10: The \fBCMAKE_CODEBLOCKS_EXCLUDE_EXTERNAL_FILES\fP variable may
+be set to \fBON\fP to exclude any files which are located outside of
+the project root directory.
+
+.sp
+This "extra" generator may be specified as:
 .INDENT 0.0
 .TP
 .B \fBCodeBlocks \- MinGW Makefiles\fP
@@ -765,7 +1063,8 @@ Generate with \fBMinGW Makefiles\fP\&.
 Generate with \fBNMake Makefiles\fP\&.
 .TP
 .B \fBCodeBlocks \- NMake Makefiles JOM\fP
-Generate with \fBNMake Makefiles JOM\fP\&.
+New in version 3.8: Generate with \fBNMake Makefiles JOM\fP\&.
+
 .TP
 .B \fBCodeBlocks \- Ninja\fP
 Generate with \fBNinja\fP\&.
@@ -780,14 +1079,16 @@ Generates CodeLite project files.
 Project files for CodeLite will be created in the top directory and
 in every subdirectory which features a CMakeLists.txt file containing
 a \fBproject()\fP call.
-The \fBCMAKE_CODELITE_USE_TARGETS\fP variable may be set to \fBON\fP
-to change the default behavior from projects to targets as the basis
-for project files.
 The appropriate make program can build the
 project through the default \fBall\fP target.  An \fBinstall\fP target
 is also provided.
 .sp
-This “extra” generator may be specified as:
+New in version 3.7: The \fBCMAKE_CODELITE_USE_TARGETS\fP variable may be set to \fBON\fP
+to change the default behavior from projects to targets as the basis
+for project files.
+
+.sp
+This "extra" generator may be specified as:
 .INDENT 0.0
 .TP
 .B \fBCodeLite \- MinGW Makefiles\fP
@@ -813,7 +1114,7 @@ generated into the build tree.  The appropriate make program can build
 the project through the default \fBall\fP target.  An \fBinstall\fP target
 is also provided.
 .sp
-This “extra” generator may be specified as:
+This "extra" generator may be specified as:
 .INDENT 0.0
 .TP
 .B \fBEclipse CDT4 \- MinGW Makefiles\fP
@@ -840,7 +1141,7 @@ The project file is loaded in Kate by opening the
 If the Kate Build\-plugin is enabled, all targets generated by CMake are
 available for building.
 .sp
-This “extra” generator may be specified as:
+This "extra" generator may be specified as:
 .INDENT 0.0
 .TP
 .B \fBKate \- MinGW Makefiles\fP
@@ -866,7 +1167,7 @@ containing a \fBproject()\fP call.  Additionally \fBMakefiles\fP
 The appropriate make program can build the project through the default \fBall\fP
 target.  An \fBinstall\fP target is also provided.
 .sp
-This “extra” generator may be specified as:
+This "extra" generator may be specified as:
 .INDENT 0.0
 .TP
 .B \fBSublime Text 2 \- MinGW Makefiles\fP
@@ -882,6 +1183,6 @@ Generate with \fBNinja\fP\&.
 Generate with \fBUnix Makefiles\fP\&.
 .UNINDENT
 .SH COPYRIGHT
-2000-2020 Kitware, Inc. and Contributors
+2000-2021 Kitware, Inc. and Contributors
 .\" Generated by docutils manpage writer.
 .

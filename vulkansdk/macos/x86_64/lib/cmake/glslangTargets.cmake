@@ -4,7 +4,7 @@ if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" LESS 2.5)
    message(FATAL_ERROR "CMake >= 2.6.0 required")
 endif()
 cmake_policy(PUSH)
-cmake_policy(VERSION 2.6)
+cmake_policy(VERSION 2.6...3.18)
 #----------------------------------------------------------------
 # Generated CMake target import file.
 #----------------------------------------------------------------
@@ -16,7 +16,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_targetsDefined)
 set(_targetsNotDefined)
 set(_expectedTargets)
-foreach(_expectedTarget glslang)
+foreach(_expectedTarget glslang MachineIndependent GenericCodeGen)
   list(APPEND _expectedTargets ${_expectedTarget})
   if(NOT TARGET ${_expectedTarget})
     list(APPEND _targetsNotDefined ${_expectedTarget})
@@ -54,8 +54,18 @@ add_library(glslang STATIC IMPORTED)
 
 set_target_properties(glslang PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "OGLCompiler;OSDependent;HLSL"
+  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:OGLCompiler>;\$<LINK_ONLY:OSDependent>;\$<LINK_ONLY:MachineIndependent>"
 )
+
+# Create imported target MachineIndependent
+add_library(MachineIndependent STATIC IMPORTED)
+
+set_target_properties(MachineIndependent PROPERTIES
+  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:OGLCompiler>;\$<LINK_ONLY:OSDependent>;\$<LINK_ONLY:GenericCodeGen>"
+)
+
+# Create imported target GenericCodeGen
+add_library(GenericCodeGen STATIC IMPORTED)
 
 if(CMAKE_VERSION VERSION_LESS 2.8.12)
   message(FATAL_ERROR "This file relies on consumers using CMake 2.8.12 or greater.")
@@ -90,10 +100,10 @@ but not all the files it references.
 endforeach()
 unset(_IMPORT_CHECK_TARGETS)
 
-# Make sure the targets which have been exported in some other 
+# Make sure the targets which have been exported in some other
 # export set exist.
 unset(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE_targets)
-foreach(_target "OGLCompiler" "OSDependent" "HLSL" )
+foreach(_target "OGLCompiler" "OSDependent" )
   if(NOT TARGET "${_target}" )
     set(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE_targets "${${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE_targets} ${_target}")
   endif()
