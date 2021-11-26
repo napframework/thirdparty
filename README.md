@@ -33,6 +33,8 @@ Keep the third-party source code in the repository if possible.
 
 ## Docker Buildx Process For Linux Cross-Architecture Compilation
 
-Docker images can be created to ease the compilation across architectures on Linux by following the instructions in the README under `build_tools/docker_images` in the main NAP repository.
+Docker Buildx is used to build each package, running eg. `docker buildx bake <arch>` in the package directory, where the architecture is one of `x86_64`, `armhf` or `arm64`. A Docker image for the destination architecture should be created first.
+
+More detailed instructions on the process, including creation of the images, are in the README under `/docker_images`.
 
 Going forward this is the preferred method of compilation on Linux and may later be explored on other platforms.
