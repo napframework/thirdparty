@@ -17,7 +17,7 @@ RUN \
   tar -xf ${package_archive} && \
   cd ${package_version} && \
   rm -rf x86_64 && \
-  ./vulkansdk headers loader tools glslang layers spirv-headers vulkan-extensionlayer && \
+  ./vulkansdk headers loader tools layers vulkan-extensionlayer && \
   mkdir -p ${inst_dir} && \
   cp -a x86_64/* ${inst_dir}/ && \
   cd / && \
