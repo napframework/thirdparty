@@ -1,4 +1,0 @@
-#! /bin/bash -e
-
-faust -t 0 -svg $@ -o /dev/null
-
