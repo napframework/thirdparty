@@ -6,8 +6,8 @@ import shutil
 
 def main(arch):
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    nap_root = os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir))
-    cmake_third_party = os.path.abspath(os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake'))
+    thirdparty_root = os.path.abspath(os.path.join(script_dir, os.pardir))
+    cmake_third_party = os.path.abspath(os.path.join(thirdparty_root, 'cmake'))
     os.chdir(script_dir)
 
     if os.path.exists('cmake'):
