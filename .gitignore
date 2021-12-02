@@ -45,3 +45,4 @@ vulkansdk/linux/lib/libVkLayer_api_dump.so
 cryptopp/linux/*/lib/libcryptopp.a
 opencv/ffmpeg
 opencv/nap-cmake
+docker_images/cmake
