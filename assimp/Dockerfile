@@ -7,9 +7,8 @@ ARG inst_dir
 ENV src_dir="/input"
 COPY source ${src_dir}
 
-# TODO debug and re-enable tests
-#   RUN apt-get update && apt-get --no-install-recommends install -y libgtest-dev && \
-#     rm -rf /var/lib/apt/lists/*
+# Note: At some point an attempt build the tests should probably be made (after first updating 
+#       Assimp)
 
 RUN \
   cd ${src_dir} && \
