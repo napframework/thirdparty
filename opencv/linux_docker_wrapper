@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+import argparse
+from subprocess import call
+import os
+
+def work(arch):
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    third_party_root = os.path.abspath(os.path.join(script_dir, os.pardir))
+    os.chdir(script_dir)
+
+    # Prep cmake
+    cmake_dir = os.path.join(third_party_root, 'cmake', 'linux', arch)
+    cmd = 'cp -a {} nap-cmake'.format(cmake_dir)
+    print(cmd)
+    call(cmd, shell=True)
+
+    # Prep our FFmpeg
+    cmd = './build-aux/prepare_ffmpeg {}'.format(arch)
+    print(cmd)
+    call(cmd, shell=True)
+
+    cmd = 'docker buildx bake {} --no-cache --progress plain'.format(arch)
+    print(cmd)
+    call(cmd, shell=True)
+
+    # Cleanup
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    ffmpeg_dir = os.path.join(script_dir, 'ffmpeg')
+    cmd = 'rm -rf {}'.format(ffmpeg_dir)
+    call(cmd, shell=True)
+    cmd = 'rm -rf {}'.format('nap-cmake')
+    call(cmd, shell=True)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('architecture', choices=['x86_64', 'arm64', 'armhf'])
+    args = parser.parse_args()
+    work(args.architecture)

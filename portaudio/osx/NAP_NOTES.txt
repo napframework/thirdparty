@@ -1,9 +1,0 @@
-Built from source in thirdparty
-
-Needed to install MacOSX10.12.sdk to get it building on 10.13.
-
-Post build:
-
-install_name_tool -id @rpath/libportaudio.2.dylib osx/lib/libportaudio.2.dylib
-
-TODO: Cleanup removing thirdparty/portaudio/xcode after merge of release-packaging-fixes-the-second

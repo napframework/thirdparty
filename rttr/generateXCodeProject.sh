@@ -1,2 +1,2 @@
 #!/bin/sh
-cmake -H. -Bxcode -G Xcode
+cmake -Hsource -Bxcode -G Xcode

@@ -1,3 +1,0 @@
-#!/bin/bash
-
-for f in *.dsp; do echo $f; faust -pn main $f -o /dev/null; done
