@@ -1,3 +1,0 @@
-Initial attempts at some Python support for Android, built via https://github.com/GRRedWings/python3-android (with included env file)
-
-Work in progress
