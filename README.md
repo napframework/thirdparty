@@ -1,5 +1,6 @@
+<br>
 <p align="center">
-  <img width=256 height=256 src="https://www.napframework.com/png/nap_logo_small.png">
+  <img width=384 src="https://docs.nap.tech/content/nap_logo_blue.svg">
 </p>
 
 This repository contains all cross-platform third party dependencies to build [NAP](https://github.com/napframework/nap) from source on Windows, Linux and macOS, except Qt. The third party master is guaranteed to be in-sync with the current NAP master.
