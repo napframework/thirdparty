@@ -1,1 +1,0 @@
-The CMakeLists.txt (and process) has been made on our end for Android and is very off the cuff
