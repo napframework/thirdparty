@@ -8,7 +8,6 @@
 */
 
 #include "pybind11_tests.h"
-
 #include "constructor_stats.h"
 
 #include <functional>
@@ -27,21 +26,23 @@ productively.
 Instead, see the "How can I reduce the build time?" question in the "Frequently asked questions"
 section of the documentation for good practice on splitting binding code over multiple files.
 */
-std::list<std::function<void(py::module_ &)>> &initializers() {
-    static std::list<std::function<void(py::module_ &)>> inits;
+std::list<std::function<void(py::module &)>> &initializers() {
+    static std::list<std::function<void(py::module &)>> inits;
     return inits;
 }
 
-test_initializer::test_initializer(Initializer init) { initializers().emplace_back(init); }
+test_initializer::test_initializer(Initializer init) {
+    initializers().push_back(init);
+}
 
 test_initializer::test_initializer(const char *submodule_name, Initializer init) {
-    initializers().emplace_back([=](py::module_ &parent) {
+    initializers().push_back([=](py::module &parent) {
         auto m = parent.def_submodule(submodule_name);
         init(m);
     });
 }
 
-void bind_ConstructorStats(py::module_ &m) {
+void bind_ConstructorStats(py::module &m) {
     py::class_<ConstructorStats>(m, "ConstructorStats")
         .def("alive", &ConstructorStats::alive)
         .def("values", &ConstructorStats::values)
@@ -50,16 +51,15 @@ void bind_ConstructorStats(py::module_ &m) {
         .def_readwrite("move_assignments", &ConstructorStats::move_assignments)
         .def_readwrite("copy_constructions", &ConstructorStats::copy_constructions)
         .def_readwrite("move_constructions", &ConstructorStats::move_constructions)
-        .def_static("get",
-                    (ConstructorStats & (*) (py::object)) & ConstructorStats::get,
-                    py::return_value_policy::reference_internal)
+        .def_static("get", (ConstructorStats &(*)(py::object)) &ConstructorStats::get, py::return_value_policy::reference_internal)
 
-        // Not exactly ConstructorStats, but related: expose the internal pybind number of
-        // registered instances to allow instance cleanup checks (invokes a GC first)
+        // Not exactly ConstructorStats, but related: expose the internal pybind number of registered instances
+        // to allow instance cleanup checks (invokes a GC first)
         .def_static("detail_reg_inst", []() {
             ConstructorStats::gc();
             return py::detail::get_internals().registered_instances.size();
-        });
+        })
+        ;
 }
 
 PYBIND11_MODULE(pybind11_tests, m) {
@@ -77,16 +77,16 @@ PYBIND11_MODULE(pybind11_tests, m) {
         .def(py::init<>())
         .def(py::init<int>())
         .def("get_value", &UserType::value, "Get value using a method")
-        .def("set_value", &UserType::set, "Set value using a method")
-        .def_property("value", &UserType::value, &UserType::set, "Get/set value using a property")
-        .def("__repr__", [](const UserType &u) { return "UserType({})"_s.format(u.value()); });
+        .def_property_readonly("value", &UserType::value, "Get value using a property")
+        .def("__repr__", [](const UserType& u) { return "UserType({})"_s.format(u.value()); });
 
     py::class_<IncType, UserType>(m, "IncType")
         .def(py::init<>())
         .def(py::init<int>())
-        .def("__repr__", [](const IncType &u) { return "IncType({})"_s.format(u.value()); });
+        .def("__repr__", [](const IncType& u) { return "IncType({})"_s.format(u.value()); });
 
-    for (const auto &initializer : initializers()) {
+    for (const auto &initializer : initializers())
         initializer(m);
-    }
+
+    if (!py::hasattr(m, "have_eigen")) m.attr("have_eigen") = false;
 }
