@@ -21,12 +21,12 @@ Then follow the instructions on the [Docker Buildx](https://docs.docker.com/buil
 eg. at time of writing, with Buildx v0.6.3
 
 ``` shell
-$ wget https://github.com/docker/buildx/releases/download/v0.6.3/buildx-v0.6.3.linux-amd64
-$ mkdir -p ~/.docker/cli-plugins
-$ mv buildx-v0.6.3.linux-amd64 ~/.docker/cli-plugins/docker-buildx
-$ chmod +x ~/.docker/cli-plugins/docker-buildx
-$ docker buildx install
-$ docker buildx version
+# wget https://github.com/docker/buildx/releases/download/v0.6.3/buildx-v0.6.3.linux-amd64
+# mkdir -p ~/.docker/cli-plugins
+# mv buildx-v0.6.3.linux-amd64 ~/.docker/cli-plugins/docker-buildx
+# chmod +x ~/.docker/cli-plugins/docker-buildx
+# docker buildx install
+# docker buildx version
 ```
 
 The final line of the output should show the installed Docker Buildx version, eg.
@@ -43,13 +43,13 @@ The wrapper script `create_image.py` exists to guide the image creation process,
 
 eg. for ARMhf
 ```
-$ ./create_image.py armhf
+# ./create_image.py armhf
 ```
 
 Check the Docker image list to verify it's been created
 
 ```
-$ docker images ls
+# docker images ls
 ```
 
 ### Compiling a third-party library
