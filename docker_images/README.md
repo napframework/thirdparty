@@ -20,15 +20,13 @@ Then follow the instructions on the [Docker Buildx](https://docs.docker.com/buil
 
 eg. at time of writing, with Buildx v0.6.3
 
-```
-sudo sh -c " \
-wget https://github.com/docker/buildx/releases/download/v0.6.3/buildx-v0.6.3.linux-amd64 && \
-mkdir -p ~/.docker/cli-plugins ; \
-mv buildx-v0.6.3.linux-amd64 ~/.docker/cli-plugins/docker-buildx && \
-chmod +x ~/.docker/cli-plugins/docker-buildx && \
-docker buildx install && \
-docker buildx version \
-"
+``` shell
+$ wget https://github.com/docker/buildx/releases/download/v0.6.3/buildx-v0.6.3.linux-amd64
+$ mkdir -p ~/.docker/cli-plugins
+$ mv buildx-v0.6.3.linux-amd64 ~/.docker/cli-plugins/docker-buildx
+$ chmod +x ~/.docker/cli-plugins/docker-buildx
+$ docker buildx install
+$ docker buildx version
 ```
 
 The final line of the output should show the installed Docker Buildx version, eg.
