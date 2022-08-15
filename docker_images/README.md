@@ -13,7 +13,7 @@ These processes were developed on a Debian-based Linux distro and were executed 
 First you need Docker and QEMU
 
 ```
-# apt install docker.io qemu-user-static
+$ apt install docker.io qemu-user-static
 ```
 
 Then follow the instructions on the [Docker Buildx](https://docs.docker.com/buildx/working-with-buildx/) page to get Buildx installed, running eg. `# docker buildx version` to verify its installation.
@@ -43,13 +43,13 @@ The wrapper script `create_image.py` exists to guide the image creation process,
 
 eg. for ARMhf
 ```
-# ./create_image.py armhf
+$ ./create_image.py armhf
 ```
 
 Check the Docker image list to verify it's been created
 
 ```
-# docker images ls
+$ docker images ls
 ```
 
 ### Compiling a third-party library
