@@ -1,14 +1,14 @@
 #----------------------------------------------------------------
-# Generated CMake target import file.
+# Generated CMake target import file for configuration "Release".
 #----------------------------------------------------------------
 
 # Commands may need to know the format version.
 set(CMAKE_IMPORT_FILE_VERSION 1)
 
-# Import target "glslangValidator" for configuration ""
-set_property(TARGET glslangValidator APPEND PROPERTY IMPORTED_CONFIGURATIONS NOCONFIG)
+# Import target "glslangValidator" for configuration "Release"
+set_property(TARGET glslangValidator APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(glslangValidator PROPERTIES
-  IMPORTED_LOCATION_NOCONFIG "${_IMPORT_PREFIX}/bin/glslangValidator"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/bin/glslangValidator"
   )
 
 list(APPEND _IMPORT_CHECK_TARGETS glslangValidator )
