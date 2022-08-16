@@ -10,7 +10,7 @@ RUN \
   cd ${src_dir} && \
   mkdir build && \
   cd build && \
-  cmake ../ -DCMAKE_INSTALL_PREFIX=${inst_dir} -DENABLE_HLSL=OFF && \
+  cmake ../ -DCMAKE_INSTALL_PREFIX=${inst_dir} -DENABLE_HLSL=OFF -DENABLE_RTTI=ON && \
   cmake --build . --target install --config Release -- -j `nproc` && \
   cmake --build . --target install --config Debug -- -j `nproc` && \
   rm -rf ${src_dir}
