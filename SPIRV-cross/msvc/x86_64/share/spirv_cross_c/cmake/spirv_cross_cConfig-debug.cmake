@@ -9,7 +9,6 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set_property(TARGET spirv-cross-c APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 set_target_properties(spirv-cross-c PROPERTIES
   IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "CXX"
-  IMPORTED_LINK_INTERFACE_LIBRARIES_DEBUG "spirv-cross-glsl;spirv-cross-hlsl;spirv-cross-msl;spirv-cross-cpp;spirv-cross-reflect"
   IMPORTED_LOCATION_DEBUG "${_IMPORT_PREFIX}/lib/spirv-cross-cd.lib"
   )
 
