@@ -13,22 +13,20 @@ These processes were developed on a Debian-based Linux distro and were executed 
 First you need Docker and QEMU
 
 ```
-# apt install docker.io qemu-user-static
+$ apt install docker.io qemu-user-static
 ```
 
 Then follow the instructions on the [Docker Buildx](https://docs.docker.com/buildx/working-with-buildx/) page to get Buildx installed, running eg. `# docker buildx version` to verify its installation.
 
 eg. at time of writing, with Buildx v0.6.3
 
-```
-sudo sh -c " \
-wget https://github.com/docker/buildx/releases/download/v0.6.3/buildx-v0.6.3.linux-amd64 && \
-mkdir -p ~/.docker/cli-plugins ; \
-mv buildx-v0.6.3.linux-amd64 ~/.docker/cli-plugins/docker-buildx && \
-chmod +x ~/.docker/cli-plugins/docker-buildx && \
-docker buildx install && \
-docker buildx version \
-"
+``` shell
+# wget https://github.com/docker/buildx/releases/download/v0.6.3/buildx-v0.6.3.linux-amd64
+# mkdir -p ~/.docker/cli-plugins
+# mv buildx-v0.6.3.linux-amd64 ~/.docker/cli-plugins/docker-buildx
+# chmod +x ~/.docker/cli-plugins/docker-buildx
+# docker buildx install
+# docker buildx version
 ```
 
 The final line of the output should show the installed Docker Buildx version, eg.
