@@ -46,3 +46,4 @@ cryptopp/linux/*/lib/libcryptopp.a
 opencv/ffmpeg
 opencv/nap-cmake
 docker_images/cmake
+*.swp

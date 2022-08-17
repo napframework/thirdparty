@@ -5,19 +5,6 @@
 
 using namespace metal;
 
-constant float4 _20[2] = { float4(10.0), float4(20.0) };
-
-struct main0_out
-{
-    float4 gl_Position [[position]];
-};
-
-struct main0_in
-{
-    float4 vInput0 [[attribute(0)]];
-    float4 vInput1 [[attribute(1)]];
-};
-
 template<typename T, uint A>
 inline void spvArrayCopyFromConstantToStack1(thread T (&dst)[A], constant T (&src)[A])
 {
@@ -126,19 +113,32 @@ inline void spvArrayCopyFromDeviceToThreadGroup1(threadgroup T (&dst)[A], device
     }
 }
 
-static inline __attribute__((always_inline))
-void test(thread float4 (&SPIRV_Cross_return_value)[2])
+constant float4 _20[2] = { float4(10.0), float4(20.0) };
+
+struct main0_out
 {
-    spvArrayCopyFromConstantToStack1(SPIRV_Cross_return_value, _20);
+    float4 gl_Position [[position]];
+};
+
+struct main0_in
+{
+    float4 vInput0 [[attribute(0)]];
+    float4 vInput1 [[attribute(1)]];
+};
+
+static inline __attribute__((always_inline))
+void test(thread float4 (&spvReturnValue)[2])
+{
+    spvArrayCopyFromConstantToStack1(spvReturnValue, _20);
 }
 
 static inline __attribute__((always_inline))
-void test2(thread float4 (&SPIRV_Cross_return_value)[2], thread float4& vInput0, thread float4& vInput1)
+void test2(thread float4 (&spvReturnValue)[2], thread float4& vInput0, thread float4& vInput1)
 {
     float4 foobar[2];
     foobar[0] = vInput0;
     foobar[1] = vInput1;
-    spvArrayCopyFromStackToStack1(SPIRV_Cross_return_value, foobar);
+    spvArrayCopyFromStackToStack1(spvReturnValue, foobar);
 }
 
 vertex main0_out main0(main0_in in [[stage_in]])

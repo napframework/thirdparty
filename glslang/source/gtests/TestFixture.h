@@ -253,10 +253,13 @@ public:
         glslang::TProgram program;
         program.addShader(&shader);
         success &= program.link(controls);
-
-        spv::SpvBuildLogger logger;
+#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+        if (success)
+            program.mapIO();
+#endif
 
         if (success && (controls & EShMsgSpvRules)) {
+            spv::SpvBuildLogger logger;
             std::vector<uint32_t> spirv_binary;
             options().disableOptimizer = !enableOptimizer;
             options().generateDebugInfo = enableDebug;
@@ -312,8 +315,9 @@ public:
         program.addShader(&shader);
         
         success &= program.link(controls);
-#ifndef GLSLANG_WEB
-        success &= program.mapIO();
+#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+        if (success)
+            program.mapIO();
 #endif
 
         spv::SpvBuildLogger logger;
@@ -356,15 +360,19 @@ public:
         glslang::TProgram program;
         program.addShader(&shader);
         success &= program.link(controls);
-
-        spv::SpvBuildLogger logger;
+#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+        if (success)
+            program.mapIO();
+#endif
 
         if (success && (controls & EShMsgSpvRules)) {
+        spv::SpvBuildLogger logger;
+            std::vector<std::string> whiteListStrings;
             std::vector<uint32_t> spirv_binary;
             glslang::GlslangToSpv(*program.getIntermediate(stage),
                                   spirv_binary, &logger, &options());
 
-            spv::spirvbin_t(0 /*verbosity*/).remap(spirv_binary, remapOptions);
+            spv::spirvbin_t(0 /*verbosity*/).remap(spirv_binary, whiteListStrings, remapOptions);
 
             std::ostringstream disassembly_stream;
             spv::Parameterize();
@@ -387,9 +395,9 @@ public:
     {
         if ((controls & EShMsgSpvRules)) {
             std::vector<uint32_t> spirv_binary(code); // scratch copy
+            std::vector<std::string> whiteListStrings;
+            spv::spirvbin_t(0 /*verbosity*/).remap(spirv_binary, whiteListStrings, remapOptions);
 
-            spv::spirvbin_t(0 /*verbosity*/).remap(spirv_binary, remapOptions);
-            
             std::ostringstream disassembly_stream;
             spv::Parameterize();
             spv::Disassemble(disassembly_stream, spirv_binary);
