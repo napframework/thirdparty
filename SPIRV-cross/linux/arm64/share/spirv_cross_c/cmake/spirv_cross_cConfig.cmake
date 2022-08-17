@@ -55,7 +55,12 @@ add_library(spirv-cross-c STATIC IMPORTED)
 
 set_target_properties(spirv-cross-c PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include/spirv_cross"
+  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:spirv-cross-glsl>;\$<LINK_ONLY:spirv-cross-hlsl>;\$<LINK_ONLY:spirv-cross-msl>;\$<LINK_ONLY:spirv-cross-cpp>;\$<LINK_ONLY:spirv-cross-reflect>"
 )
+
+if(CMAKE_VERSION VERSION_LESS 2.8.12)
+  message(FATAL_ERROR "This file relies on consumers using CMake 2.8.12 or greater.")
+endif()
 
 # Load information for each installed configuration.
 get_filename_component(_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)

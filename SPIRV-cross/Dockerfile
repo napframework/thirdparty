@@ -11,9 +11,8 @@ RUN \
   cd ${src_dir} && \
   mkdir build && \
   cd build && \
-  cmake ../ -DCMAKE_INSTALL_PREFIX=${inst_dir} -DSPIRV_CROSS_FORCE_PIC=ON && \
+  cmake ../ -DCMAKE_INSTALL_PREFIX=${inst_dir} -DSPIRV_CROSS_FORCE_PIC=ON -DCMAKE_BUILD_TYPE=Release && \
   cmake --build . --config Release --target install -- -j `nproc` && \
-  cmake --build . --config Debug --target install -- -j `nproc` && \
   rm -rf ${src_dir}
 
 FROM scratch
