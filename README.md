@@ -7,6 +7,10 @@ This repository contains all cross-platform third party dependencies to build [N
 
 - For NAP compilation instructions visit: [https://github.com/napframework/nap](https://github.com/napframework/nap)
 
+## Deprecated
+
+Starting with NAP 0.6 this repository is no longer required - all thirdparty dependencies are included. Only NAP 0.5.X and earlier versions still require this repo. 
+
 ## Third-Party Compilation
 
 Linkage should be dynamic and not violate the MPL2.0 license policy. Static linkage is discouraged unless recommended by the third-party library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using:
