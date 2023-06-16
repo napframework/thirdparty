@@ -9,7 +9,7 @@ This repository contains all cross-platform third party dependencies to build [N
 
 ## Deprecated
 
-Starting with NAP 0.6 this repository is no longer required - all thirdparty dependencies are included. Only NAP 0.5.X and earlier versions still require this repo. 
+Starting with NAP 0.6 this repository is no longer required - all thirdparty dependencies are included. Only [NAP 0.5.X](https://github.com/napframework/nap/tree/0.5) and earlier versions still require this repo. 
 
 ## Third-Party Compilation
 
